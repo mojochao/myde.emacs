@@ -14,10 +14,17 @@
       inhibit-startup-echo-area-message t
       initial-scratch-message nil)
 
-;; Get rid of the scollbar and toolbar. They take up precious space and one
-;; of my goals is to keep my hands on the keyboard, not the mouse.
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
+;; Get rid of the scollbar and toolbar in GUI. They take up precious space
+;; and one of my goals is to keep my hands on the keyboard, not the mouse.
+(when (display-graphic-p)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1))
+
+;; If running on something else other than macOS, get rid of the menubar
+;; as well. One thing I like about macOS is that it uses a global app
+;; menu that changes with the app.  I wish Linux and Windows did that.
+(when (not (string-equal system-type "darwin"))
+  (menu-bar-mode -1))
 
 ;; Enable display of column numbers in buffer modeline.
 (setq column-number-mode t)
