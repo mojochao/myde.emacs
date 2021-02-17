@@ -90,17 +90,29 @@
   :config
   (diminish 'org-indent-mode))
 
-;; Add completion support.
-(use-package helm
+;; Configure Ivy-based  completion support.
+(use-package counsel
   :ensure t
-  :bind (("M-x" . helm-M-x)
-	 ("C-x C-b" . helm-buffers-list)
-	 ("C-x C-f" . helm-find-files)
-	 ("C-x C-r" . helm-recentf)
-	 ("C-x C-m" . helm-mini))
   :config
-  (helm-mode 1)
-  (setq helm-completion-style 'helm-fuzzy))
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t
+	ivy-count-format "(%d/%d) "
+	ivy-re-builders-alist
+	'((t . ivy--regex-fuzzy)))
+  ; Ivy-based interface to standard commands in global keymap.
+  :bind (("C-s" . swiper-isearch)
+	 ("M-x" . counsel-M-x)
+	 ("C-x C-f" . counsel-find-file)
+	 ("M-y" . counsel-yank-pop)
+	 ("<f1> f" . counsel-describe-function)
+	 ("<f1> v" . counsel-describe-variable)
+	 ("<f1> l" . counsel-find-library)
+	 ("<f2> i" . counsel-info-lookup-symbol)
+	 ("<f2> u" . counsel-unicode-char)
+	 ("<f2> j" . counsel-set-variable)
+	 ("C-x b" . ivy-switch-buffer)
+	 ("C-c v" . ivy-push-view)
+	 ("C-c V" . ivy-pop-view)))
 
 ;; Add project support.
 (use-package projectile
