@@ -90,6 +90,10 @@
   :config
   (diminish 'org-indent-mode))
 
+;; Configure Magit.
+(use-package magit
+  :ensure t)
+
 ;; Configure Ivy-based  completion support.
 (use-package counsel
   :ensure t
@@ -113,6 +117,15 @@
 	 ("C-x b" . ivy-switch-buffer)
 	 ("C-c v" . ivy-push-view)
 	 ("C-c V" . ivy-pop-view)))
+
+;; Add markdown support.
+(use-package markdown-mode
+  :ensure t
+  :commands(markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+	 ("\\.md\\'" . markdown-mode)
+	 ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
 
 ;; Add project support.
 (use-package projectile
