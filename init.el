@@ -20,6 +20,10 @@
   (scroll-bar-mode -1)
   (tool-bar-mode -1))
 
+;; Get rid of the menubar in TUI.
+(when (not window-system)
+  (menu-bar-mode -1))
+
 ;; If running on something else other than macOS, get rid of the menubar
 ;; as well. One thing I like about macOS is that it uses a global app
 ;; menu that changes with the app.  I wish Linux and Windows did that.
@@ -147,3 +151,11 @@
   :commands go-mode
   :ensure t)
   
+;; Add REST client support.
+(use-package restclient
+  :ensure t
+  :mode (("\\.http\\'" . restclient-mode)))
+
+;; Add vterm support.
+(use-package vterm
+  :ensure t)
