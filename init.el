@@ -108,8 +108,22 @@
 
 ;; Use vertico for completion support.
 (use-package vertico
+  :custom
+  (vertico-cycle t)
   :init
   (vertico-mode))
+
+(use-package marginalia
+  :after vertico
+  :custom
+  (marginalia-annotators (marginalia-annotators-heavy marginalia-annotators-light nil))
+  :init
+  (marginalia-mode))
+
+;; Save history.
+(use-package savehist
+  :init
+  (savehist-mode))
 
 ;; Use magit for git support.
 (use-package magit)
