@@ -36,6 +36,9 @@
 ;; Highlight current line everywhere.
 (global-hl-line-mode 1)
 
+;; Delete region selected when overwriting it.
+(delete-selection-mode 1)
+
 ;; Enable consistent use of 'y' or 'n' in prompts, never 'yes' or 'no'.
 (defalias 'yes-or-no-p 'y-or-n-p)
 
@@ -68,94 +71,71 @@
 (load "server")
 (unless (server-running-p) (server-start))
 
+;; Add generic programming language support.
+(add-hook 'prog-mode-hook (lambda ()
+			    (display-line-numbers-mode t)))
+
 ;; Configure package management.
-(require 'package)
-(setq package-enable-at-startup nil)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-(package-initialize)
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(eval-when-compile
-  (require 'use-package))
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 ;; Load theme.
 (use-package color-theme-sanityinc-tomorrow
-  :ensure t
   :config
   (load-theme 'sanityinc-tomorrow-eighties t))
 
-;; Do not show some common modes in the modeline, to save space.
+;; Use diminish to hide some common modes in the modeline.
 (use-package diminish
   :defer 5
   :config
   (diminish 'org-indent-mode))
 
-;; Configure Magit.
-(use-package magit
-  :ensure t)
+;; Use vterm for terminal sessions.
+(use-package vterm)
 
-;; Configure Ivy-based  completion support.
-(use-package counsel
-  :ensure t
+;; Use vertico for completion support.
+(use-package vertico
+  :init
+  (vertico-mode))
+
+;; Use magit for git support.
+(use-package magit)
+
+;; Use projectile for project support.
+(use-package projectile
+  :bind-keymap ("C-c p" . projectile-command-map)
   :config
-  (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t
-	ivy-count-format "(%d/%d) "
-	ivy-re-builders-alist
-	'((t . ivy--regex-fuzzy)))
-  ; Ivy-based interface to standard commands in global keymap.
-  :bind (("C-s" . swiper-isearch)
-	 ("M-x" . counsel-M-x)
-	 ("C-x C-f" . counsel-find-file)
-	 ("M-y" . counsel-yank-pop)
-	 ("<f1> f" . counsel-describe-function)
-	 ("<f1> v" . counsel-describe-variable)
-	 ("<f1> l" . counsel-find-library)
-	 ("<f2> i" . counsel-info-lookup-symbol)
-	 ("<f2> u" . counsel-unicode-char)
-	 ("<f2> j" . counsel-set-variable)
-	 ("C-x b" . ivy-switch-buffer)
-	 ("C-c v" . ivy-push-view)
-	 ("C-c V" . ivy-pop-view)))
+  (projectile-mode 1))
 
 ;; Add markdown support.
 (use-package markdown-mode
-  :ensure t
   :commands(markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
 	 ("\\.md\\'" . markdown-mode)
 	 ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
-;; Add project support.
-(use-package projectile
-  :ensure t
-  :bind-keymap ("C-c p" . projectile-command-map)
-  :config
-  (projectile-mode 1))
-
-;; Add LSP support.
-(use-package eglot
-  :ensure t)
-
-;; Add generic programming language support.
-(add-hook 'prog-mode-hook (lambda ()
-			    (display-line-numbers-mode t)))
+;; ;; Add LSP support.
+;; (use-package eglot
+;;   :ensure t)
 	  
 ;; Add Golang support.
 (use-package go-mode
-  :commands go-mode
-  :ensure t)
+  :commands go-mode)
   
 ;; Add REST client support.
 (use-package restclient
-  :ensure t
   :mode (("\\.http\\'" . restclient-mode)))
-
-;; Add vterm support.
-(use-package vterm
-  :ensure t)
