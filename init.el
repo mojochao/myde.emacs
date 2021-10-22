@@ -97,11 +97,16 @@
   :config
   (load-theme 'sanityinc-tomorrow-eighties t))
 
-;; Use diminish to hide some common modes in the modeline.
+;; Use diminish to squelch excessive noise in the modeline.
 (use-package diminish
   :defer 5
   :config
   (diminish 'org-indent-mode))
+
+;; Use which-key for improved discoverability.
+(use-package which-key
+  :init
+  (which-key-mode))
 
 ;; Use vterm for terminal sessions.
 (use-package vterm)
@@ -113,6 +118,7 @@
   :init
   (vertico-mode))
 
+;; Use marginalia for richer completion lists.
 (use-package marginalia
   :after vertico
   :custom
