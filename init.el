@@ -136,17 +136,20 @@
 
 ;; Use projectile for project support.
 (use-package projectile
-  :bind-keymap ("C-c p" . projectile-command-map)
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
   :config
   (projectile-mode 1))
 
 ;; Add markdown support.
 (use-package markdown-mode
   :commands(markdown-mode gfm-mode)
-  :mode (("README\\.md\\'" . gfm-mode)
-	 ("\\.md\\'" . markdown-mode)
-	 ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "multimarkdown"))
+  :mode
+  (("README\\.md\\'" . gfm-mode)
+   ("\\.md\\'" . markdown-mode)
+   ("\\.markdown\\'" . markdown-mode))
+  :init
+  (setq markdown-command "multimarkdown"))
 
 ;; ;; Add LSP support.
 ;; (use-package eglot
@@ -158,4 +161,5 @@
   
 ;; Add REST client support.
 (use-package restclient
-  :mode (("\\.http\\'" . restclient-mode)))
+  :mode
+  (("\\.http\\'" . restclient-mode)))
