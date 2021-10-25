@@ -131,8 +131,19 @@
   :init
   (savehist-mode))
 
-;; Use magit for git support.
+;; Add Git support.
+(use-package git-modes)
 (use-package magit)
+(use-package blamer
+  :straight
+  (:host github :repo "artawower/blamer.el")  
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+                    :background nil
+                    :height 140
+                    :italic t)))
+  :config
+  (global-blamer-mode 1))
 
 ;; Use projectile for project support.
 (use-package projectile
