@@ -136,12 +136,13 @@
 (use-package magit)
 (use-package blamer
   :straight
-  (:host github :repo "artawower/blamer.el")  
+  (blamer :host github
+	  :repo "artawower/blamer.el")  
   :custom-face
   (blamer-face ((t :foreground "#7a88cf"
-                    :background nil
-                    :height 140
-                    :italic t)))
+                   :background nil
+                   :height 140
+                   :italic t)))
   :config
   (global-blamer-mode 1))
 
