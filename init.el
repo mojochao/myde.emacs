@@ -135,7 +135,6 @@
 (use-package git-modes)
 (use-package magit)
 (use-package blamer
-  :straight
   (blamer :host github
 	  :repo "artawower/blamer.el")  
   :custom-face
@@ -146,6 +145,12 @@
   :config
   (global-blamer-mode 1))
 
+;; Use Perspective for workspace management.
+(use-package perspective
+  :bind (("C-x k" . persp-kill-buffer*))
+  :init
+  (persp-mode))
+  
 ;; Use projectile for project support.
 (use-package projectile
   :bind-keymap
