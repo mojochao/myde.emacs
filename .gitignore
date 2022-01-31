@@ -3,3 +3,5 @@ history
 recentf
 straight/
 transient/
+.lsp-session*
+projectile-bookmarks.eld

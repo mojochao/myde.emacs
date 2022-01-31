@@ -73,7 +73,8 @@
 
 ;; Add generic programming language support.
 (add-hook 'prog-mode-hook (lambda ()
-			    (display-line-numbers-mode t)))
+			    (display-line-numbers-mode t)
+			    (highlight-indent-guides-mode t)))
 
 ;; Configure package management.
 (defvar bootstrap-version)
@@ -97,16 +98,28 @@
   :config
   (load-theme 'sanityinc-tomorrow-eighties t))
 
+
+(use-package highlight-indent-guides  
+  :config  
+  (setq highlight-indent-guides-auto-odd-face-perc 10)  
+  (setq highlight-indent-guides-auto-even-face-perc 10)  
+  (setq highlight-indent-guides-auto-character-face-perc 10)  
+  (setq highlight-indent-guides-responsive 'top)  
+  (setq highlight-indent-guides-method 'bitmap)  
+  (setq highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-line))
+
 ;; Use diminish to squelch excessive noise in the modeline.
 (use-package diminish
   :defer 5
   :config
-  (diminish 'org-indent-mode))
+  (diminish 'org-indent-mode)
+  (diminish 'which-key-mode)
+  (diminish 'highlight-indent-guides-mode))
 
 ;; Use which-key for improved discoverability.
 (use-package which-key
   :init
-  (which-key-mode))
+  (diminish 'which-key-mode))
 
 ;; Use vterm for terminal sessions.
 (use-package vterm)
@@ -134,16 +147,24 @@
 ;; Add Git support.
 (use-package git-modes)
 (use-package magit)
-(use-package blamer
-  (blamer :host github
-	  :repo "artawower/blamer.el")  
-  :custom-face
-  (blamer-face ((t :foreground "#7a88cf"
-                   :background nil
-                   :height 140
-                   :italic t)))
+;; (use-package blamer
+;;   (blamer :host github
+;; 	  :repo "artawower/blamer.el")  
+;;   :custom-face
+;;   (blamer-face ((t :foreground "#7a88cf"
+;;                    :background nil
+;;                    :height 140
+;;                    :italic t)))
+;;   :config
+;;   (global-blamer-mode 1))
+
+;; Use LSP for code intelligence.
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :init
+  (setq lsp-keymap-prefix "C-c l")
   :config
-  (global-blamer-mode 1))
+  (lsp-enable-which-key-integration))
 
 ;; Use Perspective for workspace management.
 (use-package perspective
@@ -168,13 +189,20 @@
   :init
   (setq markdown-command "multimarkdown"))
 
-;; ;; Add LSP support.
-;; (use-package eglot
-;;   :ensure t)
-	  
 ;; Add Golang support.
 (use-package go-mode
-  :commands go-mode)
+  :commands go-mode
+  :config
+  (setq myde/gobin-path (expand-file-name "~/go/bin"))
+  (setq exec-path (append exec-path `(,myde/gobin-path)))
+  :init
+  (defun lsp-go-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+  (add-hook 'go-mode-hook #'lsp-deferred)
+  (add-hook 'go-mode-hook #'yas-minor-mode)
+  )
   
 ;; Add REST client support.
 (use-package restclient
