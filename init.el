@@ -62,6 +62,14 @@
 (add-hook 'shell-mode-hook (lambda ()
 			     (display-line-numbers-mode nil)))
 
+;; Create missing dirs as needed.
+(defun mc/auto-create-missing-dirs ()
+  (let ((target-dir (file-name-directory buffer-file-name)))
+    (unless (file-exists-p target-dir)
+      (make-directory target-dir t))))
+
+(add-to-list 'find-file-not-found-functions #'mc/auto-create-missing-dirs)
+
 ;; Configure recent files.
 (require 'recentf)
 (recentf-mode t)
