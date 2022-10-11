@@ -1,7 +1,8 @@
+auto-save-list/
+backup/
 elpa/
 history
+projects
 recentf
 straight/
 transient/
-.lsp-session*
-projectile-bookmarks.eld

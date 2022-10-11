@@ -59,8 +59,18 @@
 
 ;; Configure terminals.
 (set-terminal-coding-system 'utf-8-unix)
+
+;; Configure line numbers.
+
+;; Configure line numbers.
 (add-hook 'shell-mode-hook (lambda ()
 			     (display-line-numbers-mode nil)))
+(add-hook 'prog-mode-hook (lambda ()
+			    (display-line-numbers-mode t)
+			    (highlight-indent-guides-mode t)))
+
+(add-hook 'prog-mode-hook (lambda ()
+			    (display-line-numbers-mode t)))
 
 ;; Create missing dirs as needed.
 (defun mc/auto-create-missing-dirs ()
@@ -78,11 +88,6 @@
 ;; Start emacs server if not running.
 (load "server")
 (unless (server-running-p) (server-start))
-
-;; Add generic programming language support.
-(add-hook 'prog-mode-hook (lambda ()
-			    (display-line-numbers-mode t)
-			    (highlight-indent-guides-mode t)))
 
 ;; Configure package management.
 (defvar bootstrap-version)
@@ -107,13 +112,13 @@
   (load-theme 'sanityinc-tomorrow-eighties t))
 
 
-(use-package highlight-indent-guides  
-  :config  
-  (setq highlight-indent-guides-auto-odd-face-perc 10)  
-  (setq highlight-indent-guides-auto-even-face-perc 10)  
-  (setq highlight-indent-guides-auto-character-face-perc 10)  
-  (setq highlight-indent-guides-responsive 'top)  
-  (setq highlight-indent-guides-method 'bitmap)  
+(use-package highlight-indent-guides
+  :config
+  (setq highlight-indent-guides-auto-odd-face-perc 10)
+  (setq highlight-indent-guides-auto-even-face-perc 10)
+  (setq highlight-indent-guides-auto-character-face-perc 10)
+  (setq highlight-indent-guides-responsive 'top)
+  (setq highlight-indent-guides-method 'bitmap)
   (setq highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-line))
 
 ;; Use diminish to squelch excessive noise in the modeline.
@@ -127,7 +132,17 @@
 ;; Use which-key for improved discoverability.
 (use-package which-key
   :init
-  (diminish 'which-key-mode))
+  (diminish 'which-key-mode)
+  (which-key-mode))
+
+;; Provide better help buffers.
+(use-package helpful
+  :ensure t
+  :bind (("C-c C-d" . helpful-at-point)
+	 ("C-h f" . helpful-callable)
+	 ("C-h F" . helpful-function)
+	 ("C-h k" . helpful-key)
+	 ("C-h v" . helpful-variable)))
 
 ;; Use vterm for terminal sessions.
 (use-package vterm)
@@ -154,10 +169,13 @@
 
 ;; Add Git support.
 (use-package git-modes)
-(use-package magit)
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status)))
+
 ;; (use-package blamer
 ;;   (blamer :host github
-;; 	  :repo "artawower/blamer.el")  
+;; 	  :repo "artawower/blamer.el")
 ;;   :custom-face
 ;;   (blamer-face ((t :foreground "#7a88cf"
 ;;                    :background nil
@@ -166,36 +184,37 @@
 ;;   :config
 ;;   (global-blamer-mode 1))
 
-;; Use LSP for code intelligence.
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
+;; Use vertico for completion support.
+(use-package vertico
+  :custom
+  (vertico-cycle t)
   :init
-  (setq lsp-keymap-prefix "C-c l")
-  :config
-  (lsp-enable-which-key-integration))
+  (vertico-mode))
 
-;; Use Perspective for workspace management.
-(use-package perspective
-  :bind (("C-x k" . persp-kill-buffer*))
+;; Use marginalia for richer completion lists.
+(use-package marginalia
+  :after vertico
+  :custom
+  (marginalia-annotators (marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
-  (persp-mode))
-  
-;; Use projectile for project support.
-(use-package projectile
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :config
-  (projectile-mode 1))
+  (marginalia-mode))
+
+;; Save history.
+(use-package savehist
+  :init
+  (savehist-mode))
 
 ;; Add markdown support.
 (use-package markdown-mode
   :commands(markdown-mode gfm-mode)
-  :mode
-  (("README\\.md\\'" . gfm-mode)
-   ("\\.md\\'" . markdown-mode)
-   ("\\.markdown\\'" . markdown-mode))
-  :init
-  (setq markdown-command "multimarkdown"))
+  :mode (("README\\.md\\'" . gfm-mode)
+	 ("\\.md\\'" . markdown-mode)
+	 ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
+;; Add LSP support.
+(use-package eglot
+  :ensure t)
 
 ;; Add Golang support.
 (use-package go-mode
@@ -212,7 +231,7 @@
   (add-hook 'go-mode-hook #'yas-minor-mode)
   (add-hook 'go-mode-hook (lambda ()
     (setq tab-width 2))))
-  
+
 ;; Add REST client support.
 (use-package restclient
   :mode
