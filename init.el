@@ -1,4 +1,4 @@
-;;; MyDE is *My* Development Environment. YMMV :-)
+;;; MyDE is *my* Development Environment. YMMV :-)
 
 ;; Store custom settings in separate file.
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -61,14 +61,8 @@
 (set-terminal-coding-system 'utf-8-unix)
 
 ;; Configure line numbers.
-
-;; Configure line numbers.
 (add-hook 'shell-mode-hook (lambda ()
 			     (display-line-numbers-mode nil)))
-(add-hook 'prog-mode-hook (lambda ()
-			    (display-line-numbers-mode t)
-			    (highlight-indent-guides-mode t)))
-
 (add-hook 'prog-mode-hook (lambda ()
 			    (display-line-numbers-mode t)))
 
@@ -90,6 +84,14 @@
 (unless (server-running-p) (server-start))
 
 ;; Configure package management.
+
+;;;;  package.el
+;;; so package-list-packages includes them
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+
+;; bootstrap straight.el (package manager)
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -103,8 +105,17 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+;;;;  Effectively replace use-package with straight-use-package
+;;; https://github.com/raxod502/straight.el/blob/develop/README.md#integration-with-use-package
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+
+;; Add shell PATH to exec-path on macOS
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
 
 ;; Load theme.
 (use-package color-theme-sanityinc-tomorrow
@@ -119,7 +130,9 @@
   (setq highlight-indent-guides-auto-character-face-perc 10)
   (setq highlight-indent-guides-responsive 'top)
   (setq highlight-indent-guides-method 'bitmap)
-  (setq highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-line))
+  (setq highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-line)
+  :init
+  (add-hook 'prog-mode-hook (lambda () highlight-indent-guides-mode t)))
 
 ;; Use diminish to squelch excessive noise in the modeline.
 (use-package diminish
@@ -137,7 +150,6 @@
 
 ;; Provide better help buffers.
 (use-package helpful
-  :ensure t
   :bind (("C-c C-d" . helpful-at-point)
 	 ("C-h f" . helpful-callable)
 	 ("C-h F" . helpful-function)
@@ -169,8 +181,9 @@
 
 ;; Add Git support.
 (use-package git-modes)
+(use-package git-timemachine)
+
 (use-package magit
-  :ensure t
   :bind (("C-x g" . magit-status)))
 
 ;; (use-package blamer
@@ -212,9 +225,9 @@
 	 ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
-;; Add LSP support.
-(use-package eglot
-  :ensure t)
+;; ;; Add LSP support.
+;; (use-package eglot
+;;   :ensure t)
 
 ;; Add Golang support.
 (use-package go-mode
