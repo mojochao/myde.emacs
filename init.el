@@ -12,13 +12,13 @@
   (tool-bar-mode -1))
 
 ;; Get rid of the menubar in TUI.
-(when (not window-system)
+(unless (window-system)
   (menu-bar-mode -1))
 
 ;; If running on something else other than macOS, get rid of the menubar
 ;; as well. One thing I like about macOS is that it uses a global app
 ;; menu that changes with the app.  I wish Linux and Windows did that.
-(when (not  (string-equal system-type "darwin"))
+(unless (string-equal system-type "darwin")
   (menu-bar-mode -1))
 
 ;; Enable display of column numbers in buffer modeline.
@@ -303,7 +303,7 @@
   :custom
   (marginalia-annotators (marginalia-annotators-heavy marginalia-annotators-light nil))
   (marginalia-max-relative-age 0)
-  (marginalia-align 'right)
+;  (marginalia-align 'right)
   :init
   (marginalia-mode))
 
@@ -355,18 +355,21 @@
 ;; Use vterm for a fast, richer terminal emulator.
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
-  :ensure t)
+  :demand t
+  :commands vterm)
 
 ;; Configure git support.
 ;; https://github.com/magit/magit
 (use-package magit
-  :ensure t)
+  :demand t
+  :commands magit-status)
 
 ;; Add markdown support.
 ;; https://github.com/jrblevin/markdown-mode
 (use-package markdown-mode
   :ensure t
-  :commands(markdown-mode gfm-mode)
+  :demand t
+  :commands (markdown-mode gfm-mode)
   :mode
   (("README\\.md\\'" . gfm-mode)
    ("\\.md\\'" . markdown-mode)
@@ -377,6 +380,8 @@
 ;; https://github.com/pashky/restclient.el
 (use-package restclient
   :ensure t
+  :demand t
+  :commands restclient-mode
   :mode
   (("\\.http\\'" . restclient-mode)))
 
@@ -414,7 +419,17 @@
   (add-hook 'go-mode-hook (lambda ()
     (setq tab-width 2))))
 
+;; Add Python support.
+(use-package python
+  :demand t
+  :commands python-mode
+  :init
+  (add-hook 'python-mode-hook #'yas-minor-mode))
+
 ;; Add REST client support.
 (use-package restclient
+  :ensure t
+  :demand t
+  :commands restclient-mode
   :mode
   (("\\.http\\'" . restclient-mode)))
