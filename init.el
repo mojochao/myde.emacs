@@ -67,12 +67,24 @@
 (add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode t)))
 
 ;; Create missing dirs as needed.
-(defun mc/auto-create-missing-dirs ()
+(defun myde/auto-create-missing-dirs ()
   (let ((target-dir (file-name-directory buffer-file-name)))
     (unless (file-exists-p target-dir)
       (make-directory target-dir t))))
 
-(add-to-list 'find-file-not-found-functions #'mc/auto-create-missing-dirs)
+(add-to-list 'find-file-not-found-functions #'myde/auto-create-missing-dirs)
+
+;; Improve the commenting situation.
+(defun myde/comment-or-uncomment ()
+  "Comments or uncomments the current line or region."
+  (interactive)
+  (if (region-active-p)
+      (comment-or-uncomment-region
+       (region-beginning)(region-end))
+    (comment-or-uncomment-region
+     (line-beginning-position)(line-end-position))))
+
+(global-set-key (kbd "C-c /") 'myde/comment-or-uncomment)
 
 ;; Enable clickable/selectable links for URLs in buffers.
 (goto-address-mode 1)
