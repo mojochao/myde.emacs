@@ -5,7 +5,7 @@
       inhibit-startup-echo-area-message t
       initial-scratch-message nil)
 
-;; Get rid of the scollbar and toolbar in GUI. They take up precious space
+;; Get rid of the scrollbar and toolbar in GUI. They take up precious space
 ;; and one of my goals is to keep my hands on the keyboard, not the mouse.
 (when (display-graphic-p)
   (scroll-bar-mode -1)
@@ -141,6 +141,7 @@
 ;; https://github.com/Wilfred/deadgrep
 (use-package deadgrep
   :ensure t
+  :defer t
   :bind ("<f5>" . deadgrep))
 
 ;; Add support for region expansion/shrinking.
@@ -326,7 +327,7 @@
   :custom
   (marginalia-annotators (marginalia-annotators-heavy marginalia-annotators-light nil))
   (marginalia-max-relative-age 0)
-;  (marginalia-align 'right)
+					;  (marginalia-align 'right)
   :init
   (marginalia-mode))
 
@@ -378,11 +379,15 @@
 ;; Use vterm for a fast, richer terminal emulator.
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
+  :ensure t
+  :defer t
   :commands vterm)
 
 ;; Configure git support.
 ;; https://github.com/magit/magit
 (use-package magit
+  :ensure t
+  :defer t
   :commands magit-status)
 
 ;; Add markdown support.
@@ -410,7 +415,6 @@
 ;; https://github.com/renzmann/treesit-auto
 (use-package treesit-auto
   :ensure t
-  :defer t
   :config
   (global-treesit-auto-mode))
 
@@ -418,14 +422,14 @@
 ;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
   :ensure t
-  :demand t
+  :defer t
   :config
   (yas-global-mode 1))
 
 ;; https://github.com/AndreaCrotti/yasnippet-snippets
 (use-package yasnippet-snippets
   :ensure t
-  :demand t)
+  :defer t)
 
 ;; Add Golang support.
 (use-package go-mode
@@ -438,7 +442,7 @@
   :init
   (add-hook 'go-mode-hook #'yas-minor-mode)
   (add-hook 'go-mode-hook (lambda ()
-    (setq tab-width 2))))
+			    (setq tab-width 2))))
 
 ;; Add Python support.
 (use-package python
@@ -454,3 +458,13 @@
   :commands restclient-mode
   :mode
   (("\\.http\\'" . restclient-mode)))
+
+;; Add Terraform support.
+(use-package terraform-mode
+  :ensure t
+  :defer t)
+
+;; Add YAML support
+(use-package yaml-mode
+  :ensure t
+  :defer t)
