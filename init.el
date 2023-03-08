@@ -9,7 +9,8 @@
 ;; and one of my goals is to keep my hands on the keyboard, not the mouse.
 (when (display-graphic-p)
   (scroll-bar-mode -1)
-  (tool-bar-mode -1))
+  (tool-bar-mode -1)
+  (set-frame-size (selected-frame) 120 50))
 
 ;; Get rid of the menubar in TUI.
 (unless (window-system)
@@ -110,6 +111,16 @@
 (use-package savehist
   :init
   (savehist-mode))
+
+;; Add dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-startup-banner 'logo
+	dashboard-items '((recents . 5)
+			  ;; (projects . 5)
+			  (bookmarks . 5))))
 
 ;; Add shell PATH to exec-path on macOS.
 ;; https://github.com/purcell/exec-path-from-shell
@@ -367,20 +378,18 @@
 ;; Use vterm for a fast, richer terminal emulator.
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
-  :demand t
   :commands vterm)
 
 ;; Configure git support.
 ;; https://github.com/magit/magit
 (use-package magit
-  :demand t
   :commands magit-status)
 
 ;; Add markdown support.
 ;; https://github.com/jrblevin/markdown-mode
 (use-package markdown-mode
   :ensure t
-  :demand t
+  :defer t
   :commands (markdown-mode gfm-mode)
   :mode
   (("README\\.md\\'" . gfm-mode)
@@ -392,7 +401,7 @@
 ;; https://github.com/pashky/restclient.el
 (use-package restclient
   :ensure t
-  :demand t
+  :defer t
   :commands restclient-mode
   :mode
   (("\\.http\\'" . restclient-mode)))
@@ -401,7 +410,7 @@
 ;; https://github.com/renzmann/treesit-auto
 (use-package treesit-auto
   :ensure t
-  :demand t
+  :defer t
   :config
   (global-treesit-auto-mode))
 
@@ -421,7 +430,7 @@
 ;; Add Golang support.
 (use-package go-mode
   :ensure t
-  :demand t
+  :defer t
   :commands go-mode
   :config
   (setq myde/gobin-path (expand-file-name "~/go/bin")
@@ -433,7 +442,7 @@
 
 ;; Add Python support.
 (use-package python
-  :demand t
+  :defer t
   :commands python-mode
   :init
   (add-hook 'python-mode-hook #'yas-minor-mode))
@@ -441,7 +450,7 @@
 ;; Add REST client support.
 (use-package restclient
   :ensure t
-  :demand t
+  :defer t
   :commands restclient-mode
   :mode
   (("\\.http\\'" . restclient-mode)))
