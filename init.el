@@ -460,6 +460,10 @@
   (("\\.http\\'" . restclient-mode)))
 
 ;; Add Terraform support.
+(use-package hcl-mode
+  :ensure t
+  :defer t)
+
 (use-package terraform-mode
   :ensure t
   :defer t)
