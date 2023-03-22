@@ -402,6 +402,13 @@
    ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
+(use-package pdf-tools
+  :ensure t
+  :defer t
+  :config
+  (pdf-loader-install)
+  (setq pdf-view-use-scaling t))
+
 ;; Add REST client support.
 ;; https://github.com/pashky/restclient.el
 (use-package restclient
