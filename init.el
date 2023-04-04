@@ -331,6 +331,9 @@
   :init
   (marginalia-mode))
 
+(use-package all-the-icons
+  :ensure t)
+
 (use-package all-the-icons-completion
   :ensure t
   :after (marginalia all-the-icons)
