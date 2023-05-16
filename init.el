@@ -75,6 +75,11 @@
 
 (add-to-list 'find-file-not-found-functions #'myde/auto-create-missing-dirs)
 
+;; Improve display of search candidates.
+(setq isearch-lazy-count t
+      lazy-count-prefix-format nil
+      lazy-count-suffix-format "   (%s/%s)")
+
 ;; Improve the commenting situation.
 (defun myde/comment-or-uncomment ()
   "Comments or uncomments the current line or region."
