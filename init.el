@@ -106,6 +106,12 @@
 (package-initialize)
 (require 'use-package)
 
+;; Show buffer names relative to project root
+(use-package buffer-name-relative
+  :ensure t
+  :config
+  (buffer-name-relative-mode))
+
 ;; Configure recent files.
 (use-package recentf
   :init
