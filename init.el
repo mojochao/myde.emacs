@@ -107,6 +107,7 @@
 (require 'use-package)
 
 ;; Show buffer names relative to project root
+;; https://codeberg.org/ideasman42/emacs-buffer-name-relative
 (use-package buffer-name-relative
   :ensure t
   :config
