@@ -5,9 +5,11 @@
       inhibit-startup-echo-area-message t
       initial-scratch-message nil)
 
+;; Enable smooth scrolling in GUI.
 ;; Get rid of the scrollbar and toolbar in GUI. They take up precious space
 ;; and one of my goals is to keep my hands on the keyboard, not the mouse.
 (when (display-graphic-p)
+  (pixel-scroll-precision-mode 1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (set-frame-size (selected-frame) 120 50))
