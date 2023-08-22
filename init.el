@@ -33,6 +33,12 @@
 ;; Delete region selected when overwriting it.
 (delete-selection-mode 1)
 
+;; Use GNU version of ls on macOS.
+(when (string= system-type "darwin")
+  (setq dired-use-ls-dired t
+        insert-directory-program "/usr/local/bin/gls"
+        dired-listing-switches "-aBhl --group-directories-first"))
+
 ;; Store custom settings in separate file.
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
@@ -125,16 +131,6 @@
 (use-package savehist
   :init
   (savehist-mode))
-
-;; Add dashboard
-(use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-startup-banner 'logo
-	dashboard-items '((recents . 5)
-			  ;; (projects . 5)
-			  (bookmarks . 5))))
 
 ;; Add shell PATH to exec-path on macOS.
 ;; https://github.com/purcell/exec-path-from-shell
