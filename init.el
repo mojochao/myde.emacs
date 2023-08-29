@@ -400,8 +400,13 @@
 ;; https://github.com/magit/magit
 (use-package magit
   :ensure t
-  :defer t
+  :defer f
   :commands magit-status)
+
+(use-package magit-todos
+  :ensure t
+  :defer f
+  :init (magit-todos-mode))
 
 ;; Add markdown support.
 ;; https://github.com/jrblevin/markdown-mode
