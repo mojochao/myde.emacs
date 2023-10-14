@@ -476,17 +476,17 @@
   :defer t)
 
 ;; Add Golang support.
-(use-package go-mode
+(use-package go-ts-mode
   :ensure t
   :defer t
-  :commands go-mode
+  :commands go-ts-mode
   :config
   (setq myde/gobin-path (expand-file-name "~/go/bin")
 	exec-path (append exec-path `(,myde/gobin-path)))
   :init
-  (add-hook 'go-mode-hook #'yas-minor-mode)
-  (add-hook 'go-mode-hook (lambda ()
-			    (setq tab-width 2))))
+  (add-hook 'go-ts-mode-hook #'yas-minor-mode)
+  (add-hook 'go-ts-mode-hook (lambda ()
+			       (setq tab-width 2))))
 
 ;; Add Python support.
 (use-package python
