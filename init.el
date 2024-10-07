@@ -110,7 +110,7 @@
 ;; Configure package management.
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
+             '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 (require 'use-package)
 
@@ -520,3 +520,7 @@
 ;; Add Org Mode/Reveal.js support
 (use-package ox-reveal
   :ensure t)
+
+;; ;; Add Org-roam support
+;; (use-package org-roam
+;;   )
