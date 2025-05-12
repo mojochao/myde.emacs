@@ -1,13 +1,6 @@
-auto-save-list/
-backup/
-eln-cache/
 elpa/
-elpaca/
-history
-projects
 recentf
-straight/
+minimal-emacs.d/
+projects
 transient/
 tree-sitter/
-tutorial/
-url/
