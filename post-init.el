@@ -74,6 +74,13 @@
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
 
 ;; -------------------------------
+;; Server setup
+;; -------------------------------
+(use-package server
+  :ensure nil ;; server is built-in, no need to install it
+  :hook (after-init . myde/start-server))
+
+;; -------------------------------
 ;; Package setup
 ;; -------------------------------
 (require 'package)
