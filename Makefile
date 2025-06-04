@@ -17,6 +17,8 @@ SHELL = /usr/bin/env bash -o pipefail
 MINIMAL_EMACS_D_URL ?= https://github.com/jamescherti/minimal-emacs.d
 MINIMAL_EMACS_D_DIR ?= $(PWD)/minimal-emacs.d
 
+EMACS_INIT_DIR ?= $(HOME)/.emacs.d
+
 # ==============================================================================
 # Build targets
 # ==============================================================================
@@ -47,6 +49,7 @@ vars: ## Show environment variables used by this Makefile
 
 .PHONY: clean
 clean: ## Clean minimal-emacs.d repo
+	@echo "cleaning $(MINIMAL_EMACS_D_DIR)"
 	@rm -rf $(MINIMAL_EMACS_D_DIR)
 
 .PHONY: init
@@ -77,3 +80,15 @@ unlink: ## Unlink elisp config in local minimal-emacs.d repo
 	@unlink $(MINIMAL_EMACS_D_DIR)/pre-early-init.el
 	@unlink $(MINIMAL_EMACS_D_DIR)/pre-init.el
 	@unlink $(MINIMAL_EMACS_D_DIR)/myde.el
+
+##@ Install targets
+
+.PHONY: install
+install: ## Install MyDE in default emacs init directory
+	@echo 'installing config in $(EMACS_INIT_DIR)'
+	@ln -s $(MINIMIAL_EMACS_D_DIR) $(EMACS_INIT_DIR)
+
+.PHONY: uninstall MyDE in default emacs init directory
+uninstall: ## Uninstall MyDE in default emacs init directory
+	@echo 'installing config in $(EMACS_INIT_DIR)'
+	@unlink $(EMACS_INIT_DIR)
