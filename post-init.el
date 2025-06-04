@@ -3,14 +3,14 @@
 ;; Load customizations
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)(when (file-exists-p (custom-file))
-  (load-file (custom-file)))
+                    (load-file (custom-file)))
 
 ;; Load myde.el functions
 (load-file (expand-file-name "myde.el" user-emacs-directory))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Basic UI settings
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 (setq inhibit-startup-message t
       inhibit-startup-echo-area-message t
       initial-scratch-message nil
@@ -73,27 +73,21 @@
 (dolist (interp '("bash" "sh" "zsh"))
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Package setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 (require 'package)
 (setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-        ("gnu"   . "https://elpa.gnu.org/packages/")))
+      '(("melpa"  . "https://melpa.org/packages/")
+        ("gnu"    . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))
 
-;; -------------------------------
-;; Server setup
-;; -------------------------------
-(use-package server
-  :ensure nil ;; server is built-in, no need to install it
-  :hook (after-init . myde/start-server))
-
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; macOS setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 (use-package emacs
   :if (string= system-type "darwin")
   :ensure nil ; built-in packages are always installed
@@ -111,33 +105,82 @@
   :config
   (exec-path-from-shell-initialize))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Project.el setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 (use-package project
-  :ensure nil ; part of emacs now
+  :ensure nil ; part of emacs since v29
   :config
-  (setq project-switch-use-ido 'both))  ;; Switch to `ido`-style completion for project switching
+  (setq project-switch-use-ido 'both))
 
-;; -------------------------------
-;; Theme setup
-;; -------------------------------
-(use-package color-theme-sanityinc-tomorrow
-  ;; Configure theme.
-  ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
-  :ensure t
-  :config
-  (load-theme 'sanityinc-tomorrow-eighties t))
+;; -----------------------------------------------------------------------------
+;; Visual setup
+;; -----------------------------------------------------------------------------
 
+;; https://github.com/myrjola/diminish.el
 (use-package diminish
   ;; Keep modeline noise to a minimum
   :ensure t)
 
-;; -------------------------------
+;; https://github.com/jaypei/emacs-neotree
+(use-package neotree
+  :ensure t
+  :commands (neotree-toggle)
+  :bind
+  ([f8] . neotree-toggle))
+
+;; https://github.com/rainstormstudio/nerd-icons.el
+(use-package nerd-icons
+  :ensure t
+  ;; :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+  )
+
+;; https://github.com/purcell/color-theme-sanityinc-tomorrow
+(use-package color-theme-sanityinc-tomorrow
+  ;; Configure theme.
+  ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
+  :ensure t)
+
+;; https://github.com/doomemacs/themes
+(use-package doom-themes
+  :ensure t
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-vibrant t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (nerd-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+;; https://github.com/protesilaos/spacious-padding
+(use-package spacious-padding
+  :ensure t
+  :config
+  (spacious-padding-mode 1))
+
+;; -----------------------------------------------------------------------------
+;; Miscellaneous quality-of-life improvements
+;; -----------------------------------------------------------------------------
+
+(global-set-key [remap keyboard-quit] #'myde/keyboard-quit)
+
+;; -----------------------------------------------------------------------------
 ;; Discoverability setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 (use-package which-key
-  :ensure nil ; part of emacs now
+  :ensure nil ; part of emacs since v29
   :init
   (diminish 'which-key-mode)
   (which-key-mode))
@@ -153,33 +196,45 @@
    ("C-h k" . helpful-key)
    ("C-h v" . helpful-variable)))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Terminals setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+
+;; https://codeberg.org/akib/emacs-eat
+(use-package eat
+  :ensure t)
+
+;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
   ;; Use vterm for a fast, richer terminal emulator.
-  ;; https://github.com/akermu/emacs-libvterm
   :ensure t
-  :commands vterm)
+  :commands
+  (vterm))
 
-;; -------------------------------
-;; Magit (git) setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+;; Version control setup
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/magit/magit
 (use-package magit
   :ensure t
-  :defer t)
+  :commands (magit-status))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Direnv integration
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/wbolster/emacs-direnv
 (use-package direnv
   :ensure t
   :config
   (direnv-mode))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; In-buffer completion (Corfu)
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/minad/corfu
 (use-package corfu
   :ensure t
   :custom
@@ -188,13 +243,17 @@
   :init
   (global-corfu-mode))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Minibuffer completion stack
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/minad/vertico
 (use-package vertico
   :ensure t
-  :init (vertico-mode))
+  :init
+  (vertico-mode))
 
+;; https://github.com/oantolin/orderless
 (use-package orderless
   :ensure t
   :custom
@@ -202,16 +261,20 @@
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles . (partial-completion))))))
 
+;; https://github.com/minad/marginalia
 (use-package marginalia
   :ensure t
-  :init (marginalia-mode))
+  :init
+  (marginalia-mode))
 
+;; https://github.com/minad/consult
 (use-package consult
   :ensure t
   :bind (("C-s" . consult-line)
          ("C-x b" . consult-buffer)
          ("M-y" . consult-yank-pop)))
 
+;; https://github.com/oantolin/embark
 (use-package embark
   :ensure t
   :bind (("C-." . embark-act)
@@ -219,18 +282,11 @@
   :init
   (setq prefix-help-command #'embark-prefix-help-command))
 
-;; -------------------------------
-;; treesit-auto for Tree-sitter setup
-;; -------------------------------
-(use-package treesit-auto
-  :ensure t
-  :config
-  (setq treesit-auto-install 'prompt) ; install grammars interactively if missing
-  (global-treesit-auto-mode))
+;; -----------------------------------------------------------------------------
+;; Golang setup
+;; -----------------------------------------------------------------------------
 
-;; -------------------------------
-;; Go programming setup (Tree-sitter)
-;; -------------------------------
+;; https://github.com/dominikh/go-mode.el
 (use-package go-mode
   :ensure t
   :mode (("\\.go\\'" . go-ts-or-plain-mode))
@@ -238,7 +294,7 @@
          (go-mode . eglot-ensure)
          (go-mode . goimports-setup))
   :config
-  (setq gofmt-command "goimports"))  ;; Use goimports for formatting
+  (setq gofmt-command "goimports"))
 
 (defun go-ts-or-plain-mode ()
   "Use go-ts-mode if Tree-sitter is available, otherwise fall back to go-mode."
@@ -250,26 +306,127 @@
   "Set up `goimports` to run on save for Go files."
   (add-hook 'before-save-hook 'gofmt-before-save nil t))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Enable `gopls` (LSP for Go) via Eglot
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+
 (use-package eglot
-  :ensure t
+  :ensure nil ; part of emacs since v29
   :hook ((go-ts-mode . eglot-ensure)
          (go-mode . eglot-ensure)))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
 ;; Markdown editing setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/jrblevin/markdown-mode
 (use-package markdown-mode
   :ensure t
-  :mode("README\\.md\\'" . gfm-mode)
-  :init (setq markdown-command "multimarkdown")
+  :mode (("\\.md\\'" . gfm-mode)
+         ("README\\.md\\'" . gfm-mode))
+  :init
+  (setq markdown-command "multimarkdown")
   :bind (:map markdown-mode-map ("C-c C-e" . markdown-do)))
 
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+;; Terraform support
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/hcl-emacs/terraform-mode
+(use-package terraform-mode
+  :ensure t
+  :mode ("\\.tf\\'" "\\.tfvars\\'")
+  :hook ((terraform-mode . terraform-format-on-save-mode))
+  :config
+  (defun terraform-format-buffer ()
+    "Format the current buffer with terraform fmt."
+    (interactive)
+    (when (executable-find "terraform")
+      (call-process-region (point-min) (point-max) "terraform" t t nil "fmt" "-")))
+  
+  (define-minor-mode terraform-format-on-save-mode
+    "Auto-format Terraform buffer on save using terraform fmt."
+    :lighter " fmt"
+    (if terraform-format-on-save-mode
+        (add-hook 'before-save-hook #'terraform-format-buffer nil t)
+      (remove-hook 'before-save-hook #'terraform-format-buffer t))))
+
+;; Tree-sitter remap: only after HCL grammar is installed
+(when (and (fboundp 'treesit-available-p)
+           (treesit-available-p)
+           (treesit-language-available-p 'hcl))
+  (add-to-list 'major-mode-remap-alist
+               '(terraform-mode . terraform-ts-mode)))
+
+;; -----------------------------------------------------------------------------
 ;; YAML editing setup
-;; -------------------------------
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/yoshiki/yaml-mode
 (use-package yaml-mode
+  :ensure t
+  :mode (("\\.yaml\\'" . yaml-mode)
+         ("\\.yml\\'" . yaml-mode)))
+
+;; -----------------------------------------------------------------------------
+;; treesit-auto for Tree-sitter setup
+;; -----------------------------------------------------------------------------
+
+;; Install Tree-sitter grammar if missing
+(use-package treesit
+  :ensure nil ; part of emacs since v29
+  :config
+  (add-to-list 'treesit-language-source-alist
+               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl"))
+  (unless (treesit-language-available-p 'hcl)
+    (treesit-install-language-grammar 'hcl)))
+
+;; https://github.com/renzmann/treesit-auto
+(use-package treesit-auto
+  :ensure t
+  :config
+  (setq treesit-auto-install 'prompt) ; install grammars interactively if missing
+  (global-treesit-auto-mode))
+
+;; -----------------------------------------------------------------------------
+;; Aider integration
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/MatthewZMD/aidermacs
+(use-package aidermacs
+  :ensure t
+  :bind (("C-c a" . aidermacs-transient-menu))
+  :custom
+                                        ; See the Configuration section below
+  (aidermacs-use-architect-mode t)
+  (aidermacs-default-model "sonnet"))
+
+;; -----------------------------------------------------------------------------
+;; Claude code integration
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/stevemolitor/claude-code.el 
+(use-package claude-code
+  :vc (:url "https://github.com/stevemolitor/claude-code.el")
+  :bind ("C-c c" . claude-code-command-map)
+  :config
+  (claude-code-mode))
+
+;; ;; -------------------------------
+;; ;; ChatGPT integration
+;; ;; -------------------------------
+;; (use-package chatgpt-shell
+;;   :ensure t
+;;   :custom
+;;   ((chatgpt-shell-openai-key
+;;     (lambda ()
+;;       (auth-source-pass-get 'secret "openai-key")))))
+
+;; -----------------------------------------------------------------------------
+;; gptel llm client integration
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/karthink/gptel
+(use-package gptel
   :ensure t
   :defer t)
