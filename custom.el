@@ -19,11 +19,13 @@
      "541282f66e5cc83918994002667d2268f0a563205117860e71b7cb823c1a11e9"
      "59c36051a521e3ea68dc530ded1c7be169cd19e8873b7994bfc02a216041bf3b" default))
  '(package-selected-packages
-   '(color-theme-sanityinc-tomorrow consult corfu diminish direnv doom-themes
-                                    ef-themes embark exec-path-from-shell
-                                    go-mode helpful magit marginalia
-                                    markdown-mode nerd-icons orderless
-                                    treesit-auto vertico vterm yaml-mode))
+   '(aidermacs claude-code color-theme-sanityinc-tomorrow consult corfu diminish
+               direnv doom-themes eat embark exec-path-from-shell go-mode gptel
+               helpful magit marginalia neotree nerd-icons orderless
+               spacious-padding terraform-mode treesit-auto vertico vterm
+               yaml-mode))
+ '(package-vc-selected-packages
+   '((claude-code :url "https://github.com/stevemolitor/claude-code.el")))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
