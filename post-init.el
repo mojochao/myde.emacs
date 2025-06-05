@@ -126,6 +126,8 @@
 (use-package neotree
   :ensure t
   :commands (neotree-toggle)
+  :config
+  (setq neo-window-width 40)
   :bind
   ([f8] . neotree-toggle))
 
@@ -289,22 +291,12 @@
 ;; https://github.com/dominikh/go-mode.el
 (use-package go-mode
   :ensure t
-  :mode (("\\.go\\'" . go-ts-or-plain-mode))
+  :mode (("\\.go\\'" . myde/go-ts-or-plain-mode))
   :hook ((go-ts-mode . eglot-ensure)
          (go-mode . eglot-ensure)
-         (go-mode . goimports-setup))
+         (go-mode . myde/goimports-setup))
   :config
   (setq gofmt-command "goimports"))
-
-(defun go-ts-or-plain-mode ()
-  "Use go-ts-mode if Tree-sitter is available, otherwise fall back to go-mode."
-  (if (treesit-ready-p 'go)
-      (go-ts-mode)
-    (go-mode)))
-
-(defun goimports-setup ()
-  "Set up `goimports` to run on save for Go files."
-  (add-hook 'before-save-hook 'gofmt-before-save nil t))
 
 ;; -----------------------------------------------------------------------------
 ;; Enable `gopls` (LSP for Go) via Eglot

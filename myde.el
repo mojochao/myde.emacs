@@ -74,3 +74,14 @@ minibuffer, even without explicitly focusing it."
           (minibuffer-keyboard-quit)
         (abort-recursive-edit))
     (keyboard-quit)))
+
+;; Golang support
+(defun myde/go-ts-or-plain-mode ()
+  "Use go-ts-mode if Tree-sitter is available, otherwise fall back to go-mode."
+  (if (treesit-ready-p 'go)
+      (go-ts-mode)
+    (go-mode)))
+
+(defun myde/goimports-setup ()
+  "Set up `goimports` to run on save for Go files."
+  (add-hook 'before-save-hook 'gofmt-before-save nil t))
