@@ -321,6 +321,7 @@
 ;; https://github.com/jrblevin/markdown-mode
 (use-package markdown-mode
   :ensure t
+  :hook (markdown-mode . display-line-numbers-mode)
   :mode (("\\.md\\'" . gfm-mode)
          ("README\\.md\\'" . gfm-mode))
   :init
