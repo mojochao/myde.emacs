@@ -143,28 +143,31 @@
 
 ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
 (use-package color-theme-sanityinc-tomorrow
-  ;; Configure theme.
-  ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
   :ensure t)
 
-;; https://github.com/doomemacs/themes
-(use-package doom-themes
-  :ensure t
+;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
+(use-package jetbrains-darcula-theme
   :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-vibrant t)
+  (load-theme 'jetbrains-darcula t))
 
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (nerd-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+;; https://github.com/doomemacs/themes
+;; (use-package doom-themes
+;;   :ensure t
+;;   :config
+;;   ;; Global settings (defaults)
+;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+;;         doom-themes-enable-italic t) ; if nil, italics is universally disabled
+;;   (load-theme 'doom-vibrant t)
+;; 
+;;   ;; Enable flashing mode-line on errors
+;;   (doom-themes-visual-bell-config)
+;;   ;; Enable custom neotree theme (nerd-icons must be installed!)
+;;   (doom-themes-neotree-config)
+;;   ;; or for treemacs users
+;;   (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+;;   (doom-themes-treemacs-config)
+;;   ;; Corrects (and improves) org-mode's native fontification.
+;;   (doom-themes-org-config))
 
 ;; https://github.com/protesilaos/spacious-padding
 (use-package spacious-padding
@@ -177,6 +180,10 @@
 ;; -----------------------------------------------------------------------------
 
 (global-set-key [remap keyboard-quit] #'myde/keyboard-quit)
+
+;; https://github.com/magnars/expand-region.el
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
 
 ;; -----------------------------------------------------------------------------
 ;; Discoverability setup
