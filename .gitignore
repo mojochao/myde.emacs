@@ -4,3 +4,4 @@ minimal-emacs.d/
 projects
 transient/
 tree-sitter/
+custom.el
