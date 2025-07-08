@@ -377,9 +377,7 @@
   :ensure nil ; part of emacs since v29
   :config
   (add-to-list 'treesit-language-source-alist
-               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl"))
-  (unless (treesit-language-available-p 'hcl)
-    (treesit-install-language-grammar 'hcl)))
+               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl")))
 
 ;; https://github.com/renzmann/treesit-auto
 (use-package treesit-auto
@@ -405,12 +403,18 @@
 ;; Claude code integration
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/stevemolitor/claude-code.el 
-(use-package claude-code
-  :vc (:url "https://github.com/stevemolitor/claude-code.el")
-  :bind ("C-c c" . claude-code-command-map)
-  :config
-  (claude-code-mode))
+;; ;; https://github.com/stevemolitor/claude-code.el 
+;; (use-package claude-code
+;;   :vc (:url "https://github.com/stevemolitor/claude-code.el")
+;;   :bind ("C-c c" . claude-code-command-map)
+;;   :config
+;;   (claude-code-mode))
+
+;; https://github.com/yuya373/claude-code-emacs
+(use-package claude-code-emacs
+  :ensure t
+  :vc (:url "https://github.com/yuya373/claude-code-emacs")
+  :bind ("C-c c" . 'claude-code-emacs-transient))
 
 ;; ;; -------------------------------
 ;; ;; ChatGPT integration
