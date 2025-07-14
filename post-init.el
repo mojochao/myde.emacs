@@ -38,6 +38,9 @@
 ;; Enable display of column numbers in buffer modeline.
 (setq column-number-mode t)
 
+;; Auto-revert buffer on changes to files on disk.
+(global-auto-revert-mode 1)
+
 ;; Highlight current line everywhere.
 (global-hl-line-mode 1)
 
