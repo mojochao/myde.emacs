@@ -25,15 +25,17 @@
   (tool-bar-mode -1)
   (set-frame-size (selected-frame) 120 50))
 
-;; Get rid of the menubar in TUI.
-(unless (window-system)
+
+;; Disable the menubar in TUI (on any OS) or GUI (only on macOS).
+;; One thing I like about Emacs GUI app on macOS is that it uses a global app
+;; menu that changes with the app, so leave it alone in that case.
+(unless (and (display-graphic-p) (string-equal system-type "darwin"))
   (menu-bar-mode -1))
 
-;; If running on something else other than macOS, get rid of the menubar
-;; as well. One thing I like about macOS is that it uses a global app
-;; menu that changes with the app.  I wish Linux and Windows did that.
-(unless (string-equal system-type "darwin")
-  (menu-bar-mode -1))
+;; ;; Swap option and command keys on macOS to match Linux keyboard layout.
+;; (unless (and (display-graphic-p) (string-equal system-type "darwin"))
+;;    (setq mac-command-modifier 'meta
+;;         mac-option-modifier 'super))
 
 ;; Enable display of column numbers in buffer modeline.
 (setq column-number-mode t)
@@ -295,6 +297,42 @@
   (setq prefix-help-command #'embark-prefix-help-command))
 
 ;; -----------------------------------------------------------------------------
+;; treesit-auto for Tree-sitter setup
+;; -----------------------------------------------------------------------------
+
+;; Install Tree-sitter grammar if missing
+(use-package treesit
+  :ensure nil ; part of emacs since v29
+  :config
+  (add-to-list 'treesit-language-source-alist
+               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl")))
+
+;; https://github.com/renzmann/treesit-auto
+(use-package treesit-auto
+  :ensure t
+  :config
+  (setq treesit-auto-install t) ; install grammars automatically, if missing
+  (global-treesit-auto-mode))
+
+;; -----------------------------------------------------------------------------
+;; LSP support
+;; -----------------------------------------------------------------------------
+
+(use-package eglot
+  :ensure nil ; part of emacs since v29
+  :hook ((go-ts-mode . eglot-ensure)
+         (go-mode . eglot-ensure)))
+
+;; -----------------------------------------------------------------------------
+;; Combobulate setup (tree-sitter based navigation/manipulation)
+;; -----------------------------------------------------------------------------
+
+(use-package combobulate
+  :ensure t
+  :vc (:url "https://github.com/mickeynp/combobulate" :rev :newest)
+  :after eglot)
+
+;; -----------------------------------------------------------------------------
 ;; Golang setup
 ;; -----------------------------------------------------------------------------
 
@@ -307,15 +345,6 @@
          (go-mode . myde/goimports-setup))
   :config
   (setq gofmt-command "goimports"))
-
-;; -----------------------------------------------------------------------------
-;; Enable `gopls` (LSP for Go) via Eglot
-;; -----------------------------------------------------------------------------
-
-(use-package eglot
-  :ensure nil ; part of emacs since v29
-  :hook ((go-ts-mode . eglot-ensure)
-         (go-mode . eglot-ensure)))
 
 ;; -----------------------------------------------------------------------------
 ;; Markdown editing setup
@@ -370,24 +399,6 @@
   :ensure t
   :mode (("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)))
-
-;; -----------------------------------------------------------------------------
-;; treesit-auto for Tree-sitter setup
-;; -----------------------------------------------------------------------------
-
-;; Install Tree-sitter grammar if missing
-(use-package treesit
-  :ensure nil ; part of emacs since v29
-  :config
-  (add-to-list 'treesit-language-source-alist
-               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl")))
-
-;; https://github.com/renzmann/treesit-auto
-(use-package treesit-auto
-  :ensure t
-  :config
-  (setq treesit-auto-install 'prompt) ; install grammars interactively if missing
-  (global-treesit-auto-mode))
 
 ;; -----------------------------------------------------------------------------
 ;; Aider integration
