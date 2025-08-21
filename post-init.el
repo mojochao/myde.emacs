@@ -153,10 +153,14 @@
 (use-package color-theme-sanityinc-tomorrow
   :ensure t)
 
-;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
-(use-package jetbrains-darcula-theme
+;; ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
+;; (use-package jetbrains-darcula-theme
+;;   :config
+;;   (load-theme 'jetbrains-darcula t))
+
+(use-package ef-themes
   :config
-  (load-theme 'jetbrains-darcula t))
+  (load-theme 'ef-owl))
 
 ;; https://github.com/doomemacs/themes
 ;; (use-package doom-themes
