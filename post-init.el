@@ -2,8 +2,8 @@
 
 ;; Load customizations
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)(when (file-exists-p (custom-file))
-                    (load-file (custom-file)))
+(when (file-exists-p custom-file)
+  (load-file custom-file))
 
 ;; Load myde.el functions
 (load-file (expand-file-name "myde.el" user-emacs-directory))
@@ -36,6 +36,9 @@
 ;; (unless (and (display-graphic-p) (string-equal system-type "darwin"))
 ;;    (setq mac-command-modifier 'meta
 ;;         mac-option-modifier 'super))
+
+;; Blink cursor.
+(blink-cursor-mode 1)
 
 ;; Enable display of column numbers in buffer modeline.
 (setq column-number-mode t)
@@ -296,6 +299,11 @@
   :init
   (setq prefix-help-command #'embark-prefix-help-command))
 
+(use-package embark-consult
+  :ensure t ; only need to install it, embark loads it after consult if found
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
 ;; -----------------------------------------------------------------------------
 ;; treesit-auto for Tree-sitter setup
 ;; -----------------------------------------------------------------------------
@@ -400,51 +408,57 @@
   :mode (("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)))
 
-;; -----------------------------------------------------------------------------
-;; Aider integration
-;; -----------------------------------------------------------------------------
+;; ;; -----------------------------------------------------------------------------
+;; ;; Aider integration
+;; ;; -----------------------------------------------------------------------------
 
-;; https://github.com/MatthewZMD/aidermacs
-(use-package aidermacs
-  :ensure t
-  :bind (("C-c a" . aidermacs-transient-menu))
-  :custom
-                                        ; See the Configuration section below
-  (aidermacs-use-architect-mode t)
-  (aidermacs-default-model "sonnet"))
-
-;; -----------------------------------------------------------------------------
-;; Claude code integration
-;; -----------------------------------------------------------------------------
-
-;; ;; https://github.com/stevemolitor/claude-code.el 
-;; (use-package claude-code
-;;   :vc (:url "https://github.com/stevemolitor/claude-code.el")
-;;   :bind ("C-c c" . claude-code-command-map)
-;;   :config
-;;   (claude-code-mode))
-
-;; https://github.com/yuya373/claude-code-emacs
-(use-package claude-code-emacs
-  :ensure t
-  :vc (:url "https://github.com/yuya373/claude-code-emacs")
-  :bind ("C-c c" . 'claude-code-emacs-transient))
-
-;; ;; -------------------------------
-;; ;; ChatGPT integration
-;; ;; -------------------------------
-;; (use-package chatgpt-shell
+;; ;; https://github.com/MatthewZMD/aidermacs
+;; (use-package aidermacs
 ;;   :ensure t
+;;   :bind (("C-c a" . aidermacs-transient-menu))
 ;;   :custom
-;;   ((chatgpt-shell-openai-key
-;;     (lambda ()
-;;       (auth-source-pass-get 'secret "openai-key")))))
+;;                                         ; See the Configuration section below
+;;   (aidermacs-use-architect-mode t)
+;;   (aidermacs-default-model "sonnet"))
 
-;; -----------------------------------------------------------------------------
-;; gptel llm client integration
-;; -----------------------------------------------------------------------------
+;; ;; -----------------------------------------------------------------------------
+;; ;; Claude code integration
+;; ;; -----------------------------------------------------------------------------
 
-;; https://github.com/karthink/gptel
-(use-package gptel
-  :ensure t
-  :defer t)
+;; ;; ;; https://github.com/stevemolitor/claude-code.el 
+;; ;; (use-package claude-code
+;; ;;   :vc (:url "https://github.com/stevemolitor/claude-code.el")
+;; ;;   :bind ("C-c c" . claude-code-command-map)
+;; ;;   :config
+;; ;;   (claude-code-mode))
+
+;; ;; https://github.com/yuya373/claude-code-emacs
+;; (use-package claude-code-emacs
+;;   :ensure t
+;;   :vc (:url "https://github.com/yuya373/claude-code-emacs")
+;;   :bind ("C-c c" . 'claude-code-emacs-transient))
+
+;; (use-package claude-code-ide
+;;   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+;;   :bind ("C-c c" . claude-code-ide-menu) ; Set your favorite keybinding
+;;   :config
+;;   (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+
+;; ;; ;; -------------------------------
+;; ;; ;; ChatGPT integration
+;; ;; ;; -------------------------------
+;; ;; (use-package chatgpt-shell
+;; ;;   :ensure t
+;; ;;   :custom
+;; ;;   ((chatgpt-shell-openai-key
+;; ;;     (lambda ()
+;; ;;       (auth-source-pass-get 'secret "openai-key")))))
+
+;; ;; -----------------------------------------------------------------------------
+;; ;; gptel llm client integration
+;; ;; -----------------------------------------------------------------------------
+
+;; ;; https://github.com/karthink/gptel
+;; (use-package gptel
+;;   :ensure t
+;;   :defer t)
