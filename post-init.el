@@ -197,6 +197,11 @@
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 
+(use-package whole-line-or-region
+  :ensure t
+  :config
+  (whole-line-or-region-global-mode))
+
 ;; -----------------------------------------------------------------------------
 ;; Discoverability setup
 ;; -----------------------------------------------------------------------------
