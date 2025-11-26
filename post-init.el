@@ -195,8 +195,24 @@
 
 ;; https://github.com/magnars/expand-region.el
 (use-package expand-region
-  :bind ("C-=" . er/expand-region))
+  :bind
+  ("C-=" . er/expand-region))
 
+;; https://github.com/magnars/multiple-cursors.el
+(use-package multiple-cursors
+  :ensure t
+  :bind (("C-S-c C-S-c" . mc/edit-lines)        ;; edit multiple lines
+         ("C->"         . mc/mark-next-like-this)   ;; add next match
+         ("C-<"         . mc/mark-previous-like-this) ;; add previous match
+         ("C-c C-<"     . mc/mark-all-like-this))   ;; mark all matches
+  :config
+  ;; Sensible defaults
+  (setq mc/list-file (locate-user-emacs-file "mc-lists.el"))
+
+  ;; Make cursor movement more predictable
+  (setq mc/always-run-for-all t))
+
+;; https://github.com/purcell/whole-line-or-region
 (use-package whole-line-or-region
   :ensure t
   :config
@@ -211,6 +227,7 @@
   (diminish 'which-key-mode)
   (which-key-mode))
 
+;; https://github.com/Wilfred/helpful
 (use-package helpful
   ;; Provide better help buffers.
   ;; https://github.com/Wilfred/helpful
@@ -235,8 +252,12 @@
   ;; Use vterm for a fast, richer terminal emulator.
   :ensure t
   :commands
-  (vterm))
-
+  (vterm)
+  :config
+  ;; Disable hl-line-mode in all terminal-like modes
+  (setq global-hl-line-modes
+        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
+           
 ;; -----------------------------------------------------------------------------
 ;; Version control setup
 ;; -----------------------------------------------------------------------------
