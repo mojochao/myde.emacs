@@ -14,10 +14,15 @@ SHELL = /usr/bin/env bash -o pipefail
 # Build variables
 # ==============================================================================
 
-MINIMAL_EMACS_D_URL ?= https://github.com/jamescherti/minimal-emacs.d
-MINIMAL_EMACS_D_DIR ?= $(PWD)/minimal-emacs.d
+ROOT_DIR ?= $(PWD)
 
 EMACS_INIT_DIR ?= $(HOME)/.emacs.d
+ifneq ($(local),)
+EMACS_INIT_DIR := $(BUILD_DIR)
+endif
+
+MINIMAL_EMACS_D_DIR ?= $(ROOT_DIR)/minimal-emacs.d
+MINIMAL_EMACS_D_URL ?= https://github.com/jamescherti/minimal-emacs.d
 
 # ==============================================================================
 # Build targets
@@ -42,53 +47,41 @@ help: ## Show this help
 
 .PHONY: vars
 vars: ## Show environment variables used by this Makefile
+	@echo "ROOT_DIR:             $(ROOT_DIR)"
+	@echo "EMACS_INIT_DIR:       $(EMACS_INIT_DIR)"
 	@echo "MINIMAL_EMACS_D_DIR:  $(MINIMAL_EMACS_D_DIR)"
 	@echo "MINIMAL_EMACS_D_URL:  $(MINIMAL_EMACS_D_URL)"
 
-##@ Config targets
+##@ Base config repo targets
 
 .PHONY: clean
-clean: ## Clean minimal-emacs.d repo
-	@echo "cleaning $(MINIMAL_EMACS_D_DIR)"
+clean: ## Clean the repo
+	@echo "cleaning repo ..."
+	@rm -rf $(BUILD_DIR)
 	@rm -rf $(MINIMAL_EMACS_D_DIR)
 
 .PHONY: init
-init: ## Initialize the minimal-emacs.d repo
+init: ## Initialize the base minimal-emacs.d repo
 	@echo "initializing $(MINIMAL_EMACS_D_URL)"
 	@git clone $(MINIMAL_EMACS_D_URL) $(MINIMAL_EMACS_D_DIR)
 
 .PHONY: update
-update: ## Update the minimal-emacs.d repo
+update: ## Update the base minimal-emacs.d repo
 	@echo "updating $(MINIMAL_EMACS_D_DIR)"
 	@cd $(MINIMAL_EMACS_D_DIR) && git pull
 
+##@ MyDE config install targets
+
 .PHONY: link
-link: ## Link elisp config in local minimal-emacs.d repo
-	@echo 'linking config into $(MINIMAL_EMACS_D_DIR)'
-	@ln -sf $(PWD)/post-early-init.el $(MINIMAL_EMACS_D_DIR)/
-	@ln -sf $(PWD)/post-init.el       $(MINIMAL_EMACS_D_DIR)/
-	@ln -sf $(PWD)/pre-early-init.el  $(MINIMAL_EMACS_D_DIR)/
-	@ln -sf $(PWD)/pre-init.el        $(MINIMAL_EMACS_D_DIR)/
-	@ln -sf $(PWD)/myde.el            $(MINIMAL_EMACS_D_DIR)/
-	@ln -sf $(PWD)/custom.el          $(MINIMAL_EMACS_D_DIR)/
+link: ## Symlink MyDE in emacs init directory
+	@echo 'linking config to $(EMACS_INIT_DIR)'
+	ln -fs $(ROOT_DIR) $(EMACS_INIT_DIR)
 
 .PHONY: unlink
-unlink: ## Unlink elisp config in local minimal-emacs.d repo
-	@echo 'unlinking config in $(MINIMAL_EMACS_D_DIR)'
-	@unlink $(MINIMAL_EMACS_D_DIR)/post-early-init.el
-	@unlink $(MINIMAL_EMACS_D_DIR)/post-init.el
-	@unlink $(MINIMAL_EMACS_D_DIR)/pre-early-init.el
-	@unlink $(MINIMAL_EMACS_D_DIR)/pre-init.el
-	@unlink $(MINIMAL_EMACS_D_DIR)/myde.el
+unlink: ## Unlink MyDE in emacs init directory
+	@echo 'unlinking config in $(EMACS_INIT_DIR)'
+	unlink $(EMACS_INIT_DIR)
 
-##@ Install targets
-
-.PHONY: install
-install: ## Install MyDE in default emacs init directory
-	@echo 'installing config in $(EMACS_INIT_DIR)'
-	@ln -s $(MINIMIAL_EMACS_D_DIR) $(EMACS_INIT_DIR)
-
-.PHONY: uninstall MyDE in default emacs init directory
-uninstall: ## Uninstall MyDE in default emacs init directory
-	@echo 'installing config in $(EMACS_INIT_DIR)'
-	@unlink $(EMACS_INIT_DIR)
+.PHONY: target
+target: ## Show the emacs init directory target
+	@ls -ld $(EMACS_INIT_DIR) | awk '{print $$NF " -> " $$NF}'

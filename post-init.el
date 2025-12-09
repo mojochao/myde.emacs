@@ -25,17 +25,16 @@
   (tool-bar-mode -1)
   (set-frame-size (selected-frame) 120 50))
 
-
 ;; Disable the menubar in TUI (on any OS) or GUI (only on macOS).
 ;; One thing I like about Emacs GUI app on macOS is that it uses a global app
 ;; menu that changes with the app, so leave it alone in that case.
 (unless (and (display-graphic-p) (string-equal system-type "darwin"))
   (menu-bar-mode -1))
 
-;; ;; Swap option and command keys on macOS to match Linux keyboard layout.
-;; (unless (and (display-graphic-p) (string-equal system-type "darwin"))
-;;    (setq mac-command-modifier 'meta
-;;         mac-option-modifier 'super))
+;; Swap option and command keys on macOS to match Linux keyboard layout.
+(unless (and (display-graphic-p) (string-equal system-type "darwin"))
+   (setq mac-command-modifier 'meta
+        mac-option-modifier 'super))
 
 ;; Blink cursor.
 (blink-cursor-mode 1)

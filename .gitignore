@@ -1,7 +1,9 @@
+eln-cache/
 elpa/
 recentf
 minimal-emacs.d/
-projects
 transient/
 tree-sitter/
 custom.el
+projects.eld
+tramp
