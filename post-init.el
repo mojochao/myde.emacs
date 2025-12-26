@@ -113,21 +113,114 @@
   (exec-path-from-shell-initialize))
 
 ;; -----------------------------------------------------------------------------
-;; Project.el setup
+;; Splash screen support.
 ;; -----------------------------------------------------------------------------
+
+;; use-package with package.el:
+(use-package dashboard
+  :ensure t
+  :custom
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents . 5)
+                    (projects . 5)
+                    (bookmarks . 5)
+                    (agenda . 5)))
+  :config
+  (dashboard-setup-startup-hook))
+
+;; Activate recentf to track recently opened files
+(use-package recentf
+  :ensure nil
+  :commands (recentf-mode recentf-cleanup)
+  :config
+  (recentf-mode t)
+  (setq recentf-auto-cleanup (if (daemonp) 300 'never))
+  (setq recentf-exclude
+        '("^/tmp/" "^/ssh:" "/COMMIT_EDITMSG\\'"
+          "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
+  (add-hook 'kill-emacs-hook #'recentf-cleanup -90))
+
+;; -----------------------------------------------------------------------------
+;; Projects support
+;; -----------------------------------------------------------------------------
+
 (use-package project
   :ensure nil ; part of emacs since v29
   :config
   (setq project-switch-use-ido 'both))
 
 ;; -----------------------------------------------------------------------------
-;; Visual setup
+;; Themes support
 ;; -----------------------------------------------------------------------------
+
+;; Preview and manage themes.
+;; https://github.com/ayys/easy-theme-preview.el
+(use-package easy-theme-preview
+  :ensure t)
+
+(use-package doom-themes
+  :ensure t
+  :custom
+  ;; Global settings (defaults)
+  (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
+  (doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; for treemacs users
+  (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  :config
+  ;; Load initial theme.
+  (load-theme 'doom-badger t)
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (nerd-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+;; ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
+;; (use-package color-theme-sanityinc-tomorrow
+;;   :ensure t)
+
+;; ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
+;; (use-package jetbrains-darcula-theme
+;;   :ensure t
+;;   :config
+;;   (load-theme 'jetbrains-darcula t))
+
+;; (use-package ef-themes
+;;   :config
+;;   (load-theme 'ef-owl))
+
+;; -----------------------------------------------------------------------------
+;; Give the UI space to breathe
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/protesilaos/spacious-padding
+(use-package spacious-padding
+  :ensure t
+  :config
+  (spacious-padding-mode 1))
 
 ;; https://github.com/myrjola/diminish.el
 (use-package diminish
   ;; Keep modeline noise to a minimum
   :ensure t)
+
+;; -----------------------------------------------------------------------------
+;; Project tree explorer support
+;; -----------------------------------------------------------------------------
+
+(defun myde/neotree-project-root-toggle ()
+  "Toggle NeoTree. If opening, set the root to the current 'project' root."
+  (interactive)
+  (if (and (fboundp 'neo-global--window-exists-p)
+           (neo-global--window-exists-p))
+      (neotree-hide)
+    (let ((project (project-current)))
+      (if project
+          (neotree-dir (project-root project))
+        (neotree-show)))))
 
 ;; https://github.com/jaypei/emacs-neotree
 (use-package neotree
@@ -135,8 +228,9 @@
   :commands (neotree-toggle)
   :config
   (setq neo-window-width 40)
+  (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
   :bind
-  ([f8] . neotree-toggle))
+  ([f8] . myde/neotree-project-root-toggle))
 
 ;; https://github.com/rainstormstudio/nerd-icons.el
 (use-package nerd-icons
@@ -147,44 +241,6 @@
   ;; but you can use any other Nerd Font if you want
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
   )
-
-;; https://github.com/purcell/color-theme-sanityinc-tomorrow
-(use-package color-theme-sanityinc-tomorrow
-  :ensure t)
-
-;; ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
-;; (use-package jetbrains-darcula-theme
-;;   :config
-;;   (load-theme 'jetbrains-darcula t))
-
-(use-package ef-themes
-  :config
-  (load-theme 'ef-owl))
-
-;; https://github.com/doomemacs/themes
-;; (use-package doom-themes
-;;   :ensure t
-;;   :config
-;;   ;; Global settings (defaults)
-;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-;;         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-;;   (load-theme 'doom-vibrant t)
-;; 
-;;   ;; Enable flashing mode-line on errors
-;;   (doom-themes-visual-bell-config)
-;;   ;; Enable custom neotree theme (nerd-icons must be installed!)
-;;   (doom-themes-neotree-config)
-;;   ;; or for treemacs users
-;;   (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-;;   (doom-themes-treemacs-config)
-;;   ;; Corrects (and improves) org-mode's native fontification.
-;;   (doom-themes-org-config))
-
-;; https://github.com/protesilaos/spacious-padding
-(use-package spacious-padding
-  :ensure t
-  :config
-  (spacious-padding-mode 1))
 
 ;; -----------------------------------------------------------------------------
 ;; Miscellaneous quality-of-life improvements
@@ -487,7 +543,7 @@
 ;; ;; gptel llm client integration
 ;; ;; -----------------------------------------------------------------------------
 
-;; ;; https://github.com/karthink/gptel
-;; (use-package gptel
-;;   :ensure t
-;;   :defer t)
+;; https://github.com/karthink/gptel
+(use-package gptel
+  :ensure t
+  :defer t)
