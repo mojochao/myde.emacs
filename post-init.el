@@ -113,20 +113,24 @@
   (exec-path-from-shell-initialize))
 
 ;; -----------------------------------------------------------------------------
-;; Splash screen support.
+;; Splash screen/Dashboard support.
 ;; -----------------------------------------------------------------------------
 
-;; use-package with package.el:
+;; https://github.com/emacs-dashboard/emacs-dashboard
 (use-package dashboard
   :ensure t
   :custom
-  (dashboard-projects-backend 'project-el)
+  (dashboard-projects-backend 'projectile)
   (dashboard-items '((recents . 5)
                     (projects . 5)
                     (bookmarks . 5)
                     (agenda . 5)))
   :config
-  (dashboard-setup-startup-hook))
+  (dashboard-setup-startup-hook)
+  (setq dashboard-display-icons-p t)
+  (setq dashboard-icon-type 'nerd-icons)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t))
 
 ;; Activate recentf to track recently opened files
 (use-package recentf
@@ -144,10 +148,18 @@
 ;; Projects support
 ;; -----------------------------------------------------------------------------
 
-(use-package project
-  :ensure nil ; part of emacs since v29
-  :config
-  (setq project-switch-use-ido 'both))
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode +1)
+  :bind (:map projectile-mode-map
+              ("s-p" . projectile-command-map)
+              ("C-c p" . projectile-command-map)))
+
+;; (use-package project
+;;   :ensure nil ; part of emacs since v29
+;;   :config
+;;   (setq project-switch-use-ido 'both))
 
 ;; -----------------------------------------------------------------------------
 ;; Themes support

@@ -1,9 +1,10 @@
 eln-cache/
 elpa/
-recentf
+recentf*
 minimal-emacs.d/
 transient/
 tree-sitter/
 custom.el
+projectile-bookmarks.eld
 projects.eld
 tramp
