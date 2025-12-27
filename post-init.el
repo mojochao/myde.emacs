@@ -244,6 +244,14 @@
   :bind
   ([f8] . myde/neotree-project-root-toggle))
 
+;; -----------------------------------------------------------------------------
+;; Icons support
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/domtronn/all-the-icons.el
+(use-package all-the-icons
+  :if (display-graphic-p))
+
 ;; https://github.com/rainstormstudio/nerd-icons.el
 (use-package nerd-icons
   :ensure t
