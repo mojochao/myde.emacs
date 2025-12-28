@@ -14,7 +14,8 @@
 (setq inhibit-startup-message t
       inhibit-startup-echo-area-message t
       initial-scratch-message nil
-      make-backup-files nil)
+      make-backup-files nil
+      mode-line-collapse-minor-modes t)
 
 ;; Enable smooth scrolling in GUI.
 ;; Get rid of the scrollbar and toolbar in GUI. They take up precious space
@@ -45,8 +46,8 @@
 ;; Auto-revert buffer on changes to files on disk.
 (global-auto-revert-mode 1)
 
-;; Highlight current line everywhere.
-(global-hl-line-mode 1)
+;; ;; Highlight current line everywhere.
+;; (global-hl-line-mode 1)
 
 ;; Delete region selected when overwriting it.
 (delete-selection-mode 1)
@@ -81,6 +82,30 @@
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
 
 ;; -----------------------------------------------------------------------------
+;; Elisp programming support packages
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/magnars/dash.el
+;; A modern list API for Emacs. No 'cl required.
+(use-package dash
+  :ensure t)
+
+;; https://github.com/magnars/s.el
+;; The long lost Emacs string manipulation library.
+(use-package s
+  :ensure t)
+
+;; https://elpa.gnu.org/packages/seq.html
+;; Sequence manipulation functions.
+(use-package seq
+  :ensure t)
+
+;; https://github.com/alphapapa/plz.el
+;; An HTTP library for Emacs.
+(use-package plz
+  :ensure t)
+
+;; -----------------------------------------------------------------------------
 ;; Package setup
 ;; -----------------------------------------------------------------------------
 (require 'package)
@@ -95,6 +120,7 @@
 ;; -----------------------------------------------------------------------------
 ;; macOS setup
 ;; -----------------------------------------------------------------------------
+
 (use-package emacs
   :if (string= system-type "darwin")
   :ensure nil ; built-in packages are always installed
@@ -296,6 +322,7 @@
 ;; -----------------------------------------------------------------------------
 ;; Discoverability setup
 ;; -----------------------------------------------------------------------------
+
 (use-package which-key
   :ensure nil ; part of emacs since v29
   :init
@@ -427,6 +454,7 @@
   (setq treesit-auto-install t) ; install grammars automatically, if missing
   (global-treesit-auto-mode))
 
+
 ;; -----------------------------------------------------------------------------
 ;; LSP support
 ;; -----------------------------------------------------------------------------
@@ -445,6 +473,15 @@
   :vc (:url "https://github.com/mickeynp/combobulate" :rev :newest)
   :after eglot)
 
+;; -----------------------------------------------------------------------------
+;; Environment files
+;; -----------------------------------------------------------------------------
+
+(use-package dotenv-mode
+  :ensure t
+  :mode (("\\.env\\'" . dotenv-mode)
+         ("\\.envrc\\'" . dotenv-mode)))
+  
 ;; -----------------------------------------------------------------------------
 ;; Golang setup
 ;; -----------------------------------------------------------------------------
@@ -559,11 +596,42 @@
 ;; ;;     (lambda ()
 ;; ;;       (auth-source-pass-get 'secret "openai-key")))))
 
-;; ;; -----------------------------------------------------------------------------
-;; ;; gptel llm client integration
-;; ;; -----------------------------------------------------------------------------
-
+;; gptel LLM client
 ;; https://github.com/karthink/gptel
+
+(defun myde/gptel-api-key-from-environment (&optional var)
+  (lambda ()
+    (getenv (or var                     ;provided key
+                (thread-first           ;or fall back to <TYPE>_API_KEY
+                  (type-of gptel-backend)
+                  (symbol-name)
+                  (substring 6)
+                  (upcase)
+                  (concat "_API_KEY"))))))
+
 (use-package gptel
   :ensure t
-  :defer t)
+  :defer t
+  :config
+  ;; Register backends.
+  ;; OpenAI is a reasonable default if it provides all you need.
+  (gptel-make-openai "OpenAI"
+    :host "api.openai.com"
+    :key (myde/gptel-api-key-from-environment "OPENAI_API_KEY"))
+  ;; OpenRouter offers an OpenAI compatible API for multiple LLMs covering all your needs.
+  (gptel-make-openai "OpenRouter"               ;Any name you want
+    :host "openrouter.ai"
+    :endpoint "/api/v1/chat/completions"
+    :stream t
+    :key (myde/gptel-api-key-from-environment "OPENROUTER_API_KEY")
+    :models '(openai/gpt-3.5-turbo
+              mistralai/mixtral-8x7b-instruct
+              meta-llama/codellama-34b-instruct
+              codellama/codellama-70b-instruct
+              google/palm-2-codechat-bison-32k
+              google/gemini-pro))
+  ;; Set default backend
+  (setq gptel-model 'gpt-4o
+        gptel-backend (gptel-get-backend "OpenAI"))
+  ;; Enable tool use (optional)
+  (gptel-enable-tools))
