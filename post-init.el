@@ -46,9 +46,6 @@
 ;; Auto-revert buffer on changes to files on disk.
 (global-auto-revert-mode 1)
 
-;; ;; Highlight current line everywhere.
-;; (global-hl-line-mode 1)
-
 ;; Delete region selected when overwriting it.
 (delete-selection-mode 1)
 
@@ -80,30 +77,6 @@
 ;; Auto-detect shebang comments and use shell-script-mode appropriately.
 (dolist (interp '("bash" "sh" "zsh"))
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
-
-;; -----------------------------------------------------------------------------
-;; Elisp programming support packages
-;; -----------------------------------------------------------------------------
-
-;; https://github.com/magnars/dash.el
-;; A modern list API for Emacs. No 'cl required.
-(use-package dash
-  :ensure t)
-
-;; https://github.com/magnars/s.el
-;; The long lost Emacs string manipulation library.
-(use-package s
-  :ensure t)
-
-;; https://elpa.gnu.org/packages/seq.html
-;; Sequence manipulation functions.
-(use-package seq
-  :ensure t)
-
-;; https://github.com/alphapapa/plz.el
-;; An HTTP library for Emacs.
-(use-package plz
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Package setup
@@ -139,7 +112,31 @@
   (exec-path-from-shell-initialize))
 
 ;; -----------------------------------------------------------------------------
-;; Splash screen/Dashboard support.
+;; Elisp programming support packages
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/magnars/dash.el
+;; A modern list API for Emacs. No 'cl required.
+(use-package dash
+  :ensure t)
+
+;; https://github.com/magnars/s.el
+;; The long lost Emacs string manipulation library.
+(use-package s
+  :ensure t)
+
+;; https://elpa.gnu.org/packages/seq.html
+;; Sequence manipulation functions.
+(use-package seq
+  :ensure t)
+
+;; https://github.com/alphapapa/plz.el
+;; An HTTP library for Emacs.
+(use-package plz
+  :ensure t)
+
+;; -----------------------------------------------------------------------------
+;; Splash screen/Dashboard support
 ;; -----------------------------------------------------------------------------
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
@@ -171,21 +168,32 @@
   (add-hook 'kill-emacs-hook #'recentf-cleanup -90))
 
 ;; -----------------------------------------------------------------------------
-;; Projects support
+;; UI quality of life improvements
 ;; -----------------------------------------------------------------------------
 
-(use-package projectile
+;; Give the UI space to breathe.
+;; https://github.com/protesilaos/spacious-padding
+(use-package spacious-padding
   :ensure t
-  :init
-  (projectile-mode +1)
-  :bind (:map projectile-mode-map
-              ("s-p" . projectile-command-map)
-              ("C-c p" . projectile-command-map)))
+  :config
+  (spacious-padding-mode 1))
 
-;; (use-package project
-;;   :ensure nil ; part of emacs since v29
-;;   :config
-;;   (setq project-switch-use-ido 'both))
+;; -----------------------------------------------------------------------------
+;; Icons support
+;; -----------------------------------------------------------------------------
+
+;; https://github.com/domtronn/all-the-icons.el
+(use-package all-the-icons
+  :if (display-graphic-p))
+
+;; https://github.com/rainstormstudio/nerd-icons.el
+(use-package nerd-icons
+  :ensure t)
+  ;; :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
 
 ;; -----------------------------------------------------------------------------
 ;; Themes support
@@ -196,6 +204,23 @@
 (use-package easy-theme-preview
   :ensure t)
 
+;; Sync theme with Gnome Desktop on Linux.
+;; https://github.com/dimagid/gnome-dark-style
+(use-package gnome-dark-style
+  :if (string-equal system-type "gnu/linux")  
+  :ensure t
+  :config
+  ;; Set light and dark themes to use
+  (setq gnome-light-theme 'doom-tomorrow-day)
+  (setq gnome-dark-theme 'doom-spacegrey)
+  ;; Enable sync with Gnome Desktop theme
+  (setq gnome-dark-style-sync t))
+
+;; https://github.com/purcell/color-theme-sanityinc-tomorrow
+(use-package color-theme-sanityinc-tomorrow
+  :ensure t)
+
+;; https://github.com/doomemacs/themes
 (use-package doom-themes
   :ensure t
   :custom
@@ -205,8 +230,8 @@
   ;; for treemacs users
   (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   :config
-  ;; Load initial theme.
-  (load-theme 'doom-badger t)
+  ;; Load initial theme
+  (load-theme 'doom-spacegrey)
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (nerd-icons must be installed!)
@@ -216,34 +241,26 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
-;; ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
-;; (use-package color-theme-sanityinc-tomorrow
-;;   :ensure t)
+;; https://github.com/protesilaos/ef-themes
+(use-package ef-themes
+  :ensure t)
 
-;; ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
-;; (use-package jetbrains-darcula-theme
-;;   :ensure t
-;;   :config
-;;   (load-theme 'jetbrains-darcula t))
-
-;; (use-package ef-themes
-;;   :config
-;;   (load-theme 'ef-owl))
+;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
+(use-package jetbrains-darcula-theme
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
-;; Give the UI space to breathe
+;; Projects support
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/protesilaos/spacious-padding
-(use-package spacious-padding
+(use-package projectile
   :ensure t
   :config
-  (spacious-padding-mode 1))
-
-;; https://github.com/myrjola/diminish.el
-(use-package diminish
-  ;; Keep modeline noise to a minimum
-  :ensure t)
+  (projectile-mode +1)
+  (setq projectile-project-search-path '("~/Projects/"))
+  :bind (:map projectile-mode-map
+              ("s-p" . projectile-command-map)
+              ("C-c p" . projectile-command-map)))
 
 ;; -----------------------------------------------------------------------------
 ;; Project tree explorer support
@@ -269,24 +286,6 @@
   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
   :bind
   ([f8] . myde/neotree-project-root-toggle))
-
-;; -----------------------------------------------------------------------------
-;; Icons support
-;; -----------------------------------------------------------------------------
-
-;; https://github.com/domtronn/all-the-icons.el
-(use-package all-the-icons
-  :if (display-graphic-p))
-
-;; https://github.com/rainstormstudio/nerd-icons.el
-(use-package nerd-icons
-  :ensure t
-  ;; :custom
-  ;; The Nerd Font you want to use in GUI
-  ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-  )
 
 ;; -----------------------------------------------------------------------------
 ;; Miscellaneous quality-of-life improvements
