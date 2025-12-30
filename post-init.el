@@ -63,7 +63,9 @@
 (set-terminal-coding-system 'utf-8-unix)
 
 ;; Configure display of line numbers.
-(add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode t)))
+(add-hook 'prog-mode-hook (lambda ()
+                            (display-line-numbers-mode t)
+                            (hl-line-mode t)))
 
 ;; Store custom settings in separate file.
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -150,6 +152,10 @@
                     (agenda . 5)))
   :config
   (dashboard-setup-startup-hook)
+  (setq myde-banner-image-file (expand-file-name "myde-banner.png" user-emacs-directory))
+  (setq myde-banner-text-file (expand-file-name "myde-banner.txt" user-emacs-directory))
+  (setq dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
+  (setq dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")
   (setq dashboard-display-icons-p t)
   (setq dashboard-icon-type 'nerd-icons)
   (setq dashboard-set-heading-icons t)
@@ -357,7 +363,7 @@
   :config
   ;; Disable hl-line-mode in all terminal-like modes
   (setq global-hl-line-modes
-        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
+o        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
            
 ;; -----------------------------------------------------------------------------
 ;; Version control setup
