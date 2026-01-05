@@ -5,6 +5,7 @@ minimal-emacs.d/
 transient/
 tree-sitter/
 custom.el
+ielm-history.eld
 projectile-bookmarks.eld
 projects.eld
 tramp

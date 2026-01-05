@@ -85,3 +85,15 @@ minibuffer, even without explicitly focusing it."
 (defun myde/goimports-setup ()
   "Set up `goimports` to run on save for Go files."
   (add-hook 'before-save-hook 'gofmt-before-save nil t))
+
+;; -----------------------------------------------------------------------------
+;; Org mode setup
+;; -----------------------------------------------------------------------------
+
+(defun myde/find-org-agenda-files (root-dir)
+  '("/home/agooch/Projects/platykus/org/tasks.org"
+    "/home/agooch/Projects/myde/org/tasks.org"
+    "/home/agooch/Projects/mydc/org/tasks.org"
+    "/home/agooch/Projects/playdate/org/tasks.org"
+    "/home/agooch/Projects/life/org/tasks.org"
+    "/home/agooch/Projects/dayjob/org/tasks.org"))

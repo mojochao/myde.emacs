@@ -93,7 +93,7 @@
   (package-refresh-contents))
 
 ;; -----------------------------------------------------------------------------
-;; macOS setup
+;; macOS-specific setup
 ;; -----------------------------------------------------------------------------
 
 (use-package emacs
@@ -102,7 +102,7 @@
   :config
   ;; Use GNU version of ls on macOS.
   (setq dired-use-ls-dired t
-        insert-directory-program "/usr/local/bin/gls"
+        insert-directory-program "/usr/local/bin/gls"  ; where homebrew install places it on macOS
         dired-listing-switches "-aBhl --group-directories-first"))
 
 (use-package exec-path-from-shell
@@ -236,8 +236,6 @@
   ;; for treemacs users
   (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   :config
-  ;; Load initial theme
-  (load-theme 'doom-spacegrey)
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (nerd-icons must be installed!)
@@ -254,6 +252,9 @@
 ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
 (use-package jetbrains-darcula-theme
   :ensure t)
+
+;; Load initial theme
+(load-theme 'doom-spacegrey)
 
 ;; -----------------------------------------------------------------------------
 ;; Projects support
@@ -363,7 +364,7 @@
   :config
   ;; Disable hl-line-mode in all terminal-like modes
   (setq global-hl-line-modes
-o        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
+        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
            
 ;; -----------------------------------------------------------------------------
 ;; Version control setup
@@ -459,6 +460,9 @@ o        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
   (setq treesit-auto-install t) ; install grammars automatically, if missing
   (global-treesit-auto-mode))
 
+;; -----------------------------------------------------------------------------
+;; Org mode setup
+;; -----------------------------------------------------------------------------
 
 ;; -----------------------------------------------------------------------------
 ;; LSP support
