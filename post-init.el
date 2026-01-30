@@ -273,17 +273,6 @@
 ;; Project tree explorer support
 ;; -----------------------------------------------------------------------------
 
-(defun myde/neotree-project-root-toggle ()
-  "Toggle NeoTree. If opening, set the root to the current 'project' root."
-  (interactive)
-  (if (and (fboundp 'neo-global--window-exists-p)
-           (neo-global--window-exists-p))
-      (neotree-hide)
-    (let ((project (project-current)))
-      (if project
-          (neotree-dir (project-root project))
-        (neotree-show)))))
-
 ;; https://github.com/jaypei/emacs-neotree
 (use-package neotree
   :ensure t
@@ -477,10 +466,10 @@
 ;; Combobulate setup (tree-sitter based navigation/manipulation)
 ;; -----------------------------------------------------------------------------
 
-(use-package combobulate
-  :ensure t
-  :vc (:url "https://github.com/mickeynp/combobulate" :rev :newest)
-  :after eglot)
+;; (use-package combobulate
+;;   :ensure t
+;;   :vc (:url "https://github.com/mickeynp/combobulate" :rev :newest)
+;;   :after eglot)
 
 ;; -----------------------------------------------------------------------------
 ;; Environment files
@@ -608,19 +597,8 @@
 ;; gptel LLM client
 ;; https://github.com/karthink/gptel
 
-(defun myde/gptel-api-key-from-environment (&optional var)
-  (lambda ()
-    (getenv (or var                     ;provided key
-                (thread-first           ;or fall back to <TYPE>_API_KEY
-                  (type-of gptel-backend)
-                  (symbol-name)
-                  (substring 6)
-                  (upcase)
-                  (concat "_API_KEY"))))))
-
 (use-package gptel
   :ensure t
-  :defer t
   :config
   ;; Register backends.
   ;; OpenAI is a reasonable default if it provides all you need.
@@ -628,7 +606,7 @@
     :host "api.openai.com"
     :key (myde/gptel-api-key-from-environment "OPENAI_API_KEY"))
   ;; OpenRouter offers an OpenAI compatible API for multiple LLMs covering all your needs.
-  (gptel-make-openai "OpenRouter"               ;Any name you want
+  (gptel-make-openai "OpenRouter"
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
     :stream t
@@ -641,6 +619,32 @@
               google/gemini-pro))
   ;; Set default backend
   (setq gptel-model 'gpt-4o
-        gptel-backend (gptel-get-backend "OpenAI"))
-  ;; Enable tool use (optional)
-  (gptel-enable-tools))
+        gptel-backend (gptel-get-backend "OpenAI")))
+
+;; Use minuet for AI assisted completions
+;; https://github.com/milanglacier/minuet-ai.el
+
+(use-package minuet
+  :ensure t
+  :after gptel
+  :bind
+  (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
+   ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
+   ("C-c m" . #'minuet-configure-provider)
+   :map minuet-active-mode-map
+   ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
+   ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
+   ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
+   ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
+   ;; Accept the first line of completion, or N lines with a numeric-prefix:
+   ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
+   ("M-a" . #'minuet-accept-suggestion-line)
+   ("M-e" . #'minuet-dismiss-suggestion))
+  :init
+  ;; if you want to enable auto suggestion.
+  ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
+  (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
+  :config
+  ;; You can use M-x minuet-configure-provider to interactively configure provider and model
+  (setq minuet-provider 'openai-fim-compatible)
+  (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))

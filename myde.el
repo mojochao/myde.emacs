@@ -43,10 +43,6 @@
   ;; Restore window layouts
   (winner-mode))
 
-;; Enable config for programming modes in general.
-(defun myde/prog-mode-hook-function ()
-  (display-line-numbers-mode t))
-
 ;; Squelch annoying audible bell. Briefly flash the mode line instead.
 (defun myde/flash-mode-line ()
   (invert-face 'mode-line)
@@ -75,7 +71,32 @@ minibuffer, even without explicitly focusing it."
         (abort-recursive-edit))
     (keyboard-quit)))
 
+;; -----------------------------------------------------------------------------
+;; Project tree explorer support
+;; -----------------------------------------------------------------------------
+
+(defun myde/neotree-project-root-toggle ()
+  "Toggle NeoTree. If opening, set the root to the current 'project' root."
+  (interactive)
+  (if (and (fboundp 'neo-global--window-exists-p)
+           (neo-global--window-exists-p))
+      (neotree-hide)
+    (let ((project (project-current)))
+      (if project
+          (neotree-dir (project-root project))
+        (neotree-show)))))
+
+;; -----------------------------------------------------------------------------
+;; Generic programming modes support
+;; -----------------------------------------------------------------------------
+
+(defun myde/prog-mode-hook-function ()
+  (display-line-numbers-mode t))
+
+;; -----------------------------------------------------------------------------
 ;; Golang support
+;; -----------------------------------------------------------------------------
+
 (defun myde/go-ts-or-plain-mode ()
   "Use go-ts-mode if Tree-sitter is available, otherwise fall back to go-mode."
   (if (treesit-ready-p 'go)
@@ -97,3 +118,18 @@ minibuffer, even without explicitly focusing it."
     "/home/agooch/Projects/playdate/org/tasks.org"
     "/home/agooch/Projects/life/org/tasks.org"
     "/home/agooch/Projects/dayjob/org/tasks.org"))
+
+;; -----------------------------------------------------------------------------
+;; AI enablement
+;; -----------------------------------------------------------------------------
+
+(defun myde/gptel-api-key-from-environment (&optional var)
+  (lambda ()
+    (getenv (or var                     ;provided key
+                (thread-first           ;or fall back to <TYPE>_API_KEY
+                  (type-of gptel-backend)
+                  (symbol-name)
+                  (substring 6)
+                  (upcase)
+                  (concat "_API_KEY"))))))
+
