@@ -617,27 +617,35 @@
   :ensure t
   :config
   ;; Register backends.
-  ;; OpenAI is a reasonable default if it provides all you need.
-  (gptel-make-openai "OpenAI"
-    :host "api.openai.com"
-    :key (myde/gptel-api-key-from-environment "OPENAI_API_KEY"))
-  ;; OpenRouter offers an OpenAI compatible API for multiple LLMs covering all your needs.
   (gptel-make-openai "OpenRouter"
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
     :stream t
     :key (myde/gptel-api-key-from-environment "OPENROUTER_API_KEY")
-    :models '(openai/gpt-3.5-turbo
-              mistralai/mixtral-8x7b-instruct
-              meta-llama/codellama-34b-instruct
-              codellama/codellama-70b-instruct
-              google/palm-2-codechat-bison-32k
-              google/gemini-pro))
+    :models '(anthropic/claude-haiku-4.5
+              anthropic/claude-opus-4.6
+              anthropic/claude-sonnet-4.5
+              google/gemini-3-flash-preview
+              google/gemini-3-pro-image-preview
+              google/gemini-3-pro-preview
+              openai/gpt-5.2
+              openai/gpt-5.2-codex
+              openai/gpt-5.2-pro
+              mistralai/codestral-embed-2505
+              mistralai/devstral-2512
+              mistralai/ministral-14b-2512
+              mistralai/mistral-large-2512
+              moonshotai/kimi-k2
+              moonshotai/kimi-k2-thinking
+              moonshotai/kimi-k2.5
+              qwen/qwen3-coder-next
+              z-ai/glm-4.7
+              z-ai/glm-4.7-flash))
   ;; Set default backend
-  (setq gptel-model 'gpt-4o
-        gptel-backend (gptel-get-backend "OpenAI")))
+  (setq gptel-model 'moonshotai/kimi-k2.5
+        gptel-backend (gptel-get-backend "OpenRouter")))
 
-;; Use minuet for AI assisted completions
+;; Configure AI-assisted completions.
 ;; https://github.com/milanglacier/minuet-ai.el
 
 (use-package minuet
