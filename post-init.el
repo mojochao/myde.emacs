@@ -623,14 +623,14 @@
     :stream t
     :key (myde/gptel-api-key-from-environment "OPENROUTER_API_KEY")
     :models '(anthropic/claude-haiku-4.5
+              anthropic/claude-opus-4.5
               anthropic/claude-opus-4.6
               anthropic/claude-sonnet-4.5
+              deepseek/deepseek-v3.2
               google/gemini-3-flash-preview
               google/gemini-3-pro-image-preview
               google/gemini-3-pro-preview
-              openai/gpt-5.2
-              openai/gpt-5.2-codex
-              openai/gpt-5.2-pro
+              minimax/minimax-m2.1
               mistralai/codestral-embed-2505
               mistralai/devstral-2512
               mistralai/ministral-14b-2512
@@ -638,7 +638,13 @@
               moonshotai/kimi-k2
               moonshotai/kimi-k2-thinking
               moonshotai/kimi-k2.5
+              openai/gpt-5.2
+              openai/gpt-5.2-codex
+              openai/gpt-5.2-pro
+              openrouter/free
               qwen/qwen3-coder-next
+              x-ai/grok-4.1-fast
+              x-ai/grok-code-fast-1
               z-ai/glm-4.7
               z-ai/glm-4.7-flash))
   ;; Set default backend
