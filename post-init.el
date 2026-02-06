@@ -202,6 +202,18 @@
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
 
 ;; -----------------------------------------------------------------------------
+;; Fonts support
+;; -----------------------------------------------------------------------------
+
+;; Preview fonts.
+;; https://github.com/protesilaos/show-font
+(use-package show-font
+  :ensure t
+  :bind
+  (("C-c s f" . show-font-select-preview)
+   ("C-c s t" . show-font-tabulated)))
+
+;; -----------------------------------------------------------------------------
 ;; Themes support
 ;; -----------------------------------------------------------------------------
 
