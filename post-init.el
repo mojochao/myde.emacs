@@ -560,6 +560,10 @@
   :mode (("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)))
 
+;; -----------------------------------------------------------------------------
+;; AI Agent/LLM tooling setup
+;; -----------------------------------------------------------------------------
+
 ;; ;; -----------------------------------------------------------------------------
 ;; ;; Aider integration
 ;; ;; -----------------------------------------------------------------------------
@@ -657,6 +661,11 @@
   ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
   (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
   :config
-  ;; You can use M-x minuet-configure-provider to interactively configure provider and model
-  (setq minuet-provider 'openai-fim-compatible)
-  (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))
+  ;; Use Codestral FIM completions via the Mistral API.
+  ;; Minuet expects the *environment variable name* here, not the key value.
+  (setq minuet-provider 'codestral)
+  (plist-put minuet-codestral-options :api-key "MISTRAL_API_KEY")
+  (plist-put minuet-codestral-options :end-point "https://api.mistral.ai/v1/fim/completions")
+  (plist-put minuet-codestral-options :model "codestral-latest")
+  (minuet-set-optional-options minuet-codestral-options :max_tokens 128)
+  (minuet-set-optional-options minuet-codestral-options :stop ["\n\n"]))
