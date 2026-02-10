@@ -616,7 +616,6 @@
 (use-package gptel
   :ensure t
   :config
-  ;; Register backends.
   (gptel-make-openai "OpenRouter"
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
@@ -647,7 +646,6 @@
               x-ai/grok-code-fast-1
               z-ai/glm-4.7
               z-ai/glm-4.7-flash))
-  ;; Set default backend
   (setq gptel-model 'moonshotai/kimi-k2.5
         gptel-backend (gptel-get-backend "OpenRouter")))
 
@@ -683,3 +681,13 @@
   (plist-put minuet-codestral-options :model "codestral-latest")
   (minuet-set-optional-options minuet-codestral-options :max_tokens 128)
   (minuet-set-optional-options minuet-codestral-options :stop ["\n\n"]))
+
+;; Configure ACP support
+;; https://github.com/xenodium/acp.el
+(use-package acp
+  :ensure t)
+
+;; Configure Agent Shell support
+;; https://github.com/xenodium/agent-shell
+(use-package agent-shell
+  :ensure t)
