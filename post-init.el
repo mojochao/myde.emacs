@@ -646,7 +646,8 @@
               x-ai/grok-4.1-fast
               x-ai/grok-code-fast-1
               z-ai/glm-4.7
-              z-ai/glm-4.7-flash))
+              z-ai/glm-4.7-flash
+              z-ai/glm-5))
   (setq gptel-model 'moonshotai/kimi-k2.5
         gptel-backend (gptel-get-backend "OpenRouter")))
 
