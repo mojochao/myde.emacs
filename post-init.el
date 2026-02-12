@@ -630,6 +630,7 @@
               google/gemini-3-pro-image-preview
               google/gemini-3-pro-preview
               minimax/minimax-m2.1
+              minimax/minimax-m2.5
               mistralai/codestral-embed-2505
               mistralai/devstral-2512
               mistralai/ministral-14b-2512
