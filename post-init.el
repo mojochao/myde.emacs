@@ -663,6 +663,7 @@
               openai/gpt-5.2-pro
               openrouter/free
               qwen/qwen3-coder-next
+              qwen/qwen3-max-thinking
               x-ai/grok-4.1-fast
               x-ai/grok-code-fast-1
               z-ai/glm-4.7
