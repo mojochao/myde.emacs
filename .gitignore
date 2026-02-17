@@ -9,3 +9,4 @@ ielm-history.eld
 projectile-bookmarks.eld
 projects.eld
 tramp
+*.sqlite
