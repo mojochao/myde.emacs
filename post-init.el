@@ -375,6 +375,24 @@
   :ensure t
   :commands (magit-status))
 
+;; https://github.com/magit/forge
+(use-package forge
+  :ensure t
+  :after magit)
+
+;; https://github.com/ArthurHeymans/gptel-forge-prs
+(use-package gptel-forge-prs
+  :ensure t
+  :after forge
+  :config
+  (gptel-forge-prs-install))
+
+;; https://github.com/ragnard/gptel-magit
+(use-package gptel-magit
+  :ensure t
+  :after magit
+  :hook (magit-mode . gptel-magit-install))
+
 ;; -----------------------------------------------------------------------------
 ;; Direnv integration
 ;; -----------------------------------------------------------------------------
