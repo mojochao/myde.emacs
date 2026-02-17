@@ -412,8 +412,8 @@
 (use-package orderless
   :ensure t
   :custom
-  (completion-styles '(orderless))
-  (completion-category-defaults nil)
+  (completion-styles '(orderless basic))
+  (completion-pcm-leading-wildcard t)
   (completion-category-overrides '((file (styles . (partial-completion))))))
 
 ;; https://github.com/minad/marginalia
