@@ -88,7 +88,6 @@
       '(("melpa"  . "https://melpa.org/packages/")
         ("gnu"    . "https://elpa.gnu.org/packages/")
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-(package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))
 
