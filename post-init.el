@@ -469,7 +469,9 @@
   :ensure nil ; part of emacs since v29
   :config
   (add-to-list 'treesit-language-source-alist
-               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl")))
+               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl")
+               '(elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+               '(heex "https://github.com/phoenixframework/tree-sitter-heex")))
 
 ;; https://github.com/renzmann/treesit-auto
 (use-package treesit-auto
@@ -489,7 +491,9 @@
 (use-package eglot
   :ensure nil ; part of emacs since v29
   :hook ((go-ts-mode . eglot-ensure)
-         (go-mode . eglot-ensure)))
+         (go-mode . eglot-ensure)
+         (elixir-ts-mode . eglot-ensure)
+         (heex-ts-mode . eglot-ensure)))
 
 ;; -----------------------------------------------------------------------------
 ;; Combobulate setup (tree-sitter based navigation/manipulation)
@@ -522,6 +526,92 @@
          (go-mode . myde/goimports-setup))
   :config
   (setq gofmt-command "goimports"))
+
+;; -----------------------------------------------------------------------------
+;; Flycheck (on-the-fly syntax checking)
+;; -----------------------------------------------------------------------------
+
+(use-package flycheck
+  :ensure t
+  :init
+  (global-flycheck-mode)
+  :config
+  (setq flycheck-check-syntax-automatically '(save mode-enabled)))
+
+;; -----------------------------------------------------------------------------
+;; Elixir + Phoenix setup
+;; -----------------------------------------------------------------------------
+
+(use-package elixir-ts-mode
+  :ensure nil ; built-in (Emacs 30.1+)
+  :mode (("\\.ex\\'" . elixir-ts-mode)
+         ("\\.exs\\'" . elixir-ts-mode)
+         ("\\.heex\\'" . elixir-ts-mode))
+  :hook ((elixir-ts-mode . eglot-ensure)
+         (elixir-ts-mode . myde/elixir-ts-ensure-grammars)
+         (elixir-ts-mode . flycheck-mode))
+  :config
+  (defun myde/elixir-ts-ensure-grammars ()
+    "Ensure Elixir and HEEx tree-sitter grammars are installed."
+    (dolist (lang '(elixir heex))
+      (unless (treesit-ready-p lang t)
+        (message "Installing %s tree-sitter grammar..." lang)
+        (treesit-install-language-grammar lang)))))
+
+;; HEEx mode (Phoenix LiveView templates)
+(use-package heex-ts-mode
+  :ensure t
+  :after elixir-ts-mode
+  :mode ("\\.heex\\'" . heex-ts-mode)
+  :hook (heex-ts-mode . eglot-ensure))
+
+;; Elixir test runner
+(use-package exunit
+  :ensure t
+  :after elixir-ts-mode
+  :hook (elixir-ts-mode . exunit-mode)
+  :bind (:map exunit-mode-map
+              ("C-c t a" . exunit-verify-all)
+              ("C-c t s" . exunit-verify-single)
+              ("C-c t t" . exunit-toggle-file-and-test)))
+
+;; IEx REPL integration
+(use-package inf-elixir
+  :ensure t
+  :after elixir-ts-mode
+  :bind (:map elixir-ts-mode-map
+              ("C-c i i" . inf-elixir)
+              ("C-c i p" . inf-elixir-project)
+              ("C-c i l" . inf-elixir-send-line)
+              ("C-c i r" . inf-elixir-send-region)
+              ("C-c i b" . inf-elixir-send-buffer)))
+
+;; Credo linting via Flycheck
+(use-package flycheck-credo
+  :ensure t
+  :after flycheck
+  :config
+  (flycheck-credo-setup)
+  (setq flycheck-elixir-credo-strict t))
+
+;; Dialyxir (Dialyzer) via Flycheck
+(use-package flycheck-dialyxir
+  :ensure t
+  :after flycheck
+  :config
+  (flycheck-dialyxir-setup))
+
+;; -----------------------------------------------------------------------------
+;; DAP debugger support
+;; -----------------------------------------------------------------------------
+
+(use-package dap-mode
+  :ensure t
+  :after eglot
+  :config
+  (dap-auto-configure-mode)
+  ;; ElixirLS DAP support
+  (require 'dap-elixir))
 
 ;; -----------------------------------------------------------------------------
 ;; Markdown editing setup
