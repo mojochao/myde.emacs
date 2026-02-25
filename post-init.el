@@ -105,9 +105,8 @@
         dired-listing-switches "-aBhl --group-directories-first"))
 
 (use-package exec-path-from-shell
-  ;; Add shell PATH to exec-path on macOS.
+  ;; Add shell PATH to exec-path.
   ;; https://github.com/purcell/exec-path-from-shell
-  :if (string-equal system-type "darwin")
   :ensure t
   :config
   (exec-path-from-shell-initialize))
