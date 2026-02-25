@@ -671,41 +671,15 @@
 ;; AI Agent/LLM tooling setup
 ;; -----------------------------------------------------------------------------
 
-;; ;; -----------------------------------------------------------------------------
-;; ;; Aider integration
-;; ;; -----------------------------------------------------------------------------
+;; -----------------------------------------------------------------------------
+;; Claude code integration
+;; -----------------------------------------------------------------------------
 
-;; ;; https://github.com/MatthewZMD/aidermacs
-;; (use-package aidermacs
-;;   :ensure t
-;;   :bind (("C-c a" . aidermacs-transient-menu))
-;;   :custom
-;;                                         ; See the Configuration section below
-;;   (aidermacs-use-architect-mode t)
-;;   (aidermacs-default-model "sonnet"))
-
-;; ;; -----------------------------------------------------------------------------
-;; ;; Claude code integration
-;; ;; -----------------------------------------------------------------------------
-
-;; ;; ;; https://github.com/stevemolitor/claude-code.el 
-;; ;; (use-package claude-code
-;; ;;   :vc (:url "https://github.com/stevemolitor/claude-code.el")
-;; ;;   :bind ("C-c c" . claude-code-command-map)
-;; ;;   :config
-;; ;;   (claude-code-mode))
-
-;; ;; https://github.com/yuya373/claude-code-emacs
-;; (use-package claude-code-emacs
-;;   :ensure t
-;;   :vc (:url "https://github.com/yuya373/claude-code-emacs")
-;;   :bind ("C-c c" . 'claude-code-emacs-transient))
-
-;; (use-package claude-code-ide
-;;   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
-;;   :bind ("C-c c" . claude-code-ide-menu) ; Set your favorite keybinding
-;;   :config
-;;   (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+(use-package claude-code-ide
+  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+  :bind ("C-c c" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
 
 ;; ;; ;; -------------------------------
 ;; ;; ;; ChatGPT integration
@@ -804,3 +778,12 @@
 ;; https://github.com/xenodium/agent-shell
 (use-package agent-shell
   :ensure t)
+
+;; ;; Configure opencode support
+;; ;; https://github.com/colobas/opencode.el
+;; (use-package opencode
+;;   :vc (:url "https://github.com/colobas/opencode.el" :rev :newest :branch "main")
+;;   :after gptel
+;;   :config
+;;   ; or opencode-setup, opencode-setup-minimal
+;;   (opencode-setup-coding))
