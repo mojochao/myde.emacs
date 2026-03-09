@@ -510,7 +510,13 @@
   :hook ((go-ts-mode . eglot-ensure)
          (go-mode . eglot-ensure)
          (elixir-ts-mode . eglot-ensure)
-         (heex-ts-mode . eglot-ensure)))
+         (heex-ts-mode . eglot-ensure))
+  :config
+  ;; Configure ElixirLS for Elixir and HEEx modes
+  (add-to-list 'eglot-server-programs
+               '(elixir-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh"))
+  (add-to-list 'eglot-server-programs
+               '(heex-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh")))
 
 ;; -----------------------------------------------------------------------------
 ;; Combobulate setup (tree-sitter based navigation/manipulation)
@@ -566,7 +572,8 @@
          ("\\.heex\\'" . elixir-ts-mode))
   :hook ((elixir-ts-mode . eglot-ensure)
          (elixir-ts-mode . myde/elixir-ts-ensure-grammars)
-         (elixir-ts-mode . flycheck-mode))
+         (elixir-ts-mode . flycheck-mode)
+         (elixir-ts-mode . myde/delete-trailing-whitespace-setup))
   :config
   (defun myde/elixir-ts-ensure-grammars ()
     "Ensure Elixir and HEEx tree-sitter grammars are installed."
@@ -580,7 +587,8 @@
   :ensure t
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
-  :hook (heex-ts-mode . eglot-ensure))
+  :hook ((heex-ts-mode . eglot-ensure)
+         (heex-ts-mode . myde/delete-trailing-whitespace-setup)))
 
 ;; Elixir test runner
 (use-package exunit
