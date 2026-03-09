@@ -334,6 +334,14 @@
   :config
   (whole-line-or-region-global-mode))
 
+;; https://www.jamescherti.com/pathaction-el-emacs-package-universal-makefile/
+(use-package pathaction
+  :ensure t
+  :config
+  (add-to-list 'display-buffer-alist '("\\*pathaction:"
+                                       (display-buffer-at-bottom)
+                                       (window-height . 0.33))))
+
 ;; -----------------------------------------------------------------------------
 ;; Discoverability setup
 ;; -----------------------------------------------------------------------------
