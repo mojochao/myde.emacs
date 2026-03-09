@@ -93,6 +93,10 @@ minibuffer, even without explicitly focusing it."
 (defun myde/prog-mode-hook-function ()
   (display-line-numbers-mode t))
 
+(defun myde/delete-trailing-whitespace-setup ()
+  "Delete trailing whitespace on save."
+  (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
+
 ;; -----------------------------------------------------------------------------
 ;; Golang support
 ;; -----------------------------------------------------------------------------

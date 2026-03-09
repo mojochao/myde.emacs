@@ -1,9 +1,15 @@
-;;; post-init.el --- Loaded after init.el -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; post-init.el --- Loaded after init.el -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
 
 ;; Load customizations
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(when (file-exists-p custom-file)
-  (load-file custom-file))
+(let* ((path (expand-file-name "custom.el" user-emacs-directory))
+       (exists (file-exists-p path)))
+  (setq custom-file path)
+  (when exists
+    (load-file custom-file)))
 
 ;; Load myde.el functions
 (load-file (expand-file-name "myde.el" user-emacs-directory))
@@ -33,8 +39,8 @@
   (menu-bar-mode -1))
 
 ;; Swap option and command keys on macOS to match Linux keyboard layout.
-(unless (and (display-graphic-p) (string-equal system-type "darwin"))
-   (setq mac-command-modifier 'meta
+(when (and (display-graphic-p) (string-equal system-type "darwin"))
+  (setq mac-command-modifier 'meta
         mac-option-modifier 'super))
 
 ;; Blink cursor.
@@ -66,12 +72,14 @@
 (add-hook 'prog-mode-hook (lambda ()
                             (display-line-numbers-mode t)
                             (hl-line-mode t)))
+(add-hook 'prog-mode-hook #'myde/delete-trailing-whitespace-setup)
 
 ;; Store custom settings in separate file.
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
 
 ;; Store backups in separate directory.
+;; TODO: switch to let* form
 (setq backup-directory (expand-file-name "backup" user-emacs-directory)
       backup-directory-alist `(("." . ,backup-directory)))
 (make-directory backup-directory :parents)
@@ -100,6 +108,7 @@
   :ensure nil ; built-in packages are always installed
   :config
   ;; Use GNU version of ls on macOS.
+  ;; TODO: switch to let* form
   (setq dired-use-ls-dired t
         insert-directory-program "/usr/local/bin/gls"  ; where homebrew install places it on macOS
         dired-listing-switches "-aBhl --group-directories-first"))
@@ -150,6 +159,7 @@
                     (agenda . 5)))
   :config
   (dashboard-setup-startup-hook)
+;; TODO: switch to let* form
   (setq myde-banner-image-file (expand-file-name "myde-banner.png" user-emacs-directory))
   (setq myde-banner-text-file (expand-file-name "myde-banner.txt" user-emacs-directory))
   (setq dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
@@ -223,7 +233,7 @@
 ;; Sync theme with Gnome Desktop on Linux.
 ;; https://github.com/dimagid/gnome-dark-style
 (use-package gnome-dark-style
-  :if (string-equal system-type "gnu/linux")  
+  :if (string-equal system-type "gnu/linux")
   :ensure t
   :config
   ;; Set light and dark themes to use
@@ -364,7 +374,7 @@
   ;; Disable hl-line-mode in all terminal-like modes
   (setq global-hl-line-modes
         '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
-           
+
 ;; -----------------------------------------------------------------------------
 ;; Version control setup
 ;; -----------------------------------------------------------------------------
@@ -511,7 +521,7 @@
   :ensure t
   :mode (("\\.env\\'" . dotenv-mode)
          ("\\.envrc\\'" . dotenv-mode)))
-  
+
 ;; -----------------------------------------------------------------------------
 ;; Golang setup
 ;; -----------------------------------------------------------------------------
@@ -619,7 +629,8 @@
 ;; https://github.com/jrblevin/markdown-mode
 (use-package markdown-mode
   :ensure t
-  :hook (markdown-mode . display-line-numbers-mode)
+  :hook ((markdown-mode . display-line-numbers-mode)
+         (markdown-mode . myde/delete-trailing-whitespace-setup))
   :mode (("\\.md\\'" . gfm-mode)
          ("README\\.md\\'" . gfm-mode))
   :init
@@ -641,7 +652,7 @@
     (interactive)
     (when (executable-find "terraform")
       (call-process-region (point-min) (point-max) "terraform" t t nil "fmt" "-")))
-  
+
   (define-minor-mode terraform-format-on-save-mode
     "Auto-format Terraform buffer on save using terraform fmt."
     :lighter " fmt"
@@ -754,10 +765,10 @@
    ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
    ("M-a" . #'minuet-accept-suggestion-line)
    ("M-e" . #'minuet-dismiss-suggestion))
-  :init
-  ;; if you want to enable auto suggestion.
-  ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
-  (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
+  ;; :init
+  ;; ;; if you want to enable auto suggestion.
+  ;; ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
+  ;; (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
   :config
   ;; Use Codestral FIM completions via the Mistral API.
   ;; Minuet expects the *environment variable name* here, not the key value.
@@ -777,6 +788,9 @@
 ;; https://github.com/xenodium/agent-shell
 (use-package agent-shell
   :ensure t)
+
+;; Delete trailing whitespace for org-mode
+(add-hook 'org-mode-hook #'myde/delete-trailing-whitespace-setup)
 
 ;; ;; Configure opencode support
 ;; ;; https://github.com/colobas/opencode.el
