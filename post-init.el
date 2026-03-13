@@ -309,10 +309,11 @@
 
 (global-set-key [remap keyboard-quit] #'myde/keyboard-quit)
 
-;; https://github.com/magnars/expand-region.el
-(use-package expand-region
-  :bind
-  ("C-=" . er/expand-region))
+;; https://github.com/casouri/expreg
+(use-package expreg
+  :ensure t
+  :bind (("C-=" . expreg-expand)
+         ("C--" . expreg-contract)))
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
