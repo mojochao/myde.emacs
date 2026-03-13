@@ -1,6 +1,9 @@
 ;;; post-init.el --- Loaded after init.el -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
 
 ;;; Commentary:
+;;;
+;;; I like cleaner diffs so my `use-package` macro practice here is to place the
+;;; closing paren of the form on its own line.
 
 ;;; Code:
 
@@ -111,45 +114,52 @@
   ;; TODO: switch to let* form
   (setq dired-use-ls-dired t
         insert-directory-program "/usr/local/bin/gls"  ; where homebrew install places it on macOS
-        dired-listing-switches "-aBhl --group-directories-first"))
+        dired-listing-switches "-aBhl --group-directories-first")
+  )
 
 (use-package exec-path-from-shell
-  ;; Add shell PATH to exec-path.
   ;; https://github.com/purcell/exec-path-from-shell
+  ;; Add shell PATH to exec-path.
   :ensure t
   :config
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Elisp programming support packages
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/magnars/dash.el
-;; A modern list API for Emacs. No 'cl required.
 (use-package dash
-  :ensure t)
+  ;; https://github.com/magnars/dash.el
+  ;; A modern list API for Emacs. No 'cl required.
+  :ensure t
+  )
 
-;; https://github.com/magnars/s.el
-;; The long lost Emacs string manipulation library.
 (use-package s
-  :ensure t)
+  ;; https://github.com/magnars/s.el
+  ;; The long lost Emacs string manipulation library.
+  :ensure t
+  )
 
-;; https://elpa.gnu.org/packages/seq.html
-;; Sequence manipulation functions.
 (use-package seq
-  :ensure t)
+  ;; https://elpa.gnu.org/packages/seq.html
+  ;; Sequence manipulation functions.
+  :ensure t
+  )
 
-;; https://github.com/alphapapa/plz.el
-;; An HTTP library for Emacs.
 (use-package plz
-  :ensure t)
+  ;; https://github.com/alphapapa/plz.el
+  ;; An HTTP library for Emacs.
+  :ensure t
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Splash screen/Dashboard support
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/emacs-dashboard/emacs-dashboard
 (use-package dashboard
+  ;; https://github.com/emacs-dashboard/emacs-dashboard
+  ;; A pretty dashboard buffer.
   :ensure t
   :custom
   (dashboard-projects-backend 'projectile)
@@ -167,10 +177,11 @@
   (setq dashboard-display-icons-p t)
   (setq dashboard-icon-type 'nerd-icons)
   (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t))
+  (setq dashboard-set-file-icons t)
+  )
 
-;; Activate recentf to track recently opened files
 (use-package recentf
+  ;; Activate recentf to track recently opened files
   :ensure nil
   :commands (recentf-mode recentf-cleanup)
   :config
@@ -179,63 +190,71 @@
   (setq recentf-exclude
         '("^/tmp/" "^/ssh:" "/COMMIT_EDITMSG\\'"
           "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
-  (add-hook 'kill-emacs-hook #'recentf-cleanup -90))
+  (add-hook 'kill-emacs-hook #'recentf-cleanup -90)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; UI quality of life improvements
 ;; -----------------------------------------------------------------------------
 
-;; Give the UI space to breathe.
-;; https://github.com/protesilaos/spacious-padding
 (use-package spacious-padding
+  ;; https://github.com/protesilaos/spacious-padding
+  ;; Give the UI space to breathe.
   :ensure t
   :config
-  (spacious-padding-mode 1))
+  (spacious-padding-mode 1)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Icons support
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/domtronn/all-the-icons.el
 (use-package all-the-icons
-  :if (display-graphic-p))
+  ;; https://github.com/domtronn/all-the-icons.el
+  :ensure t
+  :if (display-graphic-p)
+  )
 
-;; https://github.com/rainstormstudio/nerd-icons.el
 (use-package nerd-icons
-  :ensure t)
+  ;; https://github.com/rainstormstudio/nerd-icons.el
+  :ensure t
   ;; :custom
   ;; The Nerd Font you want to use in GUI
   ;; "Symbols Nerd Font Mono" is the default and is recommended
   ;; but you can use any other Nerd Font if you want
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Fonts support
 ;; -----------------------------------------------------------------------------
 
-;; Preview fonts.
-;; https://github.com/protesilaos/show-font
 (use-package show-font
+  ;; https://github.com/protesilaos/show-font
+  ;; Preview fonts.
   :ensure t
   :bind
   (("C-c s f" . show-font-select-preview)
-   ("C-c s t" . show-font-tabulated)))
+   ("C-c s t" . show-font-tabulated))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Themes support
 ;; -----------------------------------------------------------------------------
 
-;; Preview and manage themes.
-;; https://github.com/ayys/easy-theme-preview.el
 (use-package easy-theme-preview
-  :ensure t)
+  ;; https://github.com/ayys/easy-theme-preview.el
+  ;; Preview and manage themes.
+  :ensure t
+  )
 
-;; https://github.com/purcell/color-theme-sanityinc-tomorrow
 (use-package color-theme-sanityinc-tomorrow
-  :ensure t)
+  ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
+  :ensure t
+  )
 
-;; https://github.com/doomemacs/themes
 (use-package doom-themes
+  ;; https://github.com/doomemacs/themes
   :ensure t
   :custom
   ;; Global settings (defaults)
@@ -251,19 +270,22 @@
   ;; or for treemacs users
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+  (doom-themes-org-config)
+  )
 
-;; https://github.com/protesilaos/ef-themes
 (use-package ef-themes
-  :ensure t)
+  ;; https://github.com/protesilaos/ef-themes
+  :ensure t
+  )
 
-;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
 (use-package jetbrains-darcula-theme
-  :ensure t)
+  ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
+  :ensure t
+  )
 
-;; Sync theme with Gnome Desktop on Linux.
-;; https://github.com/dimagid/gnome-dark-style
 (use-package gnome-dark-style
+  ;; https://github.com/dimagid/gnome-dark-style
+  ;; Sync theme with Gnome Desktop on Linux.
   :ensure t
   :if (string-equal system-type "gnu/linux")
   :after doom-themes
@@ -271,34 +293,39 @@
   (gnome-light-theme 'doom-tomorrow-day)
   (gnome-dark-theme 'doom-spacegrey)
   :config
-  (setopt gnome-dark-style-sync t))
+  (setopt gnome-dark-style-sync t)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Projects support
 ;; -----------------------------------------------------------------------------
 
 (use-package projectile
+  ;; https://github.com/bbatsov/projectile
+  ;; A featureful project interaction library.
   :ensure t
   :config
   (projectile-mode +1)
   (setq projectile-project-search-path '("~/Projects/"))
   :bind (:map projectile-mode-map
               ("s-p" . projectile-command-map)
-              ("C-c p" . projectile-command-map)))
+              ("C-c p" . projectile-command-map))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Project tree explorer support
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/jaypei/emacs-neotree
 (use-package neotree
+  ;; https://github.com/jaypei/emacs-neotree
   :ensure t
+  :bind
+  ([f8] . myde/neotree-project-root-toggle)
   :commands (neotree-toggle)
   :config
   (setq neo-window-width 40)
   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
-  :bind
-  ([f8] . myde/neotree-project-root-toggle))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Miscellaneous quality-of-life improvements
@@ -306,14 +333,15 @@
 
 (global-set-key [remap keyboard-quit] #'myde/keyboard-quit)
 
-;; https://github.com/casouri/expreg
 (use-package expreg
+  ;; https://github.com/casouri/expreg
   :ensure t
   :bind (("C-=" . expreg-expand)
-         ("C--" . expreg-contract)))
+         ("C--" . expreg-contract))
+  )
 
-;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
+  ;; https://github.com/magnars/multiple-cursors.el
   :ensure t
   :bind (("C-S-c C-S-c" . mc/edit-lines)        ;; edit multiple lines
          ("C->"         . mc/mark-next-like-this)   ;; add next match
@@ -322,23 +350,25 @@
   :config
   ;; Sensible defaults
   (setq mc/list-file (locate-user-emacs-file "mc-lists.el"))
-
   ;; Make cursor movement more predictable
-  (setq mc/always-run-for-all t))
+  (setq mc/always-run-for-all t)
+  )
 
-;; https://github.com/purcell/whole-line-or-region
 (use-package whole-line-or-region
+  ;; https://github.com/purcell/whole-line-or-region
   :ensure t
   :config
-  (whole-line-or-region-global-mode))
+  (whole-line-or-region-global-mode)
+  )
 
-;; https://www.jamescherti.com/pathaction-el-emacs-package-universal-makefile/
 (use-package pathaction
+  ;; https://www.jamescherti.com/pathaction-el-emacs-package-universal-makefile/
   :ensure t
   :config
   (add-to-list 'display-buffer-alist '("\\*pathaction:"
                                        (display-buffer-at-bottom)
-                                       (window-height . 0.33))))
+                                       (window-height . 0.33)))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Discoverability setup
@@ -348,9 +378,9 @@
   :ensure nil ; part of emacs since v29
   :init
   (diminish 'which-key-mode)
-  (which-key-mode))
+  (which-key-mode)
+  )
 
-;; https://github.com/Wilfred/helpful
 (use-package helpful
   ;; Provide better help buffers.
   ;; https://github.com/Wilfred/helpful
@@ -360,18 +390,20 @@
    ("C-h f" . helpful-callable)
    ("C-h F" . helpful-function)
    ("C-h k" . helpful-key)
-   ("C-h v" . helpful-variable)))
+   ("C-h v" . helpful-variable))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Terminals setup
 ;; -----------------------------------------------------------------------------
 
-;; https://codeberg.org/akib/emacs-eat
 (use-package eat
-  :ensure t)
+  ;; https://codeberg.org/akib/emacs-eat
+  :ensure t
+  )
 
-;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
+  ;; https://github.com/akermu/emacs-libvterm
   ;; Use vterm for a fast, richer terminal emulator.
   :ensure t
   :commands
@@ -379,44 +411,50 @@
   :config
   ;; Disable hl-line-mode in all terminal-like modes
   (setq global-hl-line-modes
-        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode)))
+        '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Version control setup
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/magit/magit
 (use-package magit
+  ;; https://github.com/magit/magit
   :ensure t
-  :commands (magit-status))
+  :commands (magit-status)
+  )
 
-;; https://github.com/magit/forge
 (use-package forge
+  ;; https://github.com/magit/forge
   :ensure t
-  :after magit)
+  :after magit
+  )
 
-;; https://github.com/ArthurHeymans/gptel-forge-prs
 (use-package gptel-forge-prs
+  ;; https://github.com/ArthurHeymans/gptel-forge-prs
   :ensure t
   :after forge
   :config
-  (gptel-forge-prs-install))
+  (gptel-forge-prs-install)
+  )
 
-;; https://github.com/ragnard/gptel-magit
 (use-package gptel-magit
+  ;; https://github.com/ragnard/gptel-magit
   :ensure t
   :after magit
-  :hook (magit-mode . gptel-magit-install))
+  :hook (magit-mode . gptel-magit-install)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Direnv integration
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/wbolster/emacs-direnv
 (use-package direnv
+  ;; https://github.com/wbolster/emacs-direnv
   :ensure t
   :config
-  (direnv-mode))
+  (direnv-mode)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; In-buffer completion (Corfu)
@@ -429,7 +467,8 @@
   (corfu-auto t)
   (corfu-cycle t)
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Minibuffer completion stack
@@ -439,7 +478,8 @@
 (use-package vertico
   :ensure t
   :init
-  (vertico-mode))
+  (vertico-mode)
+  )
 
 ;; https://github.com/oantolin/orderless
 (use-package orderless
@@ -447,20 +487,23 @@
   :custom
   (completion-styles '(orderless basic))
   (completion-pcm-leading-wildcard t)
-  (completion-category-overrides '((file (styles . (partial-completion))))))
+  (completion-category-overrides '((file (styles . (partial-completion)))))
+  )
 
 ;; https://github.com/minad/marginalia
 (use-package marginalia
   :ensure t
   :init
-  (marginalia-mode))
+  (marginalia-mode)
+  )
 
 ;; https://github.com/minad/consult
 (use-package consult
   :ensure t
   :bind (("C-s" . consult-line)
          ("C-x b" . consult-buffer)
-         ("M-y" . consult-yank-pop)))
+         ("M-y" . consult-yank-pop))
+  )
 
 ;; https://github.com/oantolin/embark
 (use-package embark
@@ -468,12 +511,14 @@
   :bind (("C-." . embark-act)
          ("C-h B" . embark-bindings))
   :init
-  (setq prefix-help-command #'embark-prefix-help-command))
+  (setq prefix-help-command #'embark-prefix-help-command)
+  )
 
 (use-package embark-consult
   :ensure t ; only need to install it, embark loads it after consult if found
   :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+  (embark-collect-mode . consult-preview-at-point-mode)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; treesit-auto for Tree-sitter setup
@@ -486,14 +531,16 @@
   (add-to-list 'treesit-language-source-alist
                '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl")
                '(elixir "https://github.com/elixir-lang/tree-sitter-elixir")
-               '(heex "https://github.com/phoenixframework/tree-sitter-heex")))
+               '(heex "https://github.com/phoenixframework/tree-sitter-heex"))
+  )
 
 ;; https://github.com/renzmann/treesit-auto
 (use-package treesit-auto
   :ensure t
   :config
   (setq treesit-auto-install t) ; install grammars automatically, if missing
-  (global-treesit-auto-mode))
+  (global-treesit-auto-mode)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Org mode setup
@@ -514,16 +561,8 @@
   (add-to-list 'eglot-server-programs
                '(elixir-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh"))
   (add-to-list 'eglot-server-programs
-               '(heex-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh")))
-
-;; -----------------------------------------------------------------------------
-;; Combobulate setup (tree-sitter based navigation/manipulation)
-;; -----------------------------------------------------------------------------
-
-;; (use-package combobulate
-;;   :ensure t
-;;   :vc (:url "https://github.com/mickeynp/combobulate" :rev :newest)
-;;   :after eglot)
+               '(heex-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh"))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Environment files
@@ -532,7 +571,8 @@
 (use-package dotenv-mode
   :ensure t
   :mode (("\\.env\\'" . dotenv-mode)
-         ("\\.envrc\\'" . dotenv-mode)))
+         ("\\.envrc\\'" . dotenv-mode))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Golang setup
@@ -546,7 +586,8 @@
          (go-mode . eglot-ensure)
          (go-mode . myde/goimports-setup))
   :config
-  (setq gofmt-command "goimports"))
+  (setq gofmt-command "goimports")
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Flycheck (on-the-fly syntax checking)
@@ -557,7 +598,8 @@
   :init
   (global-flycheck-mode)
   :config
-  (setq flycheck-check-syntax-automatically '(save mode-enabled)))
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Elixir + Phoenix setup
@@ -578,7 +620,8 @@
     (dolist (lang '(elixir heex))
       (unless (treesit-ready-p lang t)
         (message "Installing %s tree-sitter grammar..." lang)
-        (treesit-install-language-grammar lang)))))
+        (treesit-install-language-grammar lang))))
+  )
 
 ;; HEEx mode (Phoenix LiveView templates)
 (use-package heex-ts-mode
@@ -586,7 +629,8 @@
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
   :hook ((heex-ts-mode . eglot-ensure)
-         (heex-ts-mode . myde/delete-trailing-whitespace-setup)))
+         (heex-ts-mode . myde/delete-trailing-whitespace-setup))
+  )
 
 ;; Elixir test runner
 (use-package exunit
@@ -596,7 +640,8 @@
   :bind (:map exunit-mode-map
               ("C-c t a" . exunit-verify-all)
               ("C-c t s" . exunit-verify-single)
-              ("C-c t t" . exunit-toggle-file-and-test)))
+              ("C-c t t" . exunit-toggle-file-and-test))
+  )
 
 ;; IEx REPL integration
 (use-package inf-elixir
@@ -607,7 +652,8 @@
               ("C-c i p" . inf-elixir-project)
               ("C-c i l" . inf-elixir-send-line)
               ("C-c i r" . inf-elixir-send-region)
-              ("C-c i b" . inf-elixir-send-buffer)))
+              ("C-c i b" . inf-elixir-send-buffer))
+  )
 
 ;; Credo linting via Flycheck
 (use-package flycheck-credo
@@ -615,14 +661,16 @@
   :after flycheck
   :config
   (flycheck-credo-setup)
-  (setq flycheck-elixir-credo-strict t))
+  (setq flycheck-elixir-credo-strict t)
+  )
 
 ;; Dialyxir (Dialyzer) via Flycheck
 (use-package flycheck-dialyxir
   :ensure t
   :after flycheck
   :config
-  (flycheck-dialyxir-setup))
+  (flycheck-dialyxir-setup)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; DAP debugger support
@@ -634,7 +682,8 @@
   :config
   (dap-auto-configure-mode)
   ;; ElixirLS DAP support
-  (require 'dap-elixir))
+  (require 'dap-elixir)
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Markdown editing setup
@@ -649,7 +698,8 @@
          ("README\\.md\\'" . gfm-mode))
   :init
   (setq markdown-command "multimarkdown")
-  :bind (:map markdown-mode-map ("C-c C-e" . markdown-do)))
+  :bind (:map markdown-mode-map ("C-c C-e" . markdown-do))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Terraform support
@@ -672,7 +722,8 @@
     :lighter " fmt"
     (if terraform-format-on-save-mode
         (add-hook 'before-save-hook #'terraform-format-buffer nil t)
-      (remove-hook 'before-save-hook #'terraform-format-buffer t))))
+      (remove-hook 'before-save-hook #'terraform-format-buffer t)))
+  )
 
 ;; Tree-sitter remap: only after HCL grammar is installed
 (when (and (fboundp 'treesit-available-p)
@@ -689,11 +740,8 @@
 (use-package yaml-mode
   :ensure t
   :mode (("\\.yaml\\'" . yaml-mode)
-         ("\\.yml\\'" . yaml-mode)))
-
-;; -----------------------------------------------------------------------------
-;; AI Agent/LLM tooling setup
-;; -----------------------------------------------------------------------------
+         ("\\.yml\\'" . yaml-mode))
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; Claude code integration
@@ -703,21 +751,11 @@
   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
   :bind ("C-c c" . claude-code-ide-menu) ; Set your favorite keybinding
   :config
-  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
-
-;; ;; ;; -------------------------------
-;; ;; ;; ChatGPT integration
-;; ;; ;; -------------------------------
-;; ;; (use-package chatgpt-shell
-;; ;;   :ensure t
-;; ;;   :custom
-;; ;;   ((chatgpt-shell-openai-key
-;; ;;     (lambda ()
-;; ;;       (auth-source-pass-get 'secret "openai-key")))))
+  (claude-code-ide-emacs-tools-setup) ; Optionally enable Emacs MCP tools
+  )
 
 ;; gptel LLM client
 ;; https://github.com/karthink/gptel
-
 (use-package gptel
   :ensure t
   :config
@@ -758,7 +796,8 @@
               z-ai/glm-4.7-flash
               z-ai/glm-5))
   (setq gptel-model 'moonshotai/kimi-k2.5
-        gptel-backend (gptel-get-backend "OpenRouter")))
+        gptel-backend (gptel-get-backend "OpenRouter"))
+  )
 
 ;; Configure AI-assisted completions.
 ;; https://github.com/milanglacier/minuet-ai.el
