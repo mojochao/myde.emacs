@@ -817,3 +817,6 @@
 ;;   :config
 ;;   ; or opencode-setup, opencode-setup-minimal
 ;;   (opencode-setup-coding))
+
+(provide 'post-init)
+;;; post-init.el ends here
