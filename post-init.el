@@ -230,18 +230,6 @@
 (use-package easy-theme-preview
   :ensure t)
 
-;; Sync theme with Gnome Desktop on Linux.
-;; https://github.com/dimagid/gnome-dark-style
-(use-package gnome-dark-style
-  :if (string-equal system-type "gnu/linux")
-  :ensure t
-  :config
-  ;; Set light and dark themes to use
-  (setq gnome-light-theme 'doom-tomorrow-day)
-  (setq gnome-dark-theme 'doom-spacegrey)
-  ;; Enable sync with Gnome Desktop theme
-  (setq gnome-dark-style-sync t))
-
 ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
 (use-package color-theme-sanityinc-tomorrow
   :ensure t)
@@ -273,8 +261,17 @@
 (use-package jetbrains-darcula-theme
   :ensure t)
 
-;; Load initial theme
-(load-theme 'doom-spacegrey)
+;; Sync theme with Gnome Desktop on Linux.
+;; https://github.com/dimagid/gnome-dark-style
+(use-package gnome-dark-style
+  :ensure t
+  :if (string-equal system-type "gnu/linux")
+  :after doom-themes
+  :custom
+  (gnome-light-theme 'doom-tomorrow-day)
+  (gnome-dark-theme 'doom-spacegrey)
+  :config
+  (setopt gnome-dark-style-sync t))
 
 ;; -----------------------------------------------------------------------------
 ;; Projects support
