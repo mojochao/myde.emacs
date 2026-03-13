@@ -791,29 +791,38 @@
   (plist-put minuet-codestral-options :end-point "https://api.mistral.ai/v1/fim/completions")
   (plist-put minuet-codestral-options :model "codestral-latest")
   (minuet-set-optional-options minuet-codestral-options :max_tokens 128)
-  (minuet-set-optional-options minuet-codestral-options :stop ["\n\n"]))
+  (minuet-set-optional-options minuet-codestral-options :stop ["\n\n"])
+  )
 
 ;; Configure ACP support
 ;; https://github.com/xenodium/acp.el
 (use-package acp
-  :ensure t)
+  :ensure t
+  )
 
 ;; Configure Agent Shell support
 ;; https://github.com/xenodium/agent-shell
 (use-package agent-shell
-  :ensure t)
+  :ensure t
+  )
 
 ;; Delete trailing whitespace for org-mode
 (add-hook 'org-mode-hook #'myde/delete-trailing-whitespace-setup)
 
-;; ;; Configure opencode support
-;; ;; https://github.com/colobas/opencode.el
-;; (use-package opencode
-;;   :vc (:url "https://github.com/colobas/opencode.el" :rev :newest :branch "main")
-;;   :after gptel
-;;   :config
-;;   ; or opencode-setup, opencode-setup-minimal
-;;   (opencode-setup-coding))
+;; -----------------------------------------------------------------------------
+;; Ebook reading support
+;; -----------------------------------------------------------------------------
+
+(use-package nov
+  ;; https://depp.brause.cc/nov.el
+  ;; Epub reader
+  :ensure t
+  :mode ("\\.epub\\'" . nov-mode)
+  )
+
+;; -----------------------------------------------------------------------------
+;; That's all folks!!!
+;; -----------------------------------------------------------------------------
 
 (provide 'post-init)
 ;;; post-init.el ends here
