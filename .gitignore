@@ -1,11 +1,13 @@
 .agent-shell/
 agent/
+.cask/
 .claude/
 .dap-breakpoints
 eln-cache/
 elpa/
 recentf*
 minimal-emacs.d/
+nov-places
 transient/
 tree-sitter/
 custom.el
