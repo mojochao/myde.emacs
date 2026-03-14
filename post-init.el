@@ -129,6 +129,12 @@
 ;; Elisp programming support packages
 ;; -----------------------------------------------------------------------------
 
+(use-package cask-mode
+  ;; https://github.com/Wilfred/cask-mode
+  ;; Major mode for editing cask files
+  :ensure t
+  )
+
 (use-package dash
   ;; https://github.com/magnars/dash.el
   ;; A modern list API for Emacs. No 'cl required.
