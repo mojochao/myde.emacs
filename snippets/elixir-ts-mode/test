@@ -1,0 +1,7 @@
+defmodule ${1:ModuleName}Test do
+  use ExUnit.Case, async: true
+
+  test "${2:description}" do
+    $0
+  end
+end

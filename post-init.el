@@ -608,6 +608,28 @@
   )
 
 ;; -----------------------------------------------------------------------------
+;; Snippets setup
+;; -----------------------------------------------------------------------------
+
+(use-package yasnippet
+  ;; https://github.com/joaotavora/yasnippet
+  ;; A snippet template system.
+  :ensure t
+  :diminish yas-minor-mode
+  :config
+  (setq yas-snippet-dirs (cons (expand-file-name "snippets" user-emacs-directory)
+                               yas-snippet-dirs))
+  (yas-global-mode 1)
+  (setq yas-trigger-key "TAB")
+  )
+
+(use-package yasnippet-classic-snippets
+  ;; https://elpa.gnu.org/packages/yasnippet-classic-snippets.html
+  ;; Snippets that were previously shipped with the GNU ELPA yasnippet package.
+  :ensure t
+  )
+
+;; -----------------------------------------------------------------------------
 ;; Elixir + Phoenix setup
 ;; -----------------------------------------------------------------------------
 
@@ -619,7 +641,8 @@
   :hook ((elixir-ts-mode . eglot-ensure)
          (elixir-ts-mode . myde/elixir-ts-ensure-grammars)
          (elixir-ts-mode . flycheck-mode)
-         (elixir-ts-mode . myde/delete-trailing-whitespace-setup))
+         (elixir-ts-mode . myde/delete-trailing-whitespace-setup)
+         (elixir-ts-mode . yas-minor-mode))
   :config
   (defun myde/elixir-ts-ensure-grammars ()
     "Ensure Elixir and HEEx tree-sitter grammars are installed."
@@ -635,7 +658,8 @@
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
   :hook ((heex-ts-mode . eglot-ensure)
-         (heex-ts-mode . myde/delete-trailing-whitespace-setup))
+         (heex-ts-mode . myde/delete-trailing-whitespace-setup)
+         (heex-ts-mode . yas-minor-mode))
   )
 
 ;; Elixir test runner

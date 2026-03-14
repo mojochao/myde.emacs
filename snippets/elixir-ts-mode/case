@@ -1,0 +1,3 @@
+case ${1:expression} do
+  ${2:pattern} -> $0
+end

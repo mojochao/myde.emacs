@@ -1,0 +1,3 @@
+defmacro ${1:macro_name}(${2:args}) do
+  $0
+end

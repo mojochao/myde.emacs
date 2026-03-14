@@ -1,0 +1,3 @@
+receive do
+  ${1:message} -> $0
+end
