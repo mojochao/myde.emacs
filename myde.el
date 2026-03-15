@@ -1,5 +1,11 @@
 ;;; myde.el --- Loaded early in post-init.el -*- no-byte-compile: t; lexical-binding: t; -*-
 
+;;; Commentary:
+;;;
+;;; Library code used by user config in post-init.el file.
+
+;;; Code:
+
 ;; Enable config for emacs in general.
 (defun myde/after-init-hook-function ()
   ;; Hide warnings and display only errors
@@ -13,7 +19,7 @@
   (delete-selection-mode 1)
   ;; Update buffer to reflect changes made to file on disk
   (global-auto-revert-mode)
-  ;; Highlight current line everywhere 
+  ;; Highlight current line everywhere
   (global-hl-line-mode)
   ;; Enable clickable/selectable links for URLs in buffers
   (goto-address-mode 1)
@@ -35,7 +41,7 @@
   ;; Improve display of search candidates.
   (setq isearch-lazy-count t
         lazy-count-prefix-format nil
-        lazy-count-suffix-format "   (%s/%s)")    
+        lazy-count-suffix-format "   (%s/%s)")
   ;; Configure terminal text encoding
   (set-terminal-coding-system 'utf-8-unix)
   ;; Enable draggable window divider sliders
@@ -137,3 +143,10 @@ minibuffer, even without explicitly focusing it."
                   (upcase)
                   (concat "_API_KEY"))))))
 
+
+;; -----------------------------------------------------------------------------
+;; That's all folks!!!
+;; -----------------------------------------------------------------------------
+
+(provide 'myde)
+;;; myde.el ends here
