@@ -329,8 +329,14 @@
   ([f8] . myde/neotree-project-root-toggle)
   :commands (neotree-toggle)
   :config
-  (setq neo-window-width 40)
   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+  (setq neo-window-fixed-size nil)
+  ;; remember mouse-dragged width
+  (add-to-list 'window-size-change-functions
+               (lambda (frame)
+                 (let ((neo-window (neo-global--get-window)))
+                   (unless (null neo-window)
+                     (setq neo-window-width (window-width neo-window))))))
   )
 
 ;; -----------------------------------------------------------------------------
