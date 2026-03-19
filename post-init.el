@@ -554,9 +554,119 @@
   (global-treesit-auto-mode)
   )
 
+;; =============================================================================
+;; External brain support.
+;; =============================================================================
+
 ;; -----------------------------------------------------------------------------
-;; Org mode setup
+;; I use org to manage my thoughts and actions.
 ;; -----------------------------------------------------------------------------
+
+(defvar myde/org-directory "~/org/")
+
+(use-package org
+  ;; https://orgmode.org
+  ;; My life in plain text.
+  :ensure nil ;; built-in package
+  :hook
+  (org-mode . visual-line-mode)
+  :custom
+  (org-directory myde/org-directory)
+  (org-return-follows-link t)
+  ;; end of org package config
+  )
+
+;; -----------------------------------------------------------------------------
+;; I capture general thoughts with denote.
+;; -----------------------------------------------------------------------------
+
+(defvar myde/denote-directory "~/org/notes/")
+
+(use-package denote
+  ;; https://protesilaos.com/emacs/denote
+  ;; Simple notes with an efficient file-naming scheme.
+  :ensure t
+  :bind
+  (("C-c d n" . denote)
+   ("C-c d l" . denote-link)
+   ("C-c d b" . denote-backlinks)
+   ("C-c d f" . denote-open-or-create)
+   ("C-c d s" . denote-search))
+  :custom
+  (denote-directory myde/denote-directory)
+  (denote-infer-keywords t)
+  (denote-sort-keywords t)
+  (denote-known-keywords
+   '("paper"
+     "book"
+     "research"
+     "distributed-systems"
+     "kubernetes"
+     "consensus"
+     "raft"))
+  ;; end of denote package config
+  )
+
+;; -----------------------------------------------------------------------------
+;; Reading and research support.
+;;
+;; Ebook formats supported include PDF and ePub files.
+;; Reading notes and highlighting are captured as org files.
+;; -----------------------------------------------------------------------------
+
+(defvar myde/reading-notes "~/org/reading/")
+(defvar myde/highlight-file "~/org/highlights.org")
+
+(defun myde/reading-setup ()
+  "Improve readability for long-form documents."
+  (visual-line-mode 1)
+  (setq-local line-spacing 0.15))
+
+(defun myde/reading-keybindings ()
+  "Unified navigation keys across readers."
+  (local-set-key (kbd "i") #'org-noter)
+  (local-set-key (kbd "n") #'org-noter-insert-note)
+  (local-set-key (kbd "h") #'org-remark-mark)
+  (local-set-key (kbd "j") #'org-noter-sync-next-note)
+  (local-set-key (kbd "k") #'org-noter-sync-prev-note))
+
+(use-package pdf-tools
+  ;; https://github.com/vedang/pdf-tools
+  ;; PDF reader
+  :ensure t
+  :mode ("\\.pdf\\'" . pdf-view-mode)
+  :init
+  ;; Better defaults for large technical PDFs
+  (setq pdf-view-display-size 'fit-width
+        pdf-view-resize-factor 1.1)
+  :config
+  ;; Compile/install epdfinfo server automatically
+  (pdf-tools-install)
+  ;; Improve rendering responsiveness
+  (setq pdf-view-use-scaling t
+        pdf-view-use-imagemagick nil)
+  ;; Keybindings for navigation and annotation
+  (define-key pdf-view-mode-map (kbd "C-s") #'isearch-forward)
+  (define-key pdf-view-mode-map (kbd "h") #'pdf-annot-add-highlight-markup-annotation)
+  (define-key pdf-view-mode-map (kbd "t") #'pdf-annot-add-text-annotation)
+
+  ;; Continuous scrolling
+  (setq pdf-view-continuous t)
+  ;; end of pdf-tools package config
+  )
+
+(use-package nov
+  ;; https://depp.brause.cc/nov.el
+  ;; Epub reader
+  :ensure t
+  :mode ("\\.epub\\'" . nov-mode)
+  :hook
+  ((nov-mode . visual-line-mode)
+   (nov-mode . variable-pitch-mode))
+  :init
+  (setq nov-text-width 80)
+  ;; end of nov package config
+  )
 
 ;; -----------------------------------------------------------------------------
 ;; LSP support
@@ -570,10 +680,12 @@
          (heex-ts-mode . eglot-ensure))
   :config
   ;; Configure ElixirLS for Elixir and HEEx modes
+  ;; TODO move these to the config of their respective packages
   (add-to-list 'eglot-server-programs
                '(elixir-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh"))
   (add-to-list 'eglot-server-programs
                '(heex-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh"))
+  ;; end of eglot package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -584,14 +696,15 @@
   :ensure t
   :mode (("\\.env\\'" . dotenv-mode)
          ("\\.envrc\\'" . dotenv-mode))
+  ;; end of dotenv-mode package config
   )
 
 ;; -----------------------------------------------------------------------------
 ;; Golang setup
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/dominikh/go-mode.el
 (use-package go-mode
+  ;; https://github.com/dominikh/go-mode.el
   :ensure t
   :mode (("\\.go\\'" . myde/go-ts-or-plain-mode))
   :hook ((go-ts-mode . eglot-ensure)
@@ -599,6 +712,7 @@
          (go-mode . myde/goimports-setup))
   :config
   (setq gofmt-command "goimports")
+  ;; end of go-mode package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -606,11 +720,14 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package flycheck
+  ;; https://github.com/flycheck/flycheck
+  ;; https://www.flycheck.org/
   :ensure t
   :init
   (global-flycheck-mode)
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  ;; end of flycheck package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -627,12 +744,14 @@
                                yas-snippet-dirs))
   (yas-global-mode 1)
   (setq yas-trigger-key "TAB")
+  ;; end of yasnippet package config
   )
 
 (use-package yasnippet-classic-snippets
   ;; https://elpa.gnu.org/packages/yasnippet-classic-snippets.html
   ;; Snippets that were previously shipped with the GNU ELPA yasnippet package.
   :ensure t
+  ;; end of yasnippet-classic-snippets package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -640,6 +759,8 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package elixir-ts-mode
+  ; Major mode using Treesitter for fontification, navigation and indentation of
+  ; Elixir files.
   :ensure nil ; built-in (Emacs 30.1+)
   :mode (("\\.ex\\'" . elixir-ts-mode)
          ("\\.exs\\'" . elixir-ts-mode)
@@ -656,31 +777,41 @@
       (unless (treesit-ready-p lang t)
         (message "Installing %s tree-sitter grammar..." lang)
         (treesit-install-language-grammar lang))))
+  ;; end of elixir-ts-mode package config
   )
 
-;; HEEx mode (Phoenix LiveView templates)
 (use-package heex-ts-mode
+  ;; https://github.com/wkirschbaum/heex-ts-mode
+  ;; Major mode using Treesitter for fontification, navigation and indentation
+  ;; of heex files used by Phoenix and LiveView templates.
   :ensure t
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
   :hook ((heex-ts-mode . eglot-ensure)
          (heex-ts-mode . myde/delete-trailing-whitespace-setup)
          (heex-ts-mode . yas-minor-mode))
+  ;; end of heex-ts-mode package config
   )
 
 ;; Elixir test runner
 (use-package exunit
+  ;; https://github.com/ananthakumaran/exunit.el
+  ;; Emacs ExUnit test runner.
   :ensure t
   :after elixir-ts-mode
   :hook (elixir-ts-mode . exunit-mode)
-  :bind (:map exunit-mode-map
+  :bind
+  (:map exunit-mode-map
               ("C-c t a" . exunit-verify-all)
               ("C-c t s" . exunit-verify-single)
               ("C-c t t" . exunit-toggle-file-and-test))
+  ;; end of exunit package config
   )
 
 ;; IEx REPL integration
 (use-package inf-elixir
+  ;; https://github.com/J3RN/inf-elixir
+  ;; Emacs plugin for interacting with elixir `ielm` REPLs
   :ensure t
   :after elixir-ts-mode
   :bind (:map elixir-ts-mode-map
@@ -689,23 +820,28 @@
               ("C-c i l" . inf-elixir-send-line)
               ("C-c i r" . inf-elixir-send-region)
               ("C-c i b" . inf-elixir-send-buffer))
+  ;; end of exunit package config
   )
 
-;; Credo linting via Flycheck
 (use-package flycheck-credo
+  ;; https://github.com/aaronjensen/flycheck-credo
+  ;; Credo linting via Flycheck.
   :ensure t
   :after flycheck
   :config
   (flycheck-credo-setup)
   (setq flycheck-elixir-credo-strict t)
+  ;; end of flycheck-credo package config
   )
 
-;; Dialyxir (Dialyzer) via Flycheck
 (use-package flycheck-dialyxir
+  ;; https://github.com/aaronjensen/flycheck-dialyxir
+  ;; Dialyzer analysis via Flycheck.
   :ensure t
   :after flycheck
   :config
   (flycheck-dialyxir-setup)
+  ;; end of flycheck-dialyzer package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -713,36 +849,41 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dap-mode
+  ;; https://github.com/emacs-lsp/dap-mode
+  ;; Emacs Debug Adapter Protocol (DAP) support
   :ensure t
   :after eglot
   :config
   (dap-auto-configure-mode)
   ;; ElixirLS DAP support
   (require 'dap-elixir)
+  ;; end of dap-mode package config
   )
 
 ;; -----------------------------------------------------------------------------
 ;; Markdown editing setup
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/jrblevin/markdown-mode
 (use-package markdown-mode
+  ;; https://github.com/jrblevin/markdown-mode
+  ;; Major mode for editing markdown files.
   :ensure t
-  :hook ((markdown-mode . display-line-numbers-mode)
-         (markdown-mode . myde/delete-trailing-whitespace-setup))
   :mode (("\\.md\\'" . gfm-mode)
          ("README\\.md\\'" . gfm-mode))
+  :hook ((markdown-mode . display-line-numbers-mode)
+         (markdown-mode . myde/delete-trailing-whitespace-setup))
+  :bind (:map markdown-mode-map ("C-c C-e" . markdown-do))
   :init
   (setq markdown-command "multimarkdown")
-  :bind (:map markdown-mode-map ("C-c C-e" . markdown-do))
+  ;; end of markdown-mode package config
   )
 
 ;; -----------------------------------------------------------------------------
 ;; Terraform support
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/hcl-emacs/terraform-mode
 (use-package terraform-mode
+  ;; https://github.com/hcl-emacs/terraform-mode
   :ensure t
   :mode ("\\.tf\\'" "\\.tfvars\\'")
   :hook ((terraform-mode . terraform-format-on-save-mode))
@@ -759,6 +900,7 @@
     (if terraform-format-on-save-mode
         (add-hook 'before-save-hook #'terraform-format-buffer nil t)
       (remove-hook 'before-save-hook #'terraform-format-buffer t)))
+  ;; end of terraform-mode package config
   )
 
 ;; Tree-sitter remap: only after HCL grammar is installed
@@ -772,27 +914,69 @@
 ;; YAML editing setup
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/yoshiki/yaml-mode
 (use-package yaml-mode
+  ;; https://github.com/yoshiki/yaml-mode
+  ;; Major mode for editing yaml documents.
   :ensure t
   :mode (("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode))
+  ;; end of yaml-mode package config
   )
+
+;; =============================================================================
+;; AI LLM and Agent support.
+;; =============================================================================
 
 ;; -----------------------------------------------------------------------------
 ;; Claude code integration
 ;; -----------------------------------------------------------------------------
 
 (use-package claude-code-ide
+  ;; https://github.com/manzaltu/claude-code-ide.el
+  ;; Claude Code IDE integration for Emacs.
   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
   :bind ("C-c c" . claude-code-ide-menu) ; Set your favorite keybinding
   :config
   (claude-code-ide-emacs-tools-setup) ; Optionally enable Emacs MCP tools
+  ;; end of claude-code-ide package config
   )
 
-;; gptel LLM client
-;; https://github.com/karthink/gptel
+(defvar myde/openrouter-models
+  '(anthropic/claude-haiku-4.5
+    anthropic/claude-opus-4.5
+    anthropic/claude-opus-4.6
+    anthropic/claude-sonnet-4.5
+    anthropic/claude-sonnet-4.6
+    deepseek/deepseek-v3.2
+    google/gemini-2.5-flash
+    google/gemini-2.5-flash-lite
+    google/gemini-3-flash-preview
+    google/gemini-3-pro-image-preview
+    google/gemini-3-pro-preview
+    minimax/minimax-m2.1
+    minimax/minimax-m2.5
+    mistralai/codestral-embed-2505
+    mistralai/devstral-2512
+    mistralai/ministral-14b-2512
+    mistralai/mistral-large-2512
+    moonshotai/kimi-k2
+    moonshotai/kimi-k2-thinking
+    moonshotai/kimi-k2.5
+    openai/gpt-5.2
+    openai/gpt-5.2-codex
+    openai/gpt-5.2-pro
+    openrouter/free
+    qwen/qwen3-coder-next
+    qwen/qwen3-max-thinking
+    x-ai/grok-4.1-fast
+    x-ai/grok-code-fast-1
+    z-ai/glm-4.7
+    z-ai/glm-4.7-flash
+    z-ai/glm-5))
+
 (use-package gptel
+  ;; https://github.com/karthink/gptel
+  ;; A simple, extensible LLM client for Emacs
   :ensure t
   :config
   (gptel-make-openai "OpenRouter"
@@ -800,45 +984,15 @@
     :endpoint "/api/v1/chat/completions"
     :stream t
     :key (myde/gptel-api-key-from-environment "OPENROUTER_API_KEY")
-    :models '(anthropic/claude-haiku-4.5
-              anthropic/claude-opus-4.5
-              anthropic/claude-opus-4.6
-              anthropic/claude-sonnet-4.5
-              anthropic/claude-sonnet-4.6
-              deepseek/deepseek-v3.2
-              google/gemini-2.5-flash
-              google/gemini-2.5-flash-lite
-              google/gemini-3-flash-preview
-              google/gemini-3-pro-image-preview
-              google/gemini-3-pro-preview
-              minimax/minimax-m2.1
-              minimax/minimax-m2.5
-              mistralai/codestral-embed-2505
-              mistralai/devstral-2512
-              mistralai/ministral-14b-2512
-              mistralai/mistral-large-2512
-              moonshotai/kimi-k2
-              moonshotai/kimi-k2-thinking
-              moonshotai/kimi-k2.5
-              openai/gpt-5.2
-              openai/gpt-5.2-codex
-              openai/gpt-5.2-pro
-              openrouter/free
-              qwen/qwen3-coder-next
-              qwen/qwen3-max-thinking
-              x-ai/grok-4.1-fast
-              x-ai/grok-code-fast-1
-              z-ai/glm-4.7
-              z-ai/glm-4.7-flash
-              z-ai/glm-5))
+    :models myde/openrouter-models)
   (setq gptel-model 'moonshotai/kimi-k2.5
         gptel-backend (gptel-get-backend "OpenRouter"))
+  ;; end of gptel package config
   )
 
-;; Configure AI-assisted completions.
-;; https://github.com/milanglacier/minuet-ai.el
-
 (use-package minuet
+  ;; https://github.com/milanglacier/minuet-ai.el
+  ;; Minuet offers code completion as-you-type from popular LLMs.
   :ensure t
   :after gptel
   :bind
@@ -867,33 +1021,26 @@
   (plist-put minuet-codestral-options :model "codestral-latest")
   (minuet-set-optional-options minuet-codestral-options :max_tokens 128)
   (minuet-set-optional-options minuet-codestral-options :stop ["\n\n"])
+  ;; end of minuet package config
   )
 
-;; Configure ACP support
-;; https://github.com/xenodium/acp.el
 (use-package acp
+  ;; https://github.com/xenodium/acp.el
+  ;; Agent Client Protocol (ACP) implementation in Emacs lisp
   :ensure t
+  ;; end of acp package config
   )
 
-;; Configure Agent Shell support
-;; https://github.com/xenodium/agent-shell
 (use-package agent-shell
+  ;; https://github.com/xenodium/agent-shell
+  ;; A native Emacs buffer to interact with LLM agents powered by ACP.
   :ensure t
+  ;; end of agent-shell package config
   )
 
+;; TODO: move this where it belongs in use-package config
 ;; Delete trailing whitespace for org-mode
 (add-hook 'org-mode-hook #'myde/delete-trailing-whitespace-setup)
-
-;; -----------------------------------------------------------------------------
-;; Ebook reading support
-;; -----------------------------------------------------------------------------
-
-(use-package nov
-  ;; https://depp.brause.cc/nov.el
-  ;; Epub reader
-  :ensure t
-  :mode ("\\.epub\\'" . nov-mode)
-  )
 
 ;; -----------------------------------------------------------------------------
 ;; That's all folks!!!
