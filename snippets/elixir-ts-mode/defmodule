@@ -1,3 +1,7 @@
 defmodule ${1:ModuleName} do
+  @moduledoc """
+  Documentation for `${1:ModuleName}`.
+  """
+
   $0
 end

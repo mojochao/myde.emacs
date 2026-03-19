@@ -1,3 +1,6 @@
+@doc """
+Documentation for this function not provided.
+"""
 def ${1:function_name}(${2:args}) do
   $0
 end
