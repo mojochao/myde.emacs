@@ -108,7 +108,7 @@ minibuffer, even without explicitly focusing it."
 ;; -----------------------------------------------------------------------------
 
 (defun myde/go-ts-or-plain-mode ()
-  "Use go-ts-mode if Tree-sitter is available, otherwise fall back to go-mode."
+  "Use 'myde/go-ts-mode' if Tree-sitter is available, otherwise fall back to go-mode."
   (if (treesit-ready-p 'go)
       (go-ts-mode)
     (go-mode)))
