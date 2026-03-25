@@ -888,6 +888,14 @@
   ;; end of flycheck-dialyzer package config
   )
 
+(use-package mix
+  ;; https://github.com/ayrat555/mix.el
+  :ensure t
+  :after elixir-ts-mode
+  :hook ((elixir-ts-mode . mix-minor-mode))
+  ;; end of mix package config
+  )
+
 ;; -----------------------------------------------------------------------------
 ;; DAP debugger support
 ;; -----------------------------------------------------------------------------
