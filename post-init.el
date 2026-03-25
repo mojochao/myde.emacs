@@ -107,14 +107,15 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package emacs
-  :if (string= system-type "darwin")
   :ensure nil ; built-in packages are always installed
+  :if (string= system-type "darwin")
   :config
   ;; Use GNU version of ls on macOS.
   ;; TODO: switch to let* form
   (setq dired-use-ls-dired t
         insert-directory-program "/usr/local/bin/gls"  ; where homebrew install places it on macOS
         dired-listing-switches "-aBhl --group-directories-first")
+  ;; end of emacs package config for macOS
   )
 
 (use-package exec-path-from-shell
@@ -123,6 +124,7 @@
   :ensure t
   :config
   (exec-path-from-shell-initialize)
+  ;; end of exec-path-from-shell package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -133,30 +135,35 @@
   ;; https://github.com/Wilfred/cask-mode
   ;; Major mode for editing cask files
   :ensure t
+  ;; end of cask-mode package config
   )
 
 (use-package dash
   ;; https://github.com/magnars/dash.el
   ;; A modern list API for Emacs. No 'cl required.
   :ensure t
+  ;; end of dash package config
   )
 
 (use-package s
   ;; https://github.com/magnars/s.el
   ;; The long lost Emacs string manipulation library.
   :ensure t
+  ;; end of s package config
   )
 
 (use-package seq
   ;; https://elpa.gnu.org/packages/seq.html
   ;; Sequence manipulation functions.
   :ensure t
+  ;; end of seq package config
   )
 
 (use-package plz
   ;; https://github.com/alphapapa/plz.el
   ;; An HTTP library for Emacs.
   :ensure t
+  ;; end of plz package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -184,6 +191,7 @@
   (setq dashboard-icon-type 'nerd-icons)
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
+  ;; end of dashboard package config
   )
 
 (use-package recentf
@@ -197,6 +205,7 @@
         '("^/tmp/" "^/ssh:" "/COMMIT_EDITMSG\\'"
           "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
   (add-hook 'kill-emacs-hook #'recentf-cleanup -90)
+  ;; end of recentf package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -209,6 +218,7 @@
   :ensure t
   :config
   (spacious-padding-mode 1)
+  ;; end of spacious-padding package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -219,6 +229,7 @@
   ;; https://github.com/domtronn/all-the-icons.el
   :ensure t
   :if (display-graphic-p)
+  ;; end of all-the-icons package config
   )
 
 (use-package nerd-icons
@@ -229,6 +240,8 @@
   ;; "Symbols Nerd Font Mono" is the default and is recommended
   ;; but you can use any other Nerd Font if you want
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+
+  ;; end of nerd-icons package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -242,6 +255,7 @@
   :bind
   (("C-c s f" . show-font-select-preview)
    ("C-c s t" . show-font-tabulated))
+  ;; end of show-font package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -252,11 +266,13 @@
   ;; https://github.com/ayys/easy-theme-preview.el
   ;; Preview and manage themes.
   :ensure t
+  ;; end of easy-theme-preview package config
   )
 
 (use-package color-theme-sanityinc-tomorrow
   ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
   :ensure t
+  ;; end of color-theme-sanityinc-tomorrow package config
   )
 
 (use-package doom-themes
@@ -277,16 +293,19 @@
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config)
+  ;; end of doom-themes package config
   )
 
 (use-package ef-themes
   ;; https://github.com/protesilaos/ef-themes
   :ensure t
+  ;; end of ef-themes package config
   )
 
 (use-package jetbrains-darcula-theme
   ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
   :ensure t
+  ;; end of jetbrains-darcula-theme package config
   )
 
 (use-package gnome-dark-style
@@ -300,6 +319,7 @@
   (gnome-dark-theme 'doom-spacegrey)
   :config
   (setopt gnome-dark-style-sync t)
+  ;; end of gnome-dark-style package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -316,6 +336,7 @@
   :bind (:map projectile-mode-map
               ("s-p" . projectile-command-map)
               ("C-c p" . projectile-command-map))
+  ;; end of projectile package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -325,8 +346,7 @@
 (use-package neotree
   ;; https://github.com/jaypei/emacs-neotree
   :ensure t
-  :bind
-  ([f8] . myde/neotree-project-root-toggle)
+  :bind ([f8] . myde/neotree-project-root-toggle)
   :commands (neotree-toggle)
   :config
   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
@@ -337,6 +357,7 @@
                  (let ((neo-window (neo-global--get-window)))
                    (unless (null neo-window)
                      (setq neo-window-width (window-width neo-window))))))
+  ;; end of neotree package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -350,6 +371,7 @@
   :ensure t
   :bind (("C-=" . expreg-expand)
          ("C--" . expreg-contract))
+  ;; end of expreg package config
   )
 
 (use-package multiple-cursors
@@ -364,6 +386,7 @@
   (setq mc/list-file (locate-user-emacs-file "mc-lists.el"))
   ;; Make cursor movement more predictable
   (setq mc/always-run-for-all t)
+  ;; end of multiple-cursors package config
   )
 
 (use-package whole-line-or-region
@@ -371,6 +394,7 @@
   :ensure t
   :config
   (whole-line-or-region-global-mode)
+  ;; end of whole-line-or-region package config
   )
 
 (use-package pathaction
@@ -380,6 +404,7 @@
   (add-to-list 'display-buffer-alist '("\\*pathaction:"
                                        (display-buffer-at-bottom)
                                        (window-height . 0.33)))
+  ;; end of pathaction package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -391,6 +416,7 @@
   :init
   (diminish 'which-key-mode)
   (which-key-mode)
+  ;; end of which-key package config
   )
 
 (use-package helpful
@@ -403,6 +429,7 @@
    ("C-h F" . helpful-function)
    ("C-h k" . helpful-key)
    ("C-h v" . helpful-variable))
+  ;; end of helpful package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -412,6 +439,7 @@
 (use-package eat
   ;; https://codeberg.org/akib/emacs-eat
   :ensure t
+  ;; end of eat package config
   )
 
 (use-package vterm
@@ -424,6 +452,7 @@
   ;; Disable hl-line-mode in all terminal-like modes
   (setq global-hl-line-modes
         '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode))
+  ;; end of vterm package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -434,12 +463,14 @@
   ;; https://github.com/magit/magit
   :ensure t
   :commands (magit-status)
+  ;; end of magit package config
   )
 
 (use-package forge
   ;; https://github.com/magit/forge
   :ensure t
   :after magit
+  ;; end of forge package config
   )
 
 (use-package gptel-forge-prs
@@ -448,6 +479,7 @@
   :after forge
   :config
   (gptel-forge-prs-install)
+  ;; end of gptel-forge-prs package config
   )
 
 (use-package gptel-magit
@@ -455,6 +487,7 @@
   :ensure t
   :after magit
   :hook (magit-mode . gptel-magit-install)
+  ;; end of gptel-magit package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -466,70 +499,80 @@
   :ensure t
   :config
   (direnv-mode)
+  ;; end of direnv package config
   )
 
 ;; -----------------------------------------------------------------------------
 ;; In-buffer completion (Corfu)
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/minad/corfu
 (use-package corfu
+  ;; https://github.com/minad/corfu
   :ensure t
   :custom
   (corfu-auto t)
   (corfu-cycle t)
   :init
   (global-corfu-mode)
+  ;; end of corfu package config
   )
 
 ;; -----------------------------------------------------------------------------
 ;; Minibuffer completion stack
 ;; -----------------------------------------------------------------------------
 
-;; https://github.com/minad/vertico
 (use-package vertico
+  ;; https://github.com/minad/vertico
   :ensure t
   :init
   (vertico-mode)
+  ;; end of vertico package config
   )
 
-;; https://github.com/oantolin/orderless
 (use-package orderless
+  ;; https://github.com/oantolin/orderless
   :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-pcm-leading-wildcard t)
   (completion-category-overrides '((file (styles . (partial-completion)))))
+  ;; end of orderless package config
   )
 
-;; https://github.com/minad/marginalia
 (use-package marginalia
+  ;; https://github.com/minad/marginalia
   :ensure t
   :init
   (marginalia-mode)
+  ;; end of marginalia package config
   )
 
-;; https://github.com/minad/consult
 (use-package consult
+  ;; https://github.com/minad/consult
   :ensure t
   :bind (("C-s" . consult-line)
          ("C-x b" . consult-buffer)
+         ("C-x C-b" . consult-buffer)
          ("M-y" . consult-yank-pop))
+  ;; end of consult package config
   )
 
-;; https://github.com/oantolin/embark
+(global-set-key (kbd "C-x C-b") #'consult-buffer)
+
 (use-package embark
+  ;; https://github.com/oantolin/embark
   :ensure t
   :bind (("C-." . embark-act)
          ("C-h B" . embark-bindings))
   :init
   (setq prefix-help-command #'embark-prefix-help-command)
+  ;; end of embark package config
   )
 
 (use-package embark-consult
   :ensure t ; only need to install it, embark loads it after consult if found
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode)
+  :hook (embark-collect-mode . consult-preview-at-point-mode)
+  ;; end of embark-consult package config
   )
 
 ;; -----------------------------------------------------------------------------
@@ -546,12 +589,13 @@
                '(heex "https://github.com/phoenixframework/tree-sitter-heex"))
   )
 
-;; https://github.com/renzmann/treesit-auto
 (use-package treesit-auto
+  ;; https://github.com/renzmann/treesit-auto
   :ensure t
   :config
   (setq treesit-auto-install t) ; install grammars automatically, if missing
   (global-treesit-auto-mode)
+  ;; end of treesit-auto package config
   )
 
 ;; =============================================================================
