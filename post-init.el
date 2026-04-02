@@ -208,6 +208,31 @@
   ;; end of recentf package config
   )
 
+(use-package buffer-guardian
+  ;; https://github.com/jamescherti/buffer-guardian.el
+  ;; Save buffers when their focus is lost.
+  :ensure t
+  :custom
+  ;; When non-nil, include remote files in the auto-save process
+  (buffer-guardian-inhibit-saving-remote-files t)
+
+  ;; When non-nil, buffers visiting nonexistent files are not saved
+  (buffer-guardian-inhibit-saving-nonexistent-files nil)
+
+  ;; Save the buffer even if the window change results in the same buffer
+  (buffer-guardian-save-on-same-buffer-window-change t)
+
+  ;; Non-nil to enable verbose mode to log when a buffer is automatically saved
+  (buffer-guardian-verbose nil)
+
+  ;; Save all buffers after N seconds of user idle time. (Disabled by default)
+  ;; (buffer-guardian-save-all-buffers-idle 30)
+
+  :hook
+  (after-init . buffer-guardian-mode)
+  ;; end of buffer-guardian package config
+  )
+
 ;; -----------------------------------------------------------------------------
 ;; UI quality of life improvements
 ;; -----------------------------------------------------------------------------
@@ -357,6 +382,13 @@
                  (let ((neo-window (neo-global--get-window)))
                    (unless (null neo-window)
                      (setq neo-window-width (window-width neo-window))))))
+  (defun myde/neotree-refresh ()
+    "Refresh neotree if visible."
+    (when (neo-global--window-exists-p)
+      (neo-buffer--refresh)))
+  (add-hook 'after-save-hook #'myde/neotree-refresh)
+  (add-hook 'after-delete-file-hook #'myde/neotree-refresh)
+  (add-hook 'after-create-file-hook #'myde/neotree-refresh)
   ;; end of neotree package config
   )
 
