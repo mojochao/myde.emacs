@@ -406,6 +406,15 @@
   ;; end of expreg package config
   )
 
+(use-package surround
+  ;; https://github.com/mkleehammer/surround
+  ;; https://emacsredux.com/blog/2026/03/17/surround-el-vim-style-pair-editing-comes-to-emacs/
+  ;; Insert, change, and delete surrounding pairs.
+  :ensure t
+  :bind-keymap ("M-'" . surround-keymap)
+  ;; end of expreg package config
+  )
+
 (use-package multiple-cursors
   ;; https://github.com/magnars/multiple-cursors.el
   :ensure t
