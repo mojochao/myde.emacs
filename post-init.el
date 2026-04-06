@@ -1048,19 +1048,28 @@
     google/gemini-3-pro-preview
     minimax/minimax-m2.1
     minimax/minimax-m2.5
+    minimax/minimax-m2.5:free
+    minimax/minimax-m2.7
     mistralai/codestral-embed-2505
     mistralai/devstral-2512
     mistralai/ministral-14b-2512
     mistralai/mistral-large-2512
+    mistralai/mistral-nemo             ; roleplay, translation, trivia
     moonshotai/kimi-k2
+    moonshotai/kimi-k2-0905            ; roleplay, trivia
     moonshotai/kimi-k2-thinking
     moonshotai/kimi-k2.5
     openai/gpt-5.2
     openai/gpt-5.2-codex
     openai/gpt-5.2-pro
+    openai/gpt-5.3-codex
+    openai/gpt-5.4
+    openai/gpt-5.4-mini
+    openai/gpt-oss-120b
     openrouter/free
     qwen/qwen3-coder-next
     qwen/qwen3-max-thinking
+    qwen/qwen3.6-plus:free
     x-ai/grok-4.1-fast
     x-ai/grok-code-fast-1
     z-ai/glm-4.7
