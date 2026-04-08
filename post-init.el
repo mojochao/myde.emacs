@@ -1038,6 +1038,7 @@
   '(anthropic/claude-haiku-4.5
     anthropic/claude-opus-4.5
     anthropic/claude-opus-4.6
+    anthropic/claude-opus-4.6-fast
     anthropic/claude-sonnet-4.5
     anthropic/claude-sonnet-4.6
     deepseek/deepseek-v3.2
@@ -1074,7 +1075,8 @@
     x-ai/grok-code-fast-1
     z-ai/glm-4.7
     z-ai/glm-4.7-flash
-    z-ai/glm-5))
+    z-ai/glm-5
+    z-ai/glm-5.1))
 
 (use-package gptel
   ;; https://github.com/karthink/gptel
