@@ -17,12 +17,6 @@ SHELL = /usr/bin/env bash -o pipefail
 ROOT_DIR ?= $(PWD)
 
 EMACS_INIT_DIR ?= $(HOME)/.emacs.d
-ifneq ($(local),)
-EMACS_INIT_DIR := $(BUILD_DIR)
-endif
-
-MINIMAL_EMACS_D_DIR ?= $(ROOT_DIR)/minimal-emacs.d
-MINIMAL_EMACS_D_URL ?= https://github.com/jamescherti/minimal-emacs.d
 
 # ==============================================================================
 # Build targets
@@ -47,28 +41,8 @@ help: ## Show this help
 
 .PHONY: vars
 vars: ## Show environment variables used by this Makefile
-	@echo "ROOT_DIR:             $(ROOT_DIR)"
-	@echo "EMACS_INIT_DIR:       $(EMACS_INIT_DIR)"
-	@echo "MINIMAL_EMACS_D_DIR:  $(MINIMAL_EMACS_D_DIR)"
-	@echo "MINIMAL_EMACS_D_URL:  $(MINIMAL_EMACS_D_URL)"
-
-##@ Base config repo targets
-
-.PHONY: clean
-clean: ## Clean the repo
-	@echo "cleaning repo ..."
-	@rm -rf $(BUILD_DIR)
-	@rm -rf $(MINIMAL_EMACS_D_DIR)
-
-.PHONY: init
-init: ## Initialize the base minimal-emacs.d repo
-	@echo "initializing $(MINIMAL_EMACS_D_URL)"
-	@git clone $(MINIMAL_EMACS_D_URL) $(MINIMAL_EMACS_D_DIR)
-
-.PHONY: update
-update: ## Update the base minimal-emacs.d repo
-	@echo "updating $(MINIMAL_EMACS_D_DIR)"
-	@cd $(MINIMAL_EMACS_D_DIR) && git pull
+	@echo "ROOT_DIR:       $(ROOT_DIR)"
+	@echo "EMACS_INIT_DIR: $(EMACS_INIT_DIR)"
 
 ##@ MyDE config install targets
 
