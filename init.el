@@ -131,11 +131,25 @@
 ;; Elisp programming support packages
 ;; -----------------------------------------------------------------------------
 
+(use-package package-lint
+  ;; https://github.com/purcell/package-lint
+  ;; A linting library for Elisp package metadata.
+  :ensure t
+  ;; end of package-lint package config
+  )
+
 (use-package cask-mode
   ;; https://github.com/Wilfred/cask-mode
-  ;; Major mode for editing cask files
+  ;; A major mode for editing cask files.
   :ensure t
   ;; end of cask-mode package config
+  )
+
+(use-package eask-mode
+  ;; https://github.com/emacs-eask/eask-mode
+  ;; A major mode for editing Eask files.
+  :ensure t
+  ;; end of eask-mode package config
   )
 
 (use-package dash
