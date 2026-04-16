@@ -623,8 +623,10 @@
   :ensure nil ; part of emacs since v29
   :config
   (add-to-list 'treesit-language-source-alist
-               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl")
-               '(elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl"))
+  (add-to-list 'treesit-language-source-alist
+               '(elixir "https://github.com/elixir-lang/tree-sitter-elixir"))
+  (add-to-list 'treesit-language-source-alist
                '(heex "https://github.com/phoenixframework/tree-sitter-heex"))
   )
 
