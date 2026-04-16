@@ -544,17 +544,17 @@
   ;; end of gptel-magit package config
   )
 
-;; -----------------------------------------------------------------------------
-;; Direnv integration
-;; -----------------------------------------------------------------------------
+;; ;; -----------------------------------------------------------------------------
+;; ;; Direnv integration
+;; ;; -----------------------------------------------------------------------------
 
-(use-package direnv
-  ;; https://github.com/wbolster/emacs-direnv
-  :ensure t
-  :config
-  (direnv-mode)
-  ;; end of direnv package config
-  )
+;; (use-package direnv
+;;   ;; https://github.com/wbolster/emacs-direnv
+;;   :ensure t
+;;   :config
+;;   (direnv-mode)
+;;   ;; end of direnv package config
+;;   )
 
 ;; -----------------------------------------------------------------------------
 ;; Minibuffer completion stack
