@@ -469,7 +469,6 @@
 (use-package which-key
   :ensure nil ; part of emacs since v29
   :init
-  (diminish 'which-key-mode)
   (which-key-mode)
   ;; end of which-key package config
   )
@@ -822,7 +821,6 @@
   ;; https://github.com/joaotavora/yasnippet
   ;; A snippet template system.
   :ensure t
-  :diminish yas-minor-mode
   :config
   (setq yas-snippet-dirs (cons (expand-file-name "snippets" user-emacs-directory)
                                yas-snippet-dirs))
