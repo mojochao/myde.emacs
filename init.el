@@ -825,7 +825,11 @@
   (setq yas-snippet-dirs (cons (expand-file-name "snippets" user-emacs-directory)
                                yas-snippet-dirs))
   (yas-global-mode 1)
-  (setq yas-trigger-key "TAB")
+  ;; Do not bind TAB globally for snippet expansion -- it conflicts with
+  ;; comint/REPL completion (e.g. inf-elixir).  Snippets can still be
+  ;; expanded via `yas-insert-snippet' or the `yas-minor-mode-map' binding.
+  (define-key yas-minor-mode-map (kbd "TAB") nil)
+  (define-key yas-minor-mode-map [(tab)] nil)
   ;; end of yasnippet package config
   )
 
