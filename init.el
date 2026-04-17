@@ -372,6 +372,24 @@
   )
 
 ;; -----------------------------------------------------------------------------
+;; Secrets support
+;; -----------------------------------------------------------------------------
+
+(use-package auth-source-1password
+  ;; https://github.com/dlobraico/auth-source-1password
+  ;; Use 1Password vault as auth source.
+  :ensure t
+  :init
+  (setq auth-source-1password-construct-secret-reference
+        #'myde/auth-source-1password-construct-secret-reference)
+  :config
+  (auth-source-1password-enable)
+  :custom
+  (auth-source-1password-vault "My API credentials")
+  ;; end of auth-source-1password package config
+  )
+
+;; -----------------------------------------------------------------------------
 ;; Projects support
 ;; -----------------------------------------------------------------------------
 

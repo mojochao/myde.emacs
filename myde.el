@@ -130,6 +130,17 @@ minibuffer, even without explicitly focusing it."
     "/home/agooch/Projects/dayjob/org/tasks.org"))
 
 ;; -----------------------------------------------------------------------------
+;; Secrets (auth-source-1password) support
+;; -----------------------------------------------------------------------------
+
+(defun myde/auth-source-1password-construct-secret-reference
+    (_backend _type host &optional user _port)
+  "Construct 1Password entry path as vault/host/password (or vault/host/user/password if user provided)."
+  (if user
+      (mapconcat #'identity (list auth-source-1password-vault host user "password") "/")
+    (mapconcat #'identity (list auth-source-1password-vault host "password") "/")))
+
+;; -----------------------------------------------------------------------------
 ;; AI enablement
 ;; -----------------------------------------------------------------------------
 
