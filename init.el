@@ -1124,7 +1124,7 @@
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
     :stream t
-    :key (myde/gptel-api-key-from-environment "OPENROUTER_API_KEY")
+    :key (auth-source-pick-first-password :host "OPENROUTER_API_KEY")
     :models myde/openrouter-models)
   (setq gptel-model 'moonshotai/kimi-k2.5
         gptel-backend (gptel-get-backend "OpenRouter"))
@@ -1155,9 +1155,8 @@
   ;; (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
   :config
   ;; Use Codestral FIM completions via the Mistral API.
-  ;; Minuet expects the *environment variable name* here, not the key value.
   (setq minuet-provider 'codestral)
-  (plist-put minuet-codestral-options :api-key "MISTRAL_API_KEY")
+  (plist-put minuet-codestral-options :api-key (auth-source-pick-first-password :host "MISTRAL_API_KEY"))
   (plist-put minuet-codestral-options :end-point "https://api.mistral.ai/v1/fim/completions")
   (plist-put minuet-codestral-options :model "codestral-latest")
   (minuet-set-optional-options minuet-codestral-options :max_tokens 128)
