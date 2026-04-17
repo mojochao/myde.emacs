@@ -1,4 +1,5 @@
 .agent-shell/
+auto-save-list/
 agent/
 .cask/
 .claude/
