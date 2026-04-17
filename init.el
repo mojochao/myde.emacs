@@ -932,19 +932,25 @@
   ;; end of exunit package config
   )
 
-;; IEx REPL integration
-(use-package inf-elixir
-  ;; https://github.com/J3RN/inf-elixir
-  ;; Emacs plugin for interacting with elixir `ielm` REPLs
-  :ensure t
-  :after elixir-ts-mode
-  :bind (:map elixir-ts-mode-map
-              ("C-c i i" . inf-elixir)
-              ("C-c i p" . inf-elixir-project)
-              ("C-c i l" . inf-elixir-send-line)
-              ("C-c i r" . inf-elixir-send-region)
-              ("C-c i b" . inf-elixir-send-buffer))
-  ;; end of exunit package config
+;; Make local elixir-iex package loadable via `require'.
+(add-to-list 'load-path "~/devel/repos/github.com/mojochao/elixir-iex")
+
+;; IEx REPL integration via eat terminal emulator.
+;; Uses a real terminal so IEx TAB-completion and ANSI colors work natively.
+(use-package elixir-iex
+  ;; https://github.com/mojochao/elixir-iex
+  :ensure nil ; loaded from external project repo on load-path
+  :after (elixir-ts-mode eat)
+  :hook (elixir-ts-mode . elixir-iex-minor-mode)
+  :bind (:map elixir-iex-minor-mode-map
+              ("C-c i i" . elixir-iex)
+              ("C-c i p" . elixir-iex-project)
+              ("C-c i l" . elixir-iex-send-line)
+              ("C-c i r" . elixir-iex-send-region)
+              ("C-c i b" . elixir-iex-send-buffer)
+              ("C-c i m" . elixir-iex-reload-module)
+              ("C-c i s" . elixir-iex-set-repl))
+  ;; end of elixir-iex package config
   )
 
 (use-package flycheck-credo
