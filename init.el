@@ -406,6 +406,14 @@
   ;; end of projectile package config
   )
 
+(use-package mise
+  ;; https://github.com/eki3z/mise.el
+  ;; Use mise for project-specific environment variables and tools.
+  :ensure t
+  :hook (after-init . global-mise-mode)
+  ;; end of mise package config
+  )
+
 ;; -----------------------------------------------------------------------------
 ;; Project tree explorer support
 ;; -----------------------------------------------------------------------------
