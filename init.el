@@ -127,6 +127,16 @@
   ;; end of exec-path-from-shell package config
   )
 
+(use-package fish-mode
+  ;; https://github.com/emacsmirror/fish-mode
+  ;; Add basic support for fish shell scripts.
+  :ensure t
+  :defer t
+  :custom
+  (fish-indent-offset 2)
+  ;; end of fish-mode package config
+  )
+
 ;; -----------------------------------------------------------------------------
 ;; Elisp programming support packages
 ;; -----------------------------------------------------------------------------
