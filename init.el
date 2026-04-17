@@ -1017,21 +1017,8 @@
 (use-package terraform-mode
   ;; https://github.com/hcl-emacs/terraform-mode
   :ensure t
-  :mode ("\\.tf\\'" "\\.tfvars\\'")
+  :mode ("\\.tf\\'" "\\.tfvars\\'" "\\.hcl\\'"  "\\.tofu\\'")
   :hook ((terraform-mode . terraform-format-on-save-mode))
-  :config
-  (defun terraform-format-buffer ()
-    "Format the current buffer with terraform fmt."
-    (interactive)
-    (when (executable-find "terraform")
-      (call-process-region (point-min) (point-max) "terraform" t t nil "fmt" "-")))
-
-  (define-minor-mode terraform-format-on-save-mode
-    "Auto-format Terraform buffer on save using terraform fmt."
-    :lighter " fmt"
-    (if terraform-format-on-save-mode
-        (add-hook 'before-save-hook #'terraform-format-buffer nil t)
-      (remove-hook 'before-save-hook #'terraform-format-buffer t)))
   ;; end of terraform-mode package config
   )
 
@@ -1077,7 +1064,7 @@
   '(anthropic/claude-haiku-4.5
     anthropic/claude-opus-4.5
     anthropic/claude-opus-4.6
-    anthropic/claude-opus-4.6-fast
+    anthropic/claude-opus-4.7
     anthropic/claude-sonnet-4.5
     anthropic/claude-sonnet-4.6
     deepseek/deepseek-v3.2
@@ -1086,6 +1073,8 @@
     google/gemini-3-flash-preview
     google/gemini-3-pro-image-preview
     google/gemini-3-pro-preview
+    google/gemma-4-26b-a4b-it:free
+    google/gemma-4-31b-it:free
     minimax/minimax-m2.1
     minimax/minimax-m2.5
     minimax/minimax-m2.5:free
@@ -1099,6 +1088,9 @@
     moonshotai/kimi-k2-0905            ; roleplay, trivia
     moonshotai/kimi-k2-thinking
     moonshotai/kimi-k2.5
+    nvidia/nemotron-3-super-120b-a12b:free
+    nvidia/nemotron-nano-12b-v2-vl:free
+    nvidia/nemotron-nano-9b-v2:free
     openai/gpt-5.2
     openai/gpt-5.2-codex
     openai/gpt-5.2-pro
@@ -1106,12 +1098,18 @@
     openai/gpt-5.4
     openai/gpt-5.4-mini
     openai/gpt-oss-120b
+    openai/gpt-oss-120b:free
     openrouter/free
     qwen/qwen3-coder-next
+    qwen/qwen3-coder:free
     qwen/qwen3-max-thinking
     qwen/qwen3.6-plus:free
-    x-ai/grok-4.1-fast
+    x-ai/grok-4
+    x-ai/grok-4-fast
+    x-ai/grok-4.20
+    x-ai/grok-4.20-multi-agent
     x-ai/grok-code-fast-1
+    z-ai/glm-4.5-air:free
     z-ai/glm-4.7
     z-ai/glm-4.7-flash
     z-ai/glm-5

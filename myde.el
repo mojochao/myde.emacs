@@ -78,11 +78,33 @@ minibuffer, even without explicitly focusing it."
     (keyboard-quit)))
 
 ;; -----------------------------------------------------------------------------
+;; Terraform/OpenTofu support
+;; -----------------------------------------------------------------------------
+
+(defcustom myde/terraform-exe "terraform"
+  "Path to the terraform or tofu executable."
+  :type 'string
+  :group 'terraform)
+
+(defun myde/terraform-format-buffer ()
+  "Format the current buffer with terraform executable fmt subcommand."
+  (interactive)
+  (when (or (executable-find "terraform") (executable-find "terraform"))
+    (call-process-region (point-min) (point-max) myde/terraform-exe t t nil "fmt" "-")))
+
+(define-minor-mode myde/terraform-format-on-save-mode
+  "Auto-format Terraform buffer on save using terraform fmt."
+  :lighter " fmt"
+  (if terraform-format-on-save-mode
+      (add-hook 'before-save-hook #'myde/terraform-format-buffer nil t)
+    (remove-hook 'before-save-hook #'myde/terraform-format-buffer t)))
+
+;; -----------------------------------------------------------------------------
 ;; Project tree explorer support
 ;; -----------------------------------------------------------------------------
 
 (defun myde/neotree-project-root-toggle ()
-  "Toggle NeoTree. If opening, set the root to the current 'project' root."
+  "Toggle NeoTree.  If opening, set the root to the current 'project' root."
   (interactive)
   (if (and (fboundp 'neo-global--window-exists-p)
            (neo-global--window-exists-p))
