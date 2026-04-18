@@ -390,6 +390,27 @@
   )
 
 ;; -----------------------------------------------------------------------------
+;; Tools support
+;; -----------------------------------------------------------------------------
+
+(use-package mason
+  ;; https://github.com/mason-org/mason.el
+  ;; Package manager for LSP, DAP, linters, and more for the Emacs ecosystem
+  :ensure t
+  :config
+  (mason-setup)
+  ;; end of mason package config
+  )
+
+(use-package mise
+  ;; https://github.com/eki3z/mise.el
+  ;; Use mise for project-specific environment variables and tools.
+  :ensure t
+  :hook (after-init . global-mise-mode)
+  ;; end of mise package config
+  )
+
+;; -----------------------------------------------------------------------------
 ;; Projects support
 ;; -----------------------------------------------------------------------------
 
@@ -404,14 +425,6 @@
               ("s-p" . projectile-command-map)
               ("C-c p" . projectile-command-map))
   ;; end of projectile package config
-  )
-
-(use-package mise
-  ;; https://github.com/eki3z/mise.el
-  ;; Use mise for project-specific environment variables and tools.
-  :ensure t
-  :hook (after-init . global-mise-mode)
-  ;; end of mise package config
   )
 
 ;; -----------------------------------------------------------------------------
