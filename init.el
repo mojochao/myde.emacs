@@ -439,16 +439,7 @@
   :config
   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
   (setq neo-window-fixed-size nil)
-  ;; remember mouse-dragged width
-  (add-to-list 'window-size-change-functions
-               (lambda (frame)
-                 (let ((neo-window (neo-global--get-window)))
-                   (unless (null neo-window)
-                     (setq neo-window-width (window-width neo-window))))))
-  (defun myde/neotree-refresh ()
-    "Refresh neotree if visible."
-    (when (neo-global--window-exists-p)
-      (neo-buffer--refresh)))
+  (add-to-list 'window-size-change-functions #'myde/neotree-window-size-change-function)
   (add-hook 'after-save-hook #'myde/neotree-refresh)
   (add-hook 'after-delete-file-hook #'myde/neotree-refresh)
   (add-hook 'after-create-file-hook #'myde/neotree-refresh)

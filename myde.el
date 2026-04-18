@@ -114,6 +114,16 @@ minibuffer, even without explicitly focusing it."
           (neotree-dir (project-root project))
         (neotree-show)))))
 
+(defun myde/neotree-refresh ()
+  "Refresh neotree if visible."my
+  (when (neo-global--window-exists-p)
+    (neo-buffer--refresh)))
+
+(defun myde/neotree-window-size-change-function (frame)
+  (let ((neo-window (neo-global--get-window)))
+    (unless (null neo-window)
+      (setq neo-window-width (window-width neo-window)))))
+
 ;; -----------------------------------------------------------------------------
 ;; Generic programming modes support
 ;; -----------------------------------------------------------------------------
