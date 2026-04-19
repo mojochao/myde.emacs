@@ -454,6 +454,12 @@
   :hook (embark-collect-mode . consult-preview-at-point-mode)
   :ensure t)
 
+(use-package corfu
+  :config
+  (global-corfu-mode)
+  (corfu-popupinfo-mode)
+  :ensure t)
+
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter setup
 ;; -----------------------------------------------------------------------------
