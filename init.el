@@ -563,11 +563,10 @@
          (elixir-ts-mode . eglot-ensure)
          (heex-ts-mode . eglot-ensure))
   :config
-  ;; TODO move these to the config of their respective packages
   (add-to-list 'eglot-server-programs
-               '(elixir-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh"))
+               '(elixir-ts-mode . (lambda (dir) (myde/mise-exec-which dir "elixir-ls"))))
   (add-to-list 'eglot-server-programs
-               '(heex-ts-mode "/home/linuxbrew/.linuxbrew/Cellar/elixir-ls/0.30.0/libexec/language_server.sh"))
+               '(heex-ts-mode . (lambda (dir) (myde/mise-exec-which dir "elixir-ls"))))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
