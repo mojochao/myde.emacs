@@ -262,12 +262,11 @@
   :ensure t)
 
 (use-package auto-dark
-  :after (batppuccin-mocha-theme batppuccin-latte-theme)
+  :after (batppuccin-latte-theme batppuccin-mocha-theme)
+  :custom
+  (auto-dark-themes '((batppuccin-mocha) (batppuccin-latte)))
   :init
-  (auto-dark-mode 1)
-  :config
-  (setq auto-dark-dark-theme 'batppuccin-mocha
-        auto-dark-light-theme 'batppuccin-latte)
+  (auto-dark-mode t)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
