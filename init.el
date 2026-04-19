@@ -107,7 +107,7 @@
   :if (string= system-type "darwin")
   :config
   (setq dired-use-ls-dired t
-        insert-directory-program "/usr/local/bin/gls"  ; where homebrew install places it on macOS
+        insert-directory-program "/usr/local/bin/gls"
         dired-listing-switches "-aBhl --group-directories-first")
   :ensure nil) ; built-in packages are always installed
 
