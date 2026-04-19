@@ -135,6 +135,16 @@ minibuffer, even without explicitly focusing it."
   "Delete trailing whitespace on save."
   (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
 
+(defun myde/mise-exec-which (dir exe)
+  "Resolve EXE path via mise exec for project in DIR."
+  (let ((default-directory (or dir
+                               (and (buffer-file-name (buffer-base-buffer))
+                                    (file-name-directory (buffer-file-name (buffer-base-buffer))))
+                               default-directory)))
+    (list (string-trim
+           (shell-command-to-string
+            (concat mise-executable " exec -- which " exe))))))
+
 ;; -----------------------------------------------------------------------------
 ;; Elixir support
 ;; -----------------------------------------------------------------------------
