@@ -92,7 +92,7 @@
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
 
 ;; -----------------------------------------------------------------------------
-;; Package setup
+;; Package initialization
 ;; -----------------------------------------------------------------------------
 (require 'package)
 (setq package-archives
@@ -311,6 +311,14 @@
 ;; Themes support
 ;; -----------------------------------------------------------------------------
 
+(use-package batppuccin-latte-theme
+  :ensure t
+  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest))
+
+(use-package batppuccin-mocha-theme
+  :ensure t
+  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest))
+
 (use-package easy-theme-preview
   ;; https://github.com/ayys/easy-theme-preview.el
   ;; Preview and manage themes.
@@ -357,19 +365,28 @@
   ;; end of jetbrains-darcula-theme package config
   )
 
-(use-package gnome-dark-style
-  ;; https://github.com/dimagid/gnome-dark-style
-  ;; Sync theme with Gnome Desktop on Linux.
+;; (use-package gnome-dark-style
+;;   ;; https://github.com/dimagid/gnome-dark-style
+;;   ;; Sync theme with Gnome Desktop on Linux.
+;;   :ensure t
+;;   :if (string-equal system-type "gnu/linux")
+;;   :after doom-themes
+;;   :custom
+;;   (gnome-light-theme 'doom-tomorrow-day)
+;;   (gnome-dark-theme 'doom-spacegrey)
+;;   :config
+;;   (setopt gnome-dark-style-sync t)
+;;   ;; end of gnome-dark-style package config
+;;   )
+
+(use-package auto-dark
   :ensure t
-  :if (string-equal system-type "gnu/linux")
-  :after doom-themes
-  :custom
-  (gnome-light-theme 'doom-tomorrow-day)
-  (gnome-dark-theme 'doom-spacegrey)
+  :after (batppuccin-mocha-theme batppuccin-latte-theme)
+  :init
+  (auto-dark-mode 1)
   :config
-  (setopt gnome-dark-style-sync t)
-  ;; end of gnome-dark-style package config
-  )
+  (setq auto-dark-dark-theme 'batppuccin-mocha
+        auto-dark-light-theme 'batppuccin-latte))
 
 ;; -----------------------------------------------------------------------------
 ;; Secrets support
