@@ -106,10 +106,10 @@
 (use-package emacs
   :if (string= system-type "darwin")
   :config
-  (setq dired-use-ls-dired t
-        insert-directory-program "/usr/local/bin/gls"
-        dired-listing-switches "-aBhl --group-directories-first")
-  :ensure nil) ; built-in packages are always installed
+  (setq dired-use-ls-dired t)
+  (setq insert-directory-program "/usr/local/bin/gls")
+  (setq dired-listing-switches "-aBhl --group-directories-first")
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Shell support
@@ -296,6 +296,11 @@
   :ensure t
   :hook (after-init . global-mise-mode))
 
+;; (use-package direnv  ;; https://github.com/wbolster/emacs-direnv
+;;   :config
+;;   (direnv-mode)
+;;   :ensure t )
+
 ;; -----------------------------------------------------------------------------
 ;; Projects support
 ;; -----------------------------------------------------------------------------
@@ -407,15 +412,6 @@
 (use-package forge  ;; https://github.com/magit/forge
   :after magit
   :ensure t)
-
-;; ;; -----------------------------------------------------------------------------
-;; ;; Direnv integration
-;; ;; -----------------------------------------------------------------------------
-
-;; (use-package direnv  ;; https://github.com/wbolster/emacs-direnv
-;;   :config
-;;   (direnv-mode)
-;;   :ensure t )
 
 ;; -----------------------------------------------------------------------------
 ;; Minibuffer completion stack
