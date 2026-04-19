@@ -136,6 +136,17 @@ minibuffer, even without explicitly focusing it."
   (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
 
 ;; -----------------------------------------------------------------------------
+;; Elixir support
+;; -----------------------------------------------------------------------------
+
+(defun myde/elixir-ts-ensure-grammars ()
+  "Ensure Elixir and HEEx tree-sitter grammars are installed."
+  (dolist (lang '(elixir heex))
+    (unless (treesit-ready-p lang t)
+      (message "Installing %s tree-sitter grammar..." lang)
+      (treesit-install-language-grammar lang))))
+
+;; -----------------------------------------------------------------------------
 ;; Golang support
 ;; -----------------------------------------------------------------------------
 
@@ -153,6 +164,10 @@ minibuffer, even without explicitly focusing it."
 ;; Org mode setup
 ;; -----------------------------------------------------------------------------
 
+(defvar myde/org-directory "~/org/")
+(defvar myde/reading-notes "~/org/reading/")
+(defvar myde/highlight-file "~/org/highlights.org")
+
 (defun myde/find-org-agenda-files (root-dir)
   '("/home/agooch/Projects/platykus/org/tasks.org"
     "/home/agooch/Projects/myde/org/tasks.org"
@@ -160,6 +175,21 @@ minibuffer, even without explicitly focusing it."
     "/home/agooch/Projects/playdate/org/tasks.org"
     "/home/agooch/Projects/life/org/tasks.org"
     "/home/agooch/Projects/dayjob/org/tasks.org"))
+
+(defun myde/reading-setup ()
+  "Improve readability for long-form documents."
+  (visual-line-mode 1)
+  (setq-local line-spacing 0.15))
+
+(defun myde/reading-keybindings ()
+  "Unified navigation keys across readers."
+  (local-set-key (kbd "i") #'org-noter)
+  (local-set-key (kbd "n") #'org-noter-insert-note)
+  (local-set-key (kbd "h") #'org-remark-mark)
+  (local-set-key (kbd "j") #'org-noter-sync-next-note)
+  (local-set-key (kbd "k") #'org-noter-sync-prev-note))
+
+(defvar myde/denote-directory "~/org/notes/")
 
 ;; -----------------------------------------------------------------------------
 ;; Secrets (auth-source-1password) support
