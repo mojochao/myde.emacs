@@ -10,6 +10,7 @@ recentf*
 mason/
 minimal-emacs.d/
 nov-places
+projects
 transient/
 tree-sitter/
 custom.el
