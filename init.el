@@ -253,18 +253,16 @@
 (use-package jetbrains-darcula-theme  ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
   :ensure t)
 
-(use-package batppuccin-latte-theme
-  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
-  :ensure t)
-
-(use-package batppuccin-mocha-theme
-  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
+(use-package batppuccin
+  :config
+  (load-theme 'batppuccin-frappe t)
   :ensure t)
 
 (use-package auto-dark
   :after (batppuccin-latte-theme batppuccin-mocha-theme)
+  :if (string= system-type "linux")
   :custom
-  (auto-dark-themes '((batppuccin-mocha) (batppuccin-latte)))
+  (auto-dark-themes '((batppuccin-frappe) (batppuccin-latte)))
   :init
   (auto-dark-mode t)
   :ensure t)
