@@ -139,6 +139,9 @@
 ;; Elisp programming support packages
 ;; -----------------------------------------------------------------------------
 
+(use-package buttercup  ;; https://github.com/jorgenschaefer/emacs-buttercup
+  :ensure t)
+
 (use-package package-lint  ;; https://github.com/purcell/package-lint
   :ensure t)
 
