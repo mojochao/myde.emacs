@@ -474,6 +474,9 @@
 
 (use-package treesit
   :config
+  (setq treesit-extra-load-path (list (expand-file-name "tree-sitter" user-emacs-directory)))
+  (add-to-list 'treesit-language-source-alist
+               '(go "https://github.com/tree-sitter-grammars/tree-sitter-go"))
   (add-to-list 'treesit-language-source-alist
                '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl"))
   (add-to-list 'treesit-language-source-alist
