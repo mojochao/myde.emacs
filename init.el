@@ -789,6 +789,7 @@
     moonshotai/kimi-k2-0905            ; roleplay, trivia
     moonshotai/kimi-k2-thinking
     moonshotai/kimi-k2.5
+    moonshotai/kimi-k2.6
     nvidia/nemotron-3-super-120b-a12b:free
     nvidia/nemotron-nano-12b-v2-vl:free
     nvidia/nemotron-nano-9b-v2:free
@@ -824,7 +825,7 @@
     :stream t
     :key (auth-source-pick-first-password :host "OPENROUTER_API_KEY")
     :models myde/openrouter-models)
-  (setq gptel-model 'moonshotai/kimi-k2.5
+  (setq gptel-model 'moonshotai/kimi-k2.6
         gptel-backend (gptel-get-backend "OpenRouter"))
   :ensure t)
 
