@@ -668,10 +668,7 @@
         ("C-c t t" . exunit-toggle-file-and-test))
   :ensure t)
 
-;; ;; Make local elixir-iex package loadable via `require'.
-;; (add-to-list 'load-path "~/devel/repos/github.com/mojochao/elixir-iex")
-
-(use-package elixir-iex
+(use-package elixir-iex  ;; https://github.com/mojochao/elixir-iex
   :after (elixir-ts-mode eat)
   :hook (elixir-ts-mode . elixir-iex-minor-mode)
   :bind (:map elixir-iex-minor-mode-map
@@ -682,7 +679,7 @@
               ("C-c i b" . elixir-iex-send-buffer)
               ("C-c i m" . elixir-iex-reload-module)
               ("C-c i s" . elixir-iex-set-repl))
-  :ensure nil)  ; loaded from external project repo on load-path
+  :ensure nil)
 
 (use-package flycheck-credo  ;; https://github.com/aaronjensen/flycheck-credo
   :after flycheck
