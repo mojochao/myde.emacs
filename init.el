@@ -96,6 +96,7 @@
       '(("melpa"  . "https://melpa.org/packages/")
         ("gnu"    . "https://elpa.gnu.org/packages/")
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+(setq package-install-upgrade-built-in t)
 (unless package-archive-contents
   (package-refresh-contents))
 
