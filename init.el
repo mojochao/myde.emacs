@@ -516,11 +516,11 @@
 
 (use-package denote  ;; https://protesilaos.com/emacs/denote
   :bind
-  (("C-c d n" . denote)
-   ("C-c d l" . denote-link)
-   ("C-c d b" . denote-backlinks)
-   ("C-c d f" . denote-open-or-create)
-   ("C-c d s" . denote-search))
+  (("C-c n n" . denote)
+   ("C-c n l" . denote-link)
+   ("C-c n b" . denote-backlinks)
+   ("C-c n f" . denote-open-or-create)
+   ("C-c n s" . denote-search))
   :custom
   (denote-directory myde/denote-directory)
   (denote-infer-keywords t)
