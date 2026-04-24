@@ -144,25 +144,6 @@
 ;; Splash screen/Dashboard support
 ;; -----------------------------------------------------------------------------
 
-(use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
-  :config
-  (dashboard-setup-startup-hook)
-  (setq myde-banner-image-file (expand-file-name "myde-banner.png" user-emacs-directory))
-  (setq myde-banner-text-file (expand-file-name "myde-banner.txt" user-emacs-directory))
-  (setq dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
-  (setq dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")
-  (setq dashboard-display-icons-p t)
-  (setq dashboard-icon-type 'nerd-icons)
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  :custom
-  (dashboard-projects-backend 'projectile)
-  (dashboard-items '((recents . 5)
-                    (projects . 5)
-                    (bookmarks . 5)
-                    (agenda . 5)))
-  :ensure t)
-
 (use-package recentf
   :config
   (recentf-mode t)
@@ -560,6 +541,7 @@
 ;; Language modules
 ;; -----------------------------------------------------------------------------
 
+(load-file (expand-file-name "myde/core-dashboard/cfg.el"  user-emacs-directory))
 (load-file (expand-file-name "myde/core-complete/cfg.el"   user-emacs-directory))
 (load-file (expand-file-name "myde/core-notes/cfg.el"      user-emacs-directory))
 (load-file (expand-file-name "myde/core-projects/cfg.el"   user-emacs-directory))
