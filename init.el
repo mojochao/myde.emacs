@@ -78,6 +78,9 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
 
+;; Increase subprocess read buffer size for LSP throughput (default is 4096).
+(setq read-process-output-max (* 1024 1024))  ; 1 MiB
+
 ;; Store backups in separate directory.
 ;; TODO: switch to let* form
 (setq backup-directory (expand-file-name "backup" user-emacs-directory)
@@ -568,6 +571,19 @@
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
+;; Eldoc — on-demand only via eldoc-box
+;; -----------------------------------------------------------------------------
+
+;; Disable automatic echo-area display; docs are shown on demand with C-c e h.
+(use-package eldoc
+  :config
+  (setq eldoc-idle-delay most-positive-fixnum)
+  :ensure nil)
+
+(use-package eldoc-box  ;; https://github.com/casouri/eldoc-box
+  :ensure t)
+
+;; -----------------------------------------------------------------------------
 ;; LSP support
 ;; -----------------------------------------------------------------------------
 
@@ -576,7 +592,31 @@
          (go-mode . eglot-ensure)
          (elixir-ts-mode . eglot-ensure)
          (heex-ts-mode . eglot-ensure))
+  :bind (:map eglot-mode-map
+              ("C-c e a" . eglot-code-actions)
+              ("C-c e r" . eglot-rename)
+              ("C-c e f" . eglot-format)
+              ("C-c e i" . eglot-find-implementation)
+              ("C-c e t" . eglot-find-typeDefinition)
+              ("C-c e h" . eldoc-box-help-at-point)
+              ("C-c e q" . eldoc-box-quit-frame))
   :config
+  (setq eglot-autoshutdown t
+        eglot-events-buffer-size 0)
+  ;; gopls workspace configuration
+  (setq-default eglot-workspace-configuration
+                '((:gopls . (:staticcheck t
+                             :gofumpt t
+                             :usePlaceholders t
+                             :completeUnimported t
+                             :semanticTokens t
+                             :hints (:assignVariableTypes t
+                                     :compositeLiteralFields t
+                                     :compositeLiteralTypes t
+                                     :constantValues t
+                                     :functionTypeParameters t
+                                     :parameterNames t
+                                     :rangeVariableTypes t)))))
   (add-to-list 'eglot-server-programs
                '(elixir-ts-mode . (lambda (dir) (myde/mise-exec-which dir "elixir-ls"))))
   (add-to-list 'eglot-server-programs
@@ -598,14 +638,30 @@
 
 (use-package go-mode  ;; https://github.com/dominikh/go-mode.el
   :config
-  (setq gofmt-command "goimports")
+  ;; Format Go buffers on save via eglot (gopls/gofumpt).  The function is a
+  ;; no-op outside of go-ts-mode buffers or when eglot has not started.
+  (add-hook 'before-save-hook #'myde/go-eglot-format-buffer)
+  :custom
+  (go-ts-mode-indent-offset 4)
   :hook
   ((go-ts-mode . eglot-ensure)
-   (go-mode . eglot-ensure)
-   (go-mode . myde/goimports-setup))
+   (go-ts-mode . myde/go-ts-mode-setup)
+   (go-mode . eglot-ensure))
   :mode
   (("\\.go\\'" . myde/go-ts-or-plain-mode))
   :ensure t)
+
+(use-package gotest-ts  ;; https://github.com/chmouel/gotest-ts.el
+  ;; Tree-sitter-aware Go test runner: detects function and subtest at point.
+  :vc (:url "https://github.com/chmouel/gotest-ts.el" :rev :newest)
+  :after go-mode
+  :hook (go-ts-mode . gotest-ts-setup)
+  :bind (:map go-ts-mode-map
+              ("C-c t t" . gotest-ts-run-dwim)
+              ("C-c t f" . gotest-ts-run-file)
+              ("C-c t p" . gotest-ts-run-package)
+              ("C-c t r" . gotest-ts-repeat))
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Flycheck (on-the-fly syntax checking)
@@ -617,6 +673,14 @@
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   :ensure t)
+
+;; flymake is used by eglot for LSP diagnostics.  Provide navigation bindings
+;; alongside the global flycheck setup so eglot errors are easy to navigate.
+(use-package flymake
+  :bind (("C-c ! n" . flymake-goto-next-error)
+         ("C-c ! p" . flymake-goto-prev-error)
+         ("C-c ! l" . flymake-show-buffer-diagnostics))
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Snippets setup
@@ -712,6 +776,38 @@
   (dap-auto-configure-mode)
   (require 'dap-elixir)
   :ensure t)
+
+(use-package dape  ;; https://github.com/svaante/dape
+  ;; Lightweight DAP client; used for Go (dlv) alongside dap-mode for Elixir.
+  :ensure t
+  :config
+  (setq dape-buffer-window-arrangement 'right)
+  (add-to-list 'dape-configs
+               '(go-debug
+                 modes (go-ts-mode go-mode)
+                 command "dlv"
+                 command-args ("dap")
+                 :type "go"
+                 :request "launch"
+                 :mode "debug"
+                 :program "."))
+  (add-to-list 'dape-configs
+               '(go-test
+                 modes (go-ts-mode go-mode)
+                 command "dlv"
+                 command-args ("dap")
+                 :type "go"
+                 :request "launch"
+                 :mode "test"
+                 :program "."))
+  :bind (("C-c d d" . dape)
+         ("C-c d l" . dape-last)
+         ("C-c d b" . dape-breakpoint-toggle)
+         ("C-c d n" . dape-next)
+         ("C-c d s" . dape-step-in)
+         ("C-c d o" . dape-step-out)
+         ("C-c d c" . dape-continue)
+         ("C-c d q" . dape-quit)))
 
 ;; -----------------------------------------------------------------------------
 ;; Markdown editing setup
