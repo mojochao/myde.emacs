@@ -115,7 +115,7 @@ minibuffer, even without explicitly focusing it."
         (neotree-show)))))
 
 (defun myde/neotree-refresh ()
-  "Refresh neotree if visible."my
+  "Refresh neotree if visible."
   (when (neo-global--window-exists-p)
     (neo-buffer--refresh)))
 
