@@ -182,6 +182,22 @@ of go-ts-mode buffers and buffers where eglot is not managing."
     (eglot-format-buffer)))
 
 ;; -----------------------------------------------------------------------------
+;; Python support
+;; -----------------------------------------------------------------------------
+
+(defun myde/python-ts-mode-setup ()
+  "Set buffer-local settings for python-ts-mode buffers.
+Runs after mise-mode has applied the project environment, so
+`executable-find' resolves against the project venv."
+  (setq-local tab-width 4
+              indent-tabs-mode nil
+              fill-column 88  ; ruff/black default line length
+              python-shell-interpreter (or (executable-find "python3")
+                                           (executable-find "python")
+                                           "python3")
+              compile-command "python -m pytest"))
+
+;; -----------------------------------------------------------------------------
 ;; Org mode setup
 ;; -----------------------------------------------------------------------------
 
