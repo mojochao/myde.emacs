@@ -100,31 +100,6 @@ minibuffer, even without explicitly focusing it."
     (remove-hook 'before-save-hook #'myde/terraform-format-buffer t)))
 
 ;; -----------------------------------------------------------------------------
-;; Project tree explorer support
-;; -----------------------------------------------------------------------------
-
-(defun myde/neotree-project-root-toggle ()
-  "Toggle NeoTree.  If opening, set the root to the current 'project' root."
-  (interactive)
-  (if (and (fboundp 'neo-global--window-exists-p)
-           (neo-global--window-exists-p))
-      (neotree-hide)
-    (let ((project (project-current)))
-      (if project
-          (neotree-dir (project-root project))
-        (neotree-show)))))
-
-(defun myde/neotree-refresh ()
-  "Refresh neotree if visible."
-  (when (neo-global--window-exists-p)
-    (neo-buffer--refresh)))
-
-(defun myde/neotree-window-size-change-function (frame)
-  (let ((neo-window (neo-global--get-window)))
-    (unless (null neo-window)
-      (setq neo-window-width (window-width neo-window)))))
-
-;; -----------------------------------------------------------------------------
 ;; Generic programming modes support
 ;; -----------------------------------------------------------------------------
 

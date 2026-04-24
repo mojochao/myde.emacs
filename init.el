@@ -289,34 +289,7 @@
 ;;   (direnv-mode)
 ;;   :ensure t )
 
-;; -----------------------------------------------------------------------------
-;; Projects support
-;; -----------------------------------------------------------------------------
 
-(use-package projectile  ;; https://github.com/bbatsov/projectile
-  :config
-  (projectile-mode +1)
-  (setq projectile-project-search-path '("~/Projects/"))
-  :bind (:map projectile-mode-map
-              ("s-p" . projectile-command-map)
-              ("C-c p" . projectile-command-map))
-  :ensure t)
-
-;; -----------------------------------------------------------------------------
-;; Project tree explorer support
-;; -----------------------------------------------------------------------------
-
-(use-package neotree  ;; https://github.com/jaypei/emacs-neotree
-  :bind ([f8] . myde/neotree-project-root-toggle)
-  :commands (neotree-toggle)
-  :config
-  (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
-  (setq neo-window-fixed-size nil)
-  (add-to-list 'window-size-change-functions #'myde/neotree-window-size-change-function)
-  (add-hook 'after-save-hook #'myde/neotree-refresh)
-  (add-hook 'after-delete-file-hook #'myde/neotree-refresh)
-  (add-hook 'after-create-file-hook #'myde/neotree-refresh)
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Miscellaneous quality-of-life improvements
@@ -401,52 +374,7 @@
   :after magit
   :ensure t)
 
-;; -----------------------------------------------------------------------------
-;; Minibuffer completion stack
-;; -----------------------------------------------------------------------------
 
-(use-package vertico  ;; https://github.com/minad/vertico
-  :init
-  (vertico-mode)
-  :ensure t)
-
-(use-package orderless  ;; https://github.com/oantolin/orderless
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-pcm-leading-wildcard t)
-  (completion-category-overrides '((file (styles . (partial-completion)))))
-  :ensure t)
-
-(use-package marginalia  ;; https://github.com/minad/marginalia
-  :init
-  (marginalia-mode)
-  :ensure t)
-
-(use-package consult  ;; https://github.com/minad/consult
-  :bind (("C-s" . consult-line)
-         ("C-x b" . consult-buffer)
-         ("C-x C-b" . consult-buffer)
-         ("M-y" . consult-yank-pop))
-  :ensure t)
-
-(global-set-key (kbd "C-x C-b") #'consult-buffer)
-
-(use-package embark  ;; https://github.com/oantolin/embark
-  :bind (("C-." . embark-act)
-         ("C-h B" . embark-bindings))
-  :init
-  (setq prefix-help-command #'embark-prefix-help-command)
-  :ensure t)
-
-(use-package embark-consult
-  :hook (embark-collect-mode . consult-preview-at-point-mode)
-  :ensure t)
-
-(use-package corfu
-  :config
-  (global-corfu-mode)
-  (corfu-popupinfo-mode)
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter setup
@@ -655,6 +583,8 @@
 ;; Language modules
 ;; -----------------------------------------------------------------------------
 
+(load-file (expand-file-name "myde/core-complete/cfg.el"   user-emacs-directory))
+(load-file (expand-file-name "myde/core-projects/cfg.el"   user-emacs-directory))
 (load-file (expand-file-name "myde/prog-elisp/cfg.el"      user-emacs-directory))
 (load-file (expand-file-name "myde/prog-go/cfg.el"         user-emacs-directory))
 (load-file (expand-file-name "myde/prog-python/cfg.el"     user-emacs-directory))
