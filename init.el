@@ -138,33 +138,7 @@
 	(editorconfig-mode 1)
 	:ensure nil)
 
-;; -----------------------------------------------------------------------------
-;; Elisp programming support packages
-;; -----------------------------------------------------------------------------
 
-(use-package buttercup  ;; https://github.com/jorgenschaefer/emacs-buttercup
-  :ensure t)
-
-(use-package package-lint  ;; https://github.com/purcell/package-lint
-  :ensure t)
-
-(use-package cask-mode  ;; https://github.com/Wilfred/cask-mode
-  :ensure t)
-
-(use-package eask-mode  ;; https://github.com/emacs-eask/eask-mode
-  :ensure t)
-
-(use-package dash  ;; https://github.com/magnars/dash.el
-  :ensure t)
-
-(use-package s  ;; https://github.com/magnars/s.el
-  :ensure t)
-
-(use-package seq  ;; https://elpa.gnu.org/packages/seq.html
-  :ensure t)
-
-(use-package plz  ;; https://github.com/alphapapa/plz.el
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Splash screen/Dashboard support
@@ -481,16 +455,7 @@
 (use-package treesit
   :config
   (setq treesit-extra-load-path (list (expand-file-name "tree-sitter" user-emacs-directory)))
-  (add-to-list 'treesit-language-source-alist
-               '(go "https://github.com/tree-sitter-grammars/tree-sitter-go"))
-  (add-to-list 'treesit-language-source-alist
-               '(hcl "https://github.com/tree-sitter-grammars/tree-sitter-hcl"))
-  (add-to-list 'treesit-language-source-alist
-               '(elixir "https://github.com/elixir-lang/tree-sitter-elixir"))
-  (add-to-list 'treesit-language-source-alist
-               '(heex "https://github.com/phoenixframework/tree-sitter-heex"))
-  (add-to-list 'treesit-language-source-alist
-               '(python "https://github.com/tree-sitter/tree-sitter-python"))
+  ;; Language grammar sources are registered by each language module in myde/.
   :ensure nil)
 
 (use-package treesit-auto  ;; https://github.com/renzmann/treesit-auto
@@ -590,11 +555,9 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package eglot
-  :hook ((go-ts-mode . eglot-ensure)
-         (go-mode . eglot-ensure)
-         (elixir-ts-mode . eglot-ensure)
-         (heex-ts-mode . eglot-ensure)
-         (python-ts-mode . eglot-ensure))
+  ;; Hooks, server programs, and workspace config are registered by each
+  ;; language module in myde/.  Only shared keybindings and performance
+  ;; settings live here.
   :bind (:map eglot-mode-map
               ("C-c e a" . eglot-code-actions)
               ("C-c e r" . eglot-rename)
@@ -606,34 +569,6 @@
   :config
   (setq eglot-autoshutdown t
         eglot-events-buffer-size 0)
-  ;; gopls workspace configuration
-  (setq-default eglot-workspace-configuration
-                '((:gopls . (:staticcheck t
-                             :gofumpt t
-                             :usePlaceholders t
-                             :completeUnimported t
-                             :semanticTokens t
-                             :hints (:assignVariableTypes t
-                                     :compositeLiteralFields t
-                                     :compositeLiteralTypes t
-                                     :constantValues t
-                                     :functionTypeParameters t
-                                     :parameterNames t
-                                     :rangeVariableTypes t)))
-                  (:basedpyright .
-                   (:typeCheckingMode "standard"
-                    :useLibraryCodeForTypes t
-                    :diagnosticMode "workspace"
-                    :inlayHints (:variableTypes t
-                                 :functionReturnTypes t
-                                 :callArgumentNames t
-                                 :genericTypes t)))))
-  (add-to-list 'eglot-server-programs
-               '((python-mode python-ts-mode) . ("basedpyright-langserver" "--stdio")))
-  (add-to-list 'eglot-server-programs
-               '(elixir-ts-mode . (lambda (dir) (myde/mise-exec-which dir "elixir-ls"))))
-  (add-to-list 'eglot-server-programs
-               '(heex-ts-mode . (lambda (dir) (myde/mise-exec-which dir "elixir-ls"))))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -645,70 +580,9 @@
          ("\\.envrc\\'" . dotenv-mode))
   :ensure t)
 
-;; -----------------------------------------------------------------------------
-;; Golang setup
-;; -----------------------------------------------------------------------------
 
-(use-package go-mode  ;; https://github.com/dominikh/go-mode.el
-  :config
-  ;; Format Go buffers on save via eglot (gopls/gofumpt).  The function is a
-  ;; no-op outside of go-ts-mode buffers or when eglot has not started.
-  (add-hook 'before-save-hook #'myde/go-eglot-format-buffer)
-  :custom
-  (go-ts-mode-indent-offset 4)
-  :hook
-  ((go-ts-mode . eglot-ensure)
-   (go-ts-mode . myde/go-ts-mode-setup)
-   (go-mode . eglot-ensure))
-  :mode
-  (("\\.go\\'" . myde/go-ts-or-plain-mode))
-  :ensure t)
 
-(use-package gotest-ts  ;; https://github.com/chmouel/gotest-ts.el
-  ;; Tree-sitter-aware Go test runner: detects function and subtest at point.
-  :vc (:url "https://github.com/chmouel/gotest-ts.el" :rev :newest)
-  :after go-mode
-  :hook (go-ts-mode . gotest-ts-setup)
-  :bind (:map go-ts-mode-map
-              ("C-c t t" . gotest-ts-run-dwim)
-              ("C-c t f" . gotest-ts-run-file)
-              ("C-c t p" . gotest-ts-run-package)
-              ("C-c t r" . gotest-ts-repeat))
-  :ensure nil)
 
-;; -----------------------------------------------------------------------------
-;; Python setup
-;; -----------------------------------------------------------------------------
-
-(use-package python
-  :hook ((python-ts-mode . myde/python-ts-mode-setup)
-         (python-ts-mode . myde/delete-trailing-whitespace-setup)
-         (python-ts-mode . flycheck-mode))
-  :bind (:map python-ts-mode-map
-              ("C-c i i" . run-python)
-              ("C-c i r" . python-shell-send-region)
-              ("C-c i b" . python-shell-send-buffer)
-              ("C-c i d" . python-shell-send-defun)
-              ("C-c i s" . python-shell-switch-to-shell))
-  :mode ("\\.py\\'" . python-ts-mode)
-  :ensure nil)
-
-(use-package ruff-format  ;; https://github.com/scop/emacs-ruff-format
-  :hook (python-ts-mode . ruff-format-on-save-mode)
-  :ensure t)
-
-(use-package python-pytest  ;; https://github.com/wbolster/emacs-python-pytest
-  :after python
-  :bind (:map python-ts-mode-map
-              ("C-c t t" . python-pytest-function-dwim)
-              ("C-c t f" . python-pytest-file-dwim)
-              ("C-c t p" . python-pytest)
-              ("C-c t r" . python-pytest-repeat)
-              ("C-c t x" . python-pytest-last-failed)
-              ("C-c t m" . python-pytest-dispatch))
-  :custom
-  (python-pytest-unsaved-buffers-behavior 'save-all)
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Flycheck (on-the-fly syntax checking)
@@ -749,69 +623,7 @@
   :after yasnippet
   :ensure t)
 
-;; -----------------------------------------------------------------------------
-;; Elixir + Phoenix setup
-;; -----------------------------------------------------------------------------
 
-(use-package elixir-ts-mode
-  :mode (("\\.ex\\'" . elixir-ts-mode)
-         ("\\.exs\\'" . elixir-ts-mode)
-         ("\\.heex\\'" . elixir-ts-mode))
-  :hook ((elixir-ts-mode . eglot-ensure)
-         (elixir-ts-mode . myde/elixir-ts-ensure-grammars)
-         (elixir-ts-mode . flycheck-mode)
-         (elixir-ts-mode . myde/delete-trailing-whitespace-setup)
-         (elixir-ts-mode . yas-minor-mode))
-  :ensure nil)
-
-(use-package heex-ts-mode  ;; https://github.com/wkirschbaum/heex-ts-mode
-  :after elixir-ts-mode
-  :mode ("\\.heex\\'" . heex-ts-mode)
-  :hook ((heex-ts-mode . eglot-ensure)
-         (heex-ts-mode . myde/delete-trailing-whitespace-setup)
-         (heex-ts-mode . yas-minor-mode))
-  :ensure t)
-
-(use-package exunit  ;; https://github.com/ananthakumaran/exunit.el
-  :after elixir-ts-mode
-  :hook (elixir-ts-mode . exunit-mode)
-  :bind
-  (:map exunit-mode-map
-        ("C-c t a" . exunit-verify-all)
-        ("C-c t s" . exunit-verify-single)
-        ("C-c t t" . exunit-toggle-file-and-test))
-  :ensure t)
-
-(use-package elixir-iex  ;; https://github.com/mojochao/elixir-iex
-  :after (elixir-ts-mode eat)
-  :hook (elixir-ts-mode . elixir-iex-minor-mode)
-  :bind (:map elixir-iex-minor-mode-map
-              ("C-c i i" . elixir-iex)
-              ("C-c i p" . elixir-iex-project)
-              ("C-c i l" . elixir-iex-send-line)
-              ("C-c i r" . elixir-iex-send-region)
-              ("C-c i b" . elixir-iex-send-buffer)
-              ("C-c i m" . elixir-iex-reload-module)
-              ("C-c i s" . elixir-iex-set-repl))
-  :ensure nil)
-
-(use-package flycheck-credo  ;; https://github.com/aaronjensen/flycheck-credo
-  :after flycheck
-  :config
-  (flycheck-credo-setup)
-  (setq flycheck-elixir-credo-strict t)
-  :ensure t)
-
-(use-package flycheck-dialyxir  ;; https://github.com/aaronjensen/flycheck-dialyxir
-  :after flycheck
-  :config
-  (flycheck-dialyxir-setup)
-  :ensure t)
-
-(use-package mix  ;; https://github.com/ayrat555/mix.el
-  :after elixir-ts-mode
-  :hook ((elixir-ts-mode . mix-minor-mode))
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; DAP debugger support
@@ -821,51 +633,15 @@
   :after eglot
   :config
   (dap-auto-configure-mode)
-  (require 'dap-elixir)
+  ;; Language-specific DAP adapters are loaded by each language module in myde/.
   :ensure t)
 
 (use-package dape  ;; https://github.com/svaante/dape
-  ;; Lightweight DAP client; used for Go (dlv) alongside dap-mode for Elixir.
+  ;; Lightweight DAP client; debug configs are registered by each language
+  ;; module in myde/.  Only shared keybindings and layout settings live here.
   :ensure t
   :config
   (setq dape-buffer-window-arrangement 'right)
-  (add-to-list 'dape-configs
-               '(go-debug
-                 modes (go-ts-mode go-mode)
-                 command "dlv"
-                 command-args ("dap")
-                 :type "go"
-                 :request "launch"
-                 :mode "debug"
-                 :program "."))
-  (add-to-list 'dape-configs
-               '(go-test
-                 modes (go-ts-mode go-mode)
-                 command "dlv"
-                 command-args ("dap")
-                 :type "go"
-                 :request "launch"
-                 :mode "test"
-                 :program "."))
-  (add-to-list 'dape-configs
-               '(python-debug
-                 modes (python-mode python-ts-mode)
-                 command "python"
-                 command-args ("-m" "debugpy.adapter")
-                 :type "python"
-                 :request "launch"
-                 :program dape-buffer-default
-                 :justMyCode nil))
-  (add-to-list 'dape-configs
-               '(python-test
-                 modes (python-mode python-ts-mode)
-                 command "python"
-                 command-args ("-m" "debugpy.adapter")
-                 :type "python"
-                 :request "launch"
-                 :module "pytest"
-                 :args ["-x" "-s"]
-                 :justMyCode nil))
   :bind (("C-c d d" . dape)
          ("C-c d l" . dape-last)
          ("C-c d b" . dape-breakpoint-toggle)
@@ -874,6 +650,15 @@
          ("C-c d o" . dape-step-out)
          ("C-c d c" . dape-continue)
          ("C-c d q" . dape-quit)))
+
+;; -----------------------------------------------------------------------------
+;; Language modules
+;; -----------------------------------------------------------------------------
+
+(load-file (expand-file-name "myde/prog-elisp/cfg.el"  user-emacs-directory))
+(load-file (expand-file-name "myde/prog-go/cfg.el"     user-emacs-directory))
+(load-file (expand-file-name "myde/prog-python/cfg.el" user-emacs-directory))
+(load-file (expand-file-name "myde/prog-elixir/cfg.el" user-emacs-directory))
 
 ;; -----------------------------------------------------------------------------
 ;; Markdown editing setup

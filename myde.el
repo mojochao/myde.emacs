@@ -146,56 +146,18 @@ minibuffer, even without explicitly focusing it."
             (concat mise-executable " exec -- which " exe))))))
 
 ;; -----------------------------------------------------------------------------
-;; Elixir support
+;; eglot support
 ;; -----------------------------------------------------------------------------
 
-(defun myde/elixir-ts-ensure-grammars ()
-  "Ensure Elixir and HEEx tree-sitter grammars are installed."
-  (dolist (lang '(elixir heex))
-    (unless (treesit-ready-p lang t)
-      (message "Installing %s tree-sitter grammar..." lang)
-      (treesit-install-language-grammar lang))))
-
-;; -----------------------------------------------------------------------------
-;; Golang support
-;; -----------------------------------------------------------------------------
-
-(defun myde/go-ts-or-plain-mode ()
-  "Use 'myde/go-ts-mode' if Tree-sitter is available, otherwise fall back to go-mode."
-  (if (treesit-ready-p 'go)
-      (go-ts-mode)
-    (go-mode)))
-
-(defun myde/go-ts-mode-setup ()
-  "Set buffer-local settings for go-ts-mode buffers."
-  (setq-local tab-width 4
-              indent-tabs-mode t
-              fill-column 100
-              compile-command "go test ./..."))
-
-(defun myde/go-eglot-format-buffer ()
-  "Format buffer via eglot when in go-ts-mode and eglot is active.
-Safe to add to `before-save-hook' globally; it is a no-op outside
-of go-ts-mode buffers and buffers where eglot is not managing."
-  (when (and (eq major-mode 'go-ts-mode)
-             (bound-and-true-p eglot--managed-mode))
-    (eglot-format-buffer)))
-
-;; -----------------------------------------------------------------------------
-;; Python support
-;; -----------------------------------------------------------------------------
-
-(defun myde/python-ts-mode-setup ()
-  "Set buffer-local settings for python-ts-mode buffers.
-Runs after mise-mode has applied the project environment, so
-`executable-find' resolves against the project venv."
-  (setq-local tab-width 4
-              indent-tabs-mode nil
-              fill-column 88  ; ruff/black default line length
-              python-shell-interpreter (or (executable-find "python3")
-                                           (executable-find "python")
-                                           "python3")
-              compile-command "python -m pytest"))
+(defun myde/eglot-add-workspace-config (server-key config)
+  "Upsert CONFIG for SERVER-KEY in `eglot-workspace-configuration'.
+Safe to call from multiple language modules independently; replaces
+any existing entry for SERVER-KEY without clobbering other languages."
+  (setq-default eglot-workspace-configuration
+                (cons (cons server-key config)
+                      (assq-delete-all server-key
+                                       (default-value
+                                         'eglot-workspace-configuration)))))
 
 ;; -----------------------------------------------------------------------------
 ;; Org mode setup
