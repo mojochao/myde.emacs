@@ -163,8 +163,6 @@ any existing entry for SERVER-KEY without clobbering other languages."
   (local-set-key (kbd "j") #'org-noter-sync-next-note)
   (local-set-key (kbd "k") #'org-noter-sync-prev-note))
 
-(defvar myde/denote-directory "~/org/notes/")
-
 ;; -----------------------------------------------------------------------------
 ;; Secrets (auth-source-1password) support
 ;; -----------------------------------------------------------------------------

@@ -408,30 +408,7 @@
   (org-return-follows-link t)
   :ensure nil)
 
-;; -----------------------------------------------------------------------------
-;; I capture general thoughts with denote.
-;; -----------------------------------------------------------------------------
 
-(use-package denote  ;; https://protesilaos.com/emacs/denote
-  :bind
-  (("C-c n n" . denote)
-   ("C-c n l" . denote-link)
-   ("C-c n b" . denote-backlinks)
-   ("C-c n f" . denote-open-or-create)
-   ("C-c n s" . denote-search))
-  :custom
-  (denote-directory myde/denote-directory)
-  (denote-infer-keywords t)
-  (denote-sort-keywords t)
-  (denote-known-keywords
-   '("paper"
-     "book"
-     "research"
-     "distributed-systems"
-     "kubernetes"
-     "consensus"
-     "raft"))
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Reading and research support.
@@ -584,6 +561,7 @@
 ;; -----------------------------------------------------------------------------
 
 (load-file (expand-file-name "myde/core-complete/cfg.el"   user-emacs-directory))
+(load-file (expand-file-name "myde/core-notes/cfg.el"      user-emacs-directory))
 (load-file (expand-file-name "myde/core-projects/cfg.el"   user-emacs-directory))
 (load-file (expand-file-name "myde/prog-elisp/cfg.el"      user-emacs-directory))
 (load-file (expand-file-name "myde/prog-go/cfg.el"         user-emacs-directory))
