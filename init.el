@@ -655,24 +655,13 @@
 ;; Language modules
 ;; -----------------------------------------------------------------------------
 
-(load-file (expand-file-name "myde/prog-elisp/cfg.el"  user-emacs-directory))
-(load-file (expand-file-name "myde/prog-go/cfg.el"     user-emacs-directory))
-(load-file (expand-file-name "myde/prog-python/cfg.el" user-emacs-directory))
-(load-file (expand-file-name "myde/prog-elixir/cfg.el" user-emacs-directory))
+(load-file (expand-file-name "myde/prog-elisp/cfg.el"      user-emacs-directory))
+(load-file (expand-file-name "myde/prog-go/cfg.el"         user-emacs-directory))
+(load-file (expand-file-name "myde/prog-python/cfg.el"     user-emacs-directory))
+(load-file (expand-file-name "myde/prog-elixir/cfg.el"     user-emacs-directory))
+(load-file (expand-file-name "myde/text-markdown/cfg.el"   user-emacs-directory))
 
-;; -----------------------------------------------------------------------------
-;; Markdown editing setup
-;; -----------------------------------------------------------------------------
 
-(use-package markdown-mode  ;; https://github.com/jrblevin/markdown-mode
-  :init
-  (setq markdown-command "multimarkdown")
-  :mode (("\\.md\\'" . gfm-mode)
-         ("README\\.md\\'" . gfm-mode))
-  :hook ((markdown-mode . display-line-numbers-mode)
-         (markdown-mode . myde/delete-trailing-whitespace-setup))
-  :bind (:map markdown-mode-map ("C-c C-e" . markdown-do))
-  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Terraform support
