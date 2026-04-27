@@ -11,8 +11,24 @@
   (when exists
     (load-file custom-file)))
 
+;; Store backups in separate directory.
+;; TODO: switch to let* form
+(setq backup-directory (expand-file-name "backup" user-emacs-directory)
+      backup-directory-alist `(("." . ,backup-directory)))
+(make-directory backup-directory :parents)
+
 ;; Load myde.el functions
 (load-file (expand-file-name "myde.el" user-emacs-directory))
+
+;; Package initialization
+(require 'package)
+(setq package-archives
+      '(("melpa"  . "https://melpa.org/packages/")
+        ("gnu"    . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+(setq package-install-upgrade-built-in t)
+(unless package-archive-contents
+  (package-refresh-contents))
 
 ;; -----------------------------------------------------------------------------
 ;; Basic UI settings
@@ -65,43 +81,18 @@
 (setq kill-buffer-query-functions
       (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
 
-;; Configure terminals.
-(set-terminal-coding-system 'utf-8-unix)
-
 ;; Configure display of line numbers.
 (add-hook 'prog-mode-hook (lambda ()
                             (display-line-numbers-mode t)
                             (hl-line-mode t)))
 (add-hook 'prog-mode-hook #'myde/delete-trailing-whitespace-setup)
 
-;; Store custom settings in separate file.
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
-
 ;; Increase subprocess read buffer size for LSP throughput (default is 4096).
 (setq read-process-output-max (* 1024 1024))  ; 1 MiB
-
-;; Store backups in separate directory.
-;; TODO: switch to let* form
-(setq backup-directory (expand-file-name "backup" user-emacs-directory)
-      backup-directory-alist `(("." . ,backup-directory)))
-(make-directory backup-directory :parents)
 
 ;; Auto-detect shebang comments and use shell-script-mode appropriately.
 (dolist (interp '("bash" "sh" "zsh"))
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
-
-;; -----------------------------------------------------------------------------
-;; Package initialization
-;; -----------------------------------------------------------------------------
-(require 'package)
-(setq package-archives
-      '(("melpa"  . "https://melpa.org/packages/")
-        ("gnu"    . "https://elpa.gnu.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-(setq package-install-upgrade-built-in t)
-(unless package-archive-contents
-  (package-refresh-contents))
 
 ;; -----------------------------------------------------------------------------
 ;; macOS-specific setup
@@ -252,24 +243,6 @@
   (auth-source-1password-vault "My API credentials")
   :ensure t)
 
-;; -----------------------------------------------------------------------------
-;; Tools support
-;; -----------------------------------------------------------------------------
-
-(use-package mason  ;; https://github.com/mason-org/mason.el
-  :config
-  (mason-setup)
-  :ensure t)
-
-(use-package mise  ;; https://github.com/eki3z/mise.el
-  :ensure t
-  :hook (after-init . global-mise-mode))
-
-;; (use-package direnv  ;; https://github.com/wbolster/emacs-direnv
-;;   :config
-;;   (direnv-mode)
-;;   :ensure t )
-
 
 
 ;; -----------------------------------------------------------------------------
@@ -311,67 +284,7 @@
                                        (window-height . 0.33)))
   :ensure t)
 
-;; -----------------------------------------------------------------------------
-;; Discoverability setup
-;; -----------------------------------------------------------------------------
 
-(use-package which-key
-  :init
-  (which-key-mode)
-  :ensure nil)
-
-(use-package helpful  ;; https://github.com/Wilfred/helpful
-  :bind
-  (("C-c C-d" . helpful-at-point)
-   ("C-h f" . helpful-callable)
-   ("C-h F" . helpful-function)
-   ("C-h k" . helpful-key)
-   ("C-h v" . helpful-variable))
-  :ensure t)
-
-;; -----------------------------------------------------------------------------
-;; Terminals setup
-;; -----------------------------------------------------------------------------
-
-(use-package eat  ;; https://codeberg.org/akib/emacs-eat
-  :ensure t)
-
-(use-package vterm  ;; https://github.com/akermu/emacs-libvterm
-  :commands
-  (vterm)
-  :config
-  (setq global-hl-line-modes '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode))  ;; Disable hl-line-mode in all terminal-like modes
-  :ensure t)
-
-;; -----------------------------------------------------------------------------
-;; Version control setup
-;; -----------------------------------------------------------------------------
-
-(use-package magit  ;; https://github.com/magit/magit
-  :commands (magit-status)
-  :ensure t)
-
-(use-package forge  ;; https://github.com/magit/forge
-  :after magit
-  :ensure t)
-
-
-
-;; -----------------------------------------------------------------------------
-;; Tree-sitter setup
-;; -----------------------------------------------------------------------------
-
-(use-package treesit
-  :config
-  (setq treesit-extra-load-path (list (expand-file-name "tree-sitter" user-emacs-directory)))
-  ;; Language grammar sources are registered by each language module in myde/.
-  :ensure nil)
-
-(use-package treesit-auto  ;; https://github.com/renzmann/treesit-auto
-  :config
-  (setq treesit-auto-install t) ; install grammars automatically, if missing
-  (global-treesit-auto-mode)
-  :ensure t)
 
 ;; =============================================================================
 ;; External brain support.
@@ -424,126 +337,18 @@
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
-;; Eldoc — on-demand only via eldoc-box
-;; -----------------------------------------------------------------------------
-
-;; Disable automatic echo-area display; docs are shown on demand with C-c e h.
-(use-package eldoc
-  :config
-  (setq eldoc-idle-delay most-positive-fixnum)
-  :ensure nil)
-
-(use-package eldoc-box  ;; https://github.com/casouri/eldoc-box
-  :ensure t)
-
-;; -----------------------------------------------------------------------------
-;; LSP support
-;; -----------------------------------------------------------------------------
-
-(use-package eglot
-  ;; Hooks, server programs, and workspace config are registered by each
-  ;; language module in myde/.  Only shared keybindings and performance
-  ;; settings live here.
-  :bind (:map eglot-mode-map
-              ("C-c e a" . eglot-code-actions)
-              ("C-c e r" . eglot-rename)
-              ("C-c e f" . eglot-format)
-              ("C-c e i" . eglot-find-implementation)
-              ("C-c e t" . eglot-find-typeDefinition)
-              ("C-c e h" . eldoc-box-help-at-point)
-              ("C-c e q" . eldoc-box-quit-frame))
-  :config
-  (setq eglot-autoshutdown t
-        eglot-events-buffer-size 0)
-  :ensure nil)
-
-;; -----------------------------------------------------------------------------
-;; Environment files
-;; -----------------------------------------------------------------------------
-
-(use-package dotenv-mode
-  :mode (("\\.env\\'" . dotenv-mode)
-         ("\\.envrc\\'" . dotenv-mode))
-  :ensure t)
-
-
-
-
-
-;; -----------------------------------------------------------------------------
-;; Flycheck (on-the-fly syntax checking)
-;; -----------------------------------------------------------------------------
-
-(use-package flycheck  ;; https://github.com/flycheck/flycheck
-  :init
-  (global-flycheck-mode)
-  :config
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  :ensure t)
-
-;; flymake is used by eglot for LSP diagnostics.  Provide navigation bindings
-;; alongside the global flycheck setup so eglot errors are easy to navigate.
-(use-package flymake
-  :bind (("C-c ! n" . flymake-goto-next-error)
-         ("C-c ! p" . flymake-goto-prev-error)
-         ("C-c ! l" . flymake-show-buffer-diagnostics))
-  :ensure nil)
-
-;; -----------------------------------------------------------------------------
 ;; Snippets setup
 ;; -----------------------------------------------------------------------------
-
-(use-package yasnippet  ;; https://github.com/joaotavora/yasnippet
-  :config
-  (setq yas-snippet-dirs (cons (expand-file-name "snippets" user-emacs-directory)
-                               yas-snippet-dirs))
-  (yas-global-mode 1)
-  ;; Do not bind TAB globally for snippet expansion -- it conflicts with
-  ;; comint/REPL completion (e.g. inf-elixir).  Snippets can still be
-  ;; expanded via `yas-insert-snippet' or the `yas-minor-mode-map' binding.
-  (define-key yas-minor-mode-map (kbd "TAB") nil)
-  (define-key yas-minor-mode-map [(tab)] nil)
-  :ensure t)
-
-(use-package yasnippet-classic-snippets  ;; https://elpa.gnu.org/packages/yasnippet-classic-snippets.html
-  :after yasnippet
-  :ensure t)
-
-
-
-;; -----------------------------------------------------------------------------
-;; DAP debugger support
-;; -----------------------------------------------------------------------------
-
-(use-package dap-mode  ;; https://github.com/emacs-lsp/dap-mode
-  :after eglot
-  :config
-  (dap-auto-configure-mode)
-  ;; Language-specific DAP adapters are loaded by each language module in myde/.
-  :ensure t)
-
-(use-package dape  ;; https://github.com/svaante/dape
-  ;; Lightweight DAP client; debug configs are registered by each language
-  ;; module in myde/.  Only shared keybindings and layout settings live here.
-  :ensure t
-  :config
-  (setq dape-buffer-window-arrangement 'right)
-  :bind (("C-c d d" . dape)
-         ("C-c d l" . dape-last)
-         ("C-c d b" . dape-breakpoint-toggle)
-         ("C-c d n" . dape-next)
-         ("C-c d s" . dape-step-in)
-         ("C-c d o" . dape-step-out)
-         ("C-c d c" . dape-continue)
-         ("C-c d q" . dape-quit)))
 
 ;; -----------------------------------------------------------------------------
 ;; Language modules
 ;; -----------------------------------------------------------------------------
 
+(load-file (expand-file-name "myde/core-terminals/cfg.el"  user-emacs-directory))
 (load-file (expand-file-name "myde/core-dashboard/cfg.el"  user-emacs-directory))
 (load-file (expand-file-name "myde/core-complete/cfg.el"   user-emacs-directory))
 (load-file (expand-file-name "myde/core-notes/cfg.el"      user-emacs-directory))
+(load-file (expand-file-name "myde/core-snippets/cfg.el"   user-emacs-directory))
 (load-file (expand-file-name "myde/core-projects/cfg.el"   user-emacs-directory))
 (load-file (expand-file-name "myde/prog-elisp/cfg.el"      user-emacs-directory))
 (load-file (expand-file-name "myde/prog-go/cfg.el"         user-emacs-directory))
