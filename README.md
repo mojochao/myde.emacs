@@ -40,7 +40,7 @@ Each module contains:
 
 **`lib.el`**
 - Contains pure library code: `defun`, `defvar`, `defcustom`
-- Requires core utilities via `(require 'myde)`
+- Does not require other modules (all utilities are distributed across modules)
 - Provides a feature symbol: `(provide 'myde-<category>-<name>)`
 
 **`cfg.el`**
