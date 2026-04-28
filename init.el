@@ -22,6 +22,7 @@
 (myde/load-module "core-projects")
 
 ;; AI modules
+(myde/load-module "ai-base")
 (myde/load-module "ai-gptel")
 (myde/load-module "ai-agents")
 (myde/load-module "ai-claude")
