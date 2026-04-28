@@ -1,7 +1,9 @@
 # AGENTS.md — MyDE Emacs Configuration
 
-Personal Emacs config (v29+) organized as a modular system.
+Personal Emacs config (v29+) organized as a modular system with [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir/basedir-spec-latest.html) compliance.
 This directory is a symlink to `~/.config/emacs`.
+
+**Portable to Emacs 30+:** Uses built-in `xdg.el` library for path management.
 
 ## Key facts
 
@@ -50,8 +52,15 @@ This directory is a symlink to `~/.config/emacs`.
 
 **Module loading is idempotent:** Each `cfg.el`'s `featurep` guard prevents re-evaluation.
 
+**XDG Base Directory compliance:**
+- Backups → `$XDG_STATE_HOME/emacs/backup/` (default: `~/.local/state/emacs/backup/`)
+- State files (recentf, projects, history) → `$XDG_STATE_HOME/emacs/`
+- Packages/data (elpa, transient, tree-sitter) → `$XDG_DATA_HOME/emacs/` (default: `~/.local/share/emacs/`)
+- Cache (eln-cache, url) → `$XDG_CACHE_HOME/emacs/` (default: `~/.cache/emacs/`)
+- Uses Emacs 29.1+ `xdg.el` library functions; no custom path logic needed
+
 **Backup and custom handling:**
-- Backups stored in `backup/` (created automatically by init.el)
+- Backups stored in XDG state directory (created automatically by init.el)
 - `custom.el` path set at init.el startup; loaded if it exists
 
 **macOS-specific behavior:**
@@ -67,5 +76,8 @@ This directory is a symlink to `~/.config/emacs`.
 ## High-value references
 
 - `docs/prog-modules-design.md` — Detailed design; read before major architecture changes
+- `docs/xdg-migration-plan.md` — XDG directory structure and rationale
+- `docs/xdg-migration-execution.md` — Complete migration execution log
 - `README.md` — Organization section documents module structure and conventions
 - `Makefile` — Two targets: `make link` (install), `make unlink` (remove); `EMACS_INIT_DIR` defaults to `~/.config/emacs`
+- [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir/basedir-spec-latest.html) — Standard for organizing user data/config/cache

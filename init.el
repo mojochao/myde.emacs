@@ -4,6 +4,8 @@
 
 ;;; Code:
 
+(require 'xdg)
+
 ;; Load customizations
 (let* ((path (expand-file-name "custom.el" user-emacs-directory))
        (exists (file-exists-p path)))
@@ -11,9 +13,8 @@
   (when exists
     (load-file custom-file)))
 
-;; Store backups in separate directory.
-;; TODO: switch to let* form
-(setq backup-directory (expand-file-name "backup" user-emacs-directory)
+;; Store backups in XDG state directory
+(setq backup-directory (expand-file-name "emacs/backup" (xdg-state-home))
       backup-directory-alist `(("." . ,backup-directory)))
 (make-directory backup-directory :parents)
 
@@ -29,6 +30,22 @@
 (setq package-install-upgrade-built-in t)
 (unless package-archive-contents
   (package-refresh-contents))
+
+;; Auto-save list file (crash recovery index)
+(setq auto-save-list-file-prefix
+      (expand-file-name "emacs/auto-save-list/.saves-" (xdg-state-home)))
+
+;; TRAMP connection cache
+(setq tramp-persistency-file-name
+      (expand-file-name "emacs/tramp" (xdg-state-home)))
+
+;; URL library configuration (cookies, cache)
+(setq url-configuration-directory
+      (expand-file-name "emacs/url/" (xdg-cache-home)))
+
+;; Transient (magit, forge, etc. history)
+(setq transient-base-dir
+      (expand-file-name "emacs/transient" (xdg-data-home)))
 
 ;; -----------------------------------------------------------------------------
 ;; Basic UI settings
@@ -139,6 +156,8 @@
   :config
   (recentf-mode t)
   (setq recentf-auto-cleanup (if (daemonp) 300 'never))
+  (setq recentf-save-file
+        (expand-file-name "emacs/recentf.eld" (xdg-state-home)))
   (setq recentf-exclude
         '("^/tmp/" "^/ssh:" "/COMMIT_EDITMSG\\'"
           "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
@@ -268,7 +287,8 @@
          ("C-<"         . mc/mark-previous-like-this)  ;; add previous match
          ("C-c C-<"     . mc/mark-all-like-this))      ;; mark all matches
   :config
-  (setq mc/list-file (locate-user-emacs-file "mc-lists.el"))
+  (setq mc/list-file
+        (expand-file-name "emacs/mc-lists.el" (xdg-state-home)))
   (setq mc/always-run-for-all t)   ;; Make cursor movement more predictable
   :ensure t)
 
@@ -302,7 +322,30 @@
   (org-return-follows-link t)
   :ensure nil)
 
+;; Project list (project.el)
+(setq project-list-file
+      (expand-file-name "emacs/projects.eld" (xdg-state-home)))
 
+;; Ebook reading state
+(use-package nov
+  :custom
+  (nov-place-file
+   (expand-file-name "emacs/nov-places" (xdg-state-home)))
+  :ensure nil)
+
+;; Forge database
+(use-package forge
+  :custom
+  (forge-database-file
+   (expand-file-name "emacs/forge-database.sqlite" (xdg-data-home)))
+  :ensure nil)
+
+;; DAP debugger breakpoints
+(use-package dap-mode
+  :custom
+  (dap-breakpoints-file
+   (expand-file-name "emacs/.dap-breakpoints" (xdg-state-home)))
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Reading and research support.

@@ -20,6 +20,8 @@
   :config
   (projectile-mode +1)
   (setq projectile-project-search-path '("~/Projects/"))
+  (setq projectile-known-projects-file
+        (expand-file-name "emacs/projectile-bookmarks.eld" (xdg-data-home)))
   :bind (:map projectile-mode-map
               ("s-p"   . projectile-command-map)
               ("C-c p" . projectile-command-map))
@@ -47,7 +49,8 @@
 
 (use-package treesit
   :config
-  (setq treesit-extra-load-path (list (expand-file-name "tree-sitter" user-emacs-directory)))
+  (setq treesit-extra-load-path
+        (list (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
   ;; Language grammar sources are registered by each language module in myde/.
   :ensure nil)
 
@@ -119,6 +122,8 @@
 (use-package mason  ;; https://github.com/mason-org/mason.el
   :config
   (mason-setup)
+  (setq mason-directory
+        (expand-file-name "emacs/mason/" (xdg-data-home)))
   :ensure t)
 
 (use-package mise  ;; https://github.com/eki3z/mise.el
