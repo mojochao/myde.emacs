@@ -15,17 +15,19 @@
 (load-file (expand-file-name "myde.el" user-emacs-directory))
 
 ;; XDG directory support and built-in configuration
+;; It is important that this is loaded early before we set locations
+;; for the various state files written by emacs and external packages.
 (use-package xdg
   :ensure nil)
 
 (use-package emacs
   :after xdg
-  :init
+  :config
   ;; Store backups in XDG state directory
   (setq backup-directory (expand-file-name "emacs/backup" (xdg-state-home))
         backup-directory-alist `(("." . ,backup-directory)))
   (make-directory backup-directory :parents)
-  :config
+
   ;; Package initialization
   (require 'package)
   (setq package-user-dir
