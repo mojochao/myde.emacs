@@ -36,8 +36,8 @@
   (setq package-user-dir
         (expand-file-name "emacs/elpa" (xdg-data-home)))
 
-  ;; Redirect native compilation cache (Emacs 29+)
-  (when (fboundp 'startup-redirect-eln-cache)
+  ;; Redirect native compilation cache
+  (when (featurep 'native-compile)
     (startup-redirect-eln-cache
      (expand-file-name "emacs/eln-cache" (xdg-cache-home))))
   
@@ -49,10 +49,6 @@
   (unless package-archive-contents
     (package-refresh-contents))
   (package-initialize)
-
-  ;; Auto-save list file (crash recovery index)
-  (setq auto-save-list-file-prefix
-        (expand-file-name "emacs/auto-save-list/.saves-" (xdg-state-home)))
 
   ;; TRAMP connection cache
   (setq tramp-persistency-file-name

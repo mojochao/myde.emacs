@@ -15,6 +15,8 @@
     anthropic/claude-sonnet-4.5
     anthropic/claude-sonnet-4.6
     deepseek/deepseek-v3.2
+    deepseek/deepseek-v4-flash
+    deepseek/deepseek-v4-pro
     google/gemini-2.5-flash
     google/gemini-2.5-flash-lite
     google/gemini-3-flash-preview
@@ -36,6 +38,7 @@
     moonshotai/kimi-k2-thinking
     moonshotai/kimi-k2.5
     moonshotai/kimi-k2.6
+    nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
     nvidia/nemotron-3-super-120b-a12b:free
     nvidia/nemotron-nano-12b-v2-vl:free
     nvidia/nemotron-nano-9b-v2:free
@@ -45,12 +48,20 @@
     openai/gpt-5.3-codex
     openai/gpt-5.4
     openai/gpt-5.4-mini
+    openai/gpt-5.5
+    openai/gpt-5.5-pro
     openai/gpt-oss-120b
     openai/gpt-oss-120b:free
     openrouter/free
+    poolside/laguna-m.1:free
+    poolside/laguna-xs.2:free
     qwen/qwen3-coder-next
     qwen/qwen3-coder:free
     qwen/qwen3-max-thinking
+    qwen/qwen3.6-27b
+    qwen/qwen3.6-35b-a3b
+    qwen/qwen3.6-flash
+    qwen/qwen3.6-max-preview
     qwen/qwen3.6-plus:free
     x-ai/grok-4
     x-ai/grok-4-fast

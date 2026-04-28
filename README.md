@@ -1,8 +1,8 @@
 # My Development Environment
 
 My Development Environment, or MyDE for short, is my personal Emacs configuration
-for modern Emacs versions (minimum v29), providing a consistent, convenient DX
-across Linux and macOS platforms.
+for modern Emacs versions (minimum v30, compiled with native-compile support),
+providing a consistent, convenient DX across Linux and macOS platforms.
 
 ## Installation
 
