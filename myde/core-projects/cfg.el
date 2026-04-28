@@ -205,6 +205,8 @@
    (expand-file-name "emacs/forge-database.sqlite" (xdg-data-home)))
   :ensure t)
 
+(use-package git-modes  ;; https://github.com/magit/git-modes
+  :ensure t)
 
 (provide 'myde-core-projects-cfg)
 ;;; cfg.el ends here
