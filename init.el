@@ -40,6 +40,7 @@
 ;; Programming language modules
 (myde/load-module "prog-base")
 (myde/load-module "prog-elisp")
+(myde/load-module "prog-erlang")
 (myde/load-module "prog-elixir")
 (myde/load-module "prog-fish")
 (myde/load-module "prog-go")

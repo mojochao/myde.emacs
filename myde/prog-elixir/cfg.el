@@ -51,6 +51,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package elixir-ts-mode
+  :after erlang
   :mode (("\\.ex\\'"   . elixir-ts-mode)
          ("\\.exs\\'"  . elixir-ts-mode)
          ("\\.heex\\'" . elixir-ts-mode))
