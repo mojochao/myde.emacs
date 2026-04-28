@@ -94,6 +94,10 @@
 ;; Squelch annoying confirmation if a file or buffer does not exist.
 (setq confirm-nonexistent-file-or-buffer nil)
 
+;; Suppress native compilation warnings for undefined functions in third-party packages.
+;; These warnings don't affect runtime functionality; the functions are available at runtime.
+(setq native-comp-warning-on-missing-defs nil)
+
 ;; Squelch prompt to kill buffer with process attached to it.
 (setq kill-buffer-query-functions
       (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
@@ -153,11 +157,12 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package recentf
+  :init
+  (setq recentf-save-file
+        (expand-file-name "emacs/recentf.eld" (xdg-state-home)))
   :config
   (recentf-mode t)
   (setq recentf-auto-cleanup (if (daemonp) 300 'never))
-  (setq recentf-save-file
-        (expand-file-name "emacs/recentf.eld" (xdg-state-home)))
   (setq recentf-exclude
         '("^/tmp/" "^/ssh:" "/COMMIT_EDITMSG\\'"
           "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))

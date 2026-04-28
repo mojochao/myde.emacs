@@ -120,10 +120,11 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package mason  ;; https://github.com/mason-org/mason.el
+  :init
+  (setq mason-dir
+        (expand-file-name "emacs/mason" (xdg-data-home)))
   :config
   (mason-setup)
-  (setq mason-directory
-        (expand-file-name "emacs/mason/" (xdg-data-home)))
   :ensure t)
 
 (use-package mise  ;; https://github.com/eki3z/mise.el
