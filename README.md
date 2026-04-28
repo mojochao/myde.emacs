@@ -42,6 +42,7 @@ Each module contains:
 - Contains pure library code: `defun`, `defvar`, `defcustom`
 - Does not require other modules (all utilities are distributed across modules)
 - Provides a feature symbol: `(provide 'myde-<category>-<name>)`
+- Hook functions must be defined here as named functions (e.g., `myde/foo-mode-hook`) — never use lambdas as hook functions
 
 **`cfg.el`**
 - Contains all configuration with side effects: `use-package` declarations, hooks, etc.

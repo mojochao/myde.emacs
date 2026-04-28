@@ -51,6 +51,7 @@ XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :conf
 - `core-base` loads first and is the only module that calls `package-initialize`.
 - Language modules share keybinding prefixes: `C-c e` (eglot/LSP), `C-c t` (tests), `C-c i` (REPL), `C-c d` (dape/debug).
 - `myde/eglot-add-workspace-config` in `core-projects/lib.el` upserts LSP workspace config without clobbering other modules' settings.
+- **Never use lambdas as hook functions.** Always define a named function (e.g., `myde/foo-mode-hook`) in the module's `lib.el` and reference it by name in `cfg.el`.
 
 ### Adding a module
 
