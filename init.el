@@ -44,6 +44,7 @@
 (myde/load-module "prog-fish")
 (myde/load-module "prog-go")
 (myde/load-module "prog-python")
+(myde/load-module "prog-rust")
 
 ;; Text format modules
 (myde/load-module "text-markdown")
