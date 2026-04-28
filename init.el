@@ -4,8 +4,6 @@
 
 ;;; Code:
 
-(require 'xdg)
-
 ;; Load customizations
 (let* ((path (expand-file-name "custom.el" user-emacs-directory))
        (exists (file-exists-p path)))
@@ -13,35 +11,51 @@
   (when exists
     (load-file custom-file)))
 
-;; Store backups in XDG state directory
-(setq backup-directory (expand-file-name "emacs/backup" (xdg-state-home))
-      backup-directory-alist `(("." . ,backup-directory)))
-(make-directory backup-directory :parents)
-
 ;; Load myde.el functions
 (load-file (expand-file-name "myde.el" user-emacs-directory))
 
-;; Package initialization
-(require 'package)
-(setq package-archives
-      '(("melpa"  . "https://melpa.org/packages/")
-        ("gnu"    . "https://elpa.gnu.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-(setq package-install-upgrade-built-in t)
-(unless package-archive-contents
-  (package-refresh-contents))
+;; XDG directory support and built-in configuration
+(use-package xdg
+  :ensure nil)
 
-;; Auto-save list file (crash recovery index)
-(setq auto-save-list-file-prefix
-      (expand-file-name "emacs/auto-save-list/.saves-" (xdg-state-home)))
+(use-package emacs
+  :after xdg
+  :init
+  ;; Store backups in XDG state directory
+  (setq backup-directory (expand-file-name "emacs/backup" (xdg-state-home))
+        backup-directory-alist `(("." . ,backup-directory)))
+  (make-directory backup-directory :parents)
+  :config
+  ;; Package initialization
+  (require 'package)
+  (setq package-user-dir
+        (expand-file-name "emacs/elpa" (xdg-data-home)))
 
-;; TRAMP connection cache
-(setq tramp-persistency-file-name
-      (expand-file-name "emacs/tramp" (xdg-state-home)))
+  ;; Redirect native compilation cache (Emacs 29+)
+  (when (fboundp 'startup-redirect-eln-cache)
+    (startup-redirect-eln-cache
+     (expand-file-name "emacs/eln-cache" (xdg-cache-home))))
+  
+  (setq package-archives
+        '(("melpa"  . "https://melpa.org/packages/")
+          ("gnu"    . "https://elpa.gnu.org/packages/")
+          ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+  (setq package-install-upgrade-built-in t)
+  (unless package-archive-contents
+    (package-refresh-contents))
+  (package-initialize)
 
-;; URL library configuration (cookies, cache)
-(setq url-configuration-directory
-      (expand-file-name "emacs/url/" (xdg-cache-home)))
+  ;; Auto-save list file (crash recovery index)
+  (setq auto-save-list-file-prefix
+        (expand-file-name "emacs/auto-save-list/.saves-" (xdg-state-home)))
+
+  ;; TRAMP connection cache
+  (setq tramp-persistency-file-name
+        (expand-file-name "emacs/tramp" (xdg-state-home)))
+
+  ;; URL library configuration (cookies, cache)
+  (setq url-configuration-directory
+        (expand-file-name "emacs/url/" (xdg-cache-home))))
 
 ;; -----------------------------------------------------------------------------
 ;; Basic UI settings
@@ -504,6 +518,7 @@
     z-ai/glm-5.1))
 
 (use-package gptel  ;; https://github.com/karthink/gptel
+  :after transient
   :config
   (gptel-make-openai "OpenRouter"
     :host "openrouter.ai"
@@ -555,9 +570,11 @@
   :ensure t)
 
 (use-package acp  ;; https://github.com/xenodium/acp.el
+  :after transient
   :ensure t)
 
 (use-package agent-shell  ;; https://github.com/xenodium/agent-shell
+  :after transient
   :ensure t)
 
 ;; TODO: move this where it belongs in use-package config

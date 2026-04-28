@@ -87,6 +87,7 @@
 
 ;; Flycheck (on-the-fly syntax checking)
 (use-package flycheck  ;; https://github.com/flycheck/flycheck
+  :after transient
   :init
   (global-flycheck-mode)
   :config
@@ -144,6 +145,7 @@
 (use-package dape  ;; https://github.com/svaante/dape
   ;; Lightweight DAP client; debug configs are registered by each language
   ;; module in myde/.  Only shared keybindings and layout settings live here.
+  :after transient
   :ensure t
   :config
   (setq dape-buffer-window-arrangement 'right)

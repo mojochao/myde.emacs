@@ -74,6 +74,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
+  :after transient
   :config
   (add-to-list 'dape-configs
                '(go-debug

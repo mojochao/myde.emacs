@@ -81,6 +81,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
+  :after transient
   :config
   (add-to-list 'dape-configs
                '(python-debug
