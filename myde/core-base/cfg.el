@@ -110,8 +110,10 @@
 (use-package transient
   :after xdg
   :init
-  (setq transient-base-dir
-        (expand-file-name "emacs/transient" (xdg-data-home)))
+  (let ((dir (expand-file-name "emacs/transient" (xdg-data-home))))
+    (setq transient-levels-file  (expand-file-name "levels.el"  dir)
+          transient-values-file  (expand-file-name "values.el"  dir)
+          transient-history-file (expand-file-name "history.el" dir)))
   :ensure nil)
 
 ;; Auto-save buffers on focus loss
