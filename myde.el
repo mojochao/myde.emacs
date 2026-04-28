@@ -134,22 +134,9 @@ any existing entry for SERVER-KEY without clobbering other languages."
                                        (default-value
                                          'eglot-workspace-configuration)))))
 
-;; -----------------------------------------------------------------------------
-;; Org mode setup
-;; -----------------------------------------------------------------------------
+;; Org mode setup moved to myde/core-org module
 
-(defvar myde/org-directory "~/org/")
-(defvar myde/reading-notes "~/org/reading/")
-(defvar myde/highlight-file "~/org/highlights.org")
-
-(defun myde/find-org-agenda-files (root-dir)
-  '("/home/agooch/Projects/platykus/org/tasks.org"
-    "/home/agooch/Projects/myde/org/tasks.org"
-    "/home/agooch/Projects/mydc/org/tasks.org"
-    "/home/agooch/Projects/playdate/org/tasks.org"
-    "/home/agooch/Projects/life/org/tasks.org"
-    "/home/agooch/Projects/dayjob/org/tasks.org"))
-
+;; Reading utilities (used across modules)
 (defun myde/reading-setup ()
   "Improve readability for long-form documents."
   (visual-line-mode 1)
@@ -163,31 +150,8 @@ any existing entry for SERVER-KEY without clobbering other languages."
   (local-set-key (kbd "j") #'org-noter-sync-next-note)
   (local-set-key (kbd "k") #'org-noter-sync-prev-note))
 
-;; -----------------------------------------------------------------------------
-;; Secrets (auth-source-1password) support
-;; -----------------------------------------------------------------------------
-
-(defun myde/auth-source-1password-construct-secret-reference
-    (_backend _type host &optional user _port)
-  "Construct 1Password entry path as vault/host/password (or vault/host/user/password if user provided)."
-  (if user
-      (mapconcat #'identity (list auth-source-1password-vault host user "password") "/")
-    (mapconcat #'identity (list auth-source-1password-vault host "password") "/")))
-
-;; -----------------------------------------------------------------------------
-;; AI enablement
-;; -----------------------------------------------------------------------------
-
-(defun myde/gptel-api-key-from-environment (&optional var)
-  (lambda ()
-    (getenv (or var                     ;provided key
-                (thread-first           ;or fall back to <TYPE>_API_KEY
-                  (type-of gptel-backend)
-                  (symbol-name)
-                  (substring 6)
-                  (upcase)
-                  (concat "_API_KEY"))))))
-
+;; Secrets (auth-source-1password) support moved to myde/auth-1password module
+;; AI (gptel) support moved to myde/ai-gptel module
 
 ;; -----------------------------------------------------------------------------
 ;; That's all folks!!!

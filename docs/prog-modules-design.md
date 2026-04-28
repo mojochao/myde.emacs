@@ -25,8 +25,8 @@ myde/
 ```
 
 The `prog-` prefix is a namespace convention for programming language modules.
-Other module categories may be introduced later (e.g. `tool-`, `ui-`) following
-the same pattern.
+Other module categories exist following the same pattern: `core-*` (infrastructure),
+`text-*` (text formats), `ebook-*` (ebook readers).
 
 ## File conventions
 
@@ -225,11 +225,22 @@ The same granularity convention is used across all language modules:
 
 ## What stays in `init.el`
 
-- Package archive setup and `use-package` bootstrap
-- Core Emacs settings (UI, scrolling, backups, encoding)
-- All non-language packages (completion stack, magit, projectile, themes, AI, etc.)
-- Shared tool base declarations (`treesit`, `eglot`, `flycheck`, `dape`)
-- The 3-line language module loader section
+- Loading `myde.el` (core utilities)
+- Loading module `cfg.el` files (via `load-file` in organized sections)
+- All non-language/non-UI packages (completion stack, magit, projectile, AI, shells, etc.)
+- Shared tool base declarations (`treesit`, `eglot`, `flycheck`, `dape`, `transient`)
+- Recentf and other state file management
+
+## What moves to `core-base` module
+
+- XDG Base Directory configuration (`xdg` package, `emacs` package XDG paths)
+- Backup directory setup (XDG state)
+- Package archive setup and initialization
+- LSP subprocess buffer configuration
+- Auto-save list file and TRAMP cache (XDG state)
+- Custom.el loading
+- Shell interpreter auto-detection
+- macOS-specific setup (dired, ls command)
 
 ## What stays in `myde.el`
 
@@ -240,8 +251,7 @@ The same granularity convention is used across all language modules:
 - Org/denote variables
 - Secrets and AI helpers
 
-`myde.el` will eventually become `myde/core/lib.el` but remains at the repo
-root for now.
+`myde.el` remains at the repo root as the core library.
 
 ## Adding a new language module
 

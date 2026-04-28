@@ -27,6 +27,34 @@
               ("C-c p" . projectile-command-map))
   :ensure t)
 
+;; Built-in project management
+(use-package project
+  :custom
+  (project-list-file
+   (expand-file-name "emacs/projects.eld" (xdg-state-home)))
+  :ensure nil)
+
+;; EditorConfig support for project-wide formatting rules
+(use-package editorconfig
+  :config
+  (editorconfig-mode 1)
+  :ensure nil)
+
+;; Declare optional functions referenced by neotree to suppress native compiler warnings
+(eval-when-compile
+  (defvar all-the-icons-icon-for-file nil)
+  (defvar all-the-icons-icon-for-dir-with-chevron nil)
+  (defvar nerd-icons-icon-for-file nil)
+  (defvar nerd-icons-icon-for-dir nil)
+  (defvar nerd-icons-octicon nil)
+  (declare-function all-the-icons-icon-for-file "all-the-icons" (file &rest _))
+  (declare-function all-the-icons-icon-for-dir-with-chevron "all-the-icons" (dir &rest _))
+  (declare-function nerd-icons-icon-for-file "nerd-icons" (file &rest _))
+  (declare-function nerd-icons-icon-for-dir "nerd-icons" (dir &rest _))
+  (declare-function nerd-icons-octicon "nerd-icons" (name &rest _))
+  (declare-function linum-mode "linum" (&optional _))
+  (declare-function projectile-project-buffers "projectile" ()))
+
 ;; -----------------------------------------------------------------------------
 ;; Project tree explorer
 ;; -----------------------------------------------------------------------------
@@ -138,6 +166,9 @@
 
 (use-package dap-mode  ;; https://github.com/emacs-lsp/dap-mode
   :after (transient eglot)
+  :custom
+  (dap-breakpoints-file
+   (expand-file-name "emacs/.dap-breakpoints" (xdg-state-home)))
   :config
   (dap-auto-configure-mode)  ;; Language-specific DAP adapters are loaded by each language module in myde/prog-*/ module dirs.
   :ensure t)
@@ -169,6 +200,9 @@
 
 (use-package forge  ;; https://github.com/magit/forge
   :after (transient magit)
+  :custom
+  (forge-database-file
+   (expand-file-name "emacs/forge-database.sqlite" (xdg-data-home)))
   :ensure t)
 
 

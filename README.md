@@ -25,9 +25,10 @@ MyDE uses a modular architecture where configuration is organized into self-cont
 
 Modules follow a `<category>-<name>` naming convention:
 
-- **`prog-*`** — Programming language modules (e.g. `prog-go`, `prog-python`, `prog-elixir`, `prog-elisp`)
-- **`core-*`** — Core infrastructure and productivity tools (e.g. `core-complete`, `core-dashboard`, `core-projects`)
+- **`prog-*`** — Programming language modules (e.g. `prog-base`, `prog-go`, `prog-python`, `prog-elixir`, `prog-elisp`)
+- **`core-*`** — Core infrastructure and productivity tools (e.g. `core-base`, `core-ui`, `core-ux`, `core-complete`, `core-dashboard`, `core-projects`)
 - **`text-*`** — Text format modules (e.g. `text-markdown`)
+- **`ebook-*`** — Ebook reader modules (e.g. `ebook-pdf`, `ebook-epub`)
 
 ### Module structure
 
@@ -52,9 +53,12 @@ Each module contains:
 
 | Module path | lib.el feature | cfg.el feature |
 |-------------|---|---|
+| `myde/core-base/lib.el` | `myde-core-base` | `myde-core-base-cfg` |
 | `myde/prog-go/lib.el` | `myde-prog-go` | `myde-prog-go-cfg` |
 | `myde/core-dashboard/lib.el` | `myde-core-dashboard` | `myde-core-dashboard-cfg` |
+| `myde/core-ui/lib.el` | `myde-core-ui` | `myde-core-ui-cfg` |
 | `myde/text-markdown/lib.el` | `myde-text-markdown` | `myde-text-markdown-cfg` |
+| `myde/ebook-pdf/lib.el` | `myde-ebook-pdf` | `myde-ebook-pdf-cfg` |
 
 Pattern: `myde-<category>-<name>` for lib, `myde-<category>-<name>-cfg` for cfg.
 
