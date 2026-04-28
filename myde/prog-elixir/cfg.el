@@ -41,6 +41,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dap-mode
+  :after transient
   :config
   (require 'dap-elixir)
   :ensure nil)

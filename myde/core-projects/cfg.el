@@ -136,7 +136,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dap-mode  ;; https://github.com/emacs-lsp/dap-mode
-  :after eglot
+  :after (transient eglot)
   :config
   (dap-auto-configure-mode)  ;; Language-specific DAP adapters are loaded by each language module in myde/prog-*/ module dirs.
   :ensure t)
@@ -161,11 +161,12 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package magit  ;; https://github.com/magit/magit
+  :after transient
   :commands (magit-status)
   :ensure t)
 
 (use-package forge  ;; https://github.com/magit/forge
-  :after magit
+  :after (transient magit)
   :ensure t)
 
 

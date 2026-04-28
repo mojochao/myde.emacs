@@ -43,10 +43,6 @@
 (setq url-configuration-directory
       (expand-file-name "emacs/url/" (xdg-cache-home)))
 
-;; Transient (magit, forge, etc. history)
-(setq transient-base-dir
-      (expand-file-name "emacs/transient" (xdg-data-home)))
-
 ;; -----------------------------------------------------------------------------
 ;; Basic UI settings
 ;; -----------------------------------------------------------------------------
@@ -168,6 +164,12 @@
           "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
   (add-hook 'kill-emacs-hook #'recentf-cleanup -90)
   :commands (recentf-mode recentf-cleanup)
+  :ensure nil)
+
+(use-package transient
+  :init
+  (setq transient-base-dir
+        (expand-file-name "emacs/transient" (xdg-data-home)))
   :ensure nil)
 
 (use-package buffer-guardian  ;; https://github.com/jamescherti/buffer-guardian.el
@@ -340,6 +342,7 @@
 
 ;; Forge database
 (use-package forge
+  :after transient
   :custom
   (forge-database-file
    (expand-file-name "emacs/forge-database.sqlite" (xdg-data-home)))
@@ -347,6 +350,7 @@
 
 ;; DAP debugger breakpoints
 (use-package dap-mode
+  :after transient
   :custom
   (dap-breakpoints-file
    (expand-file-name "emacs/.dap-breakpoints" (xdg-state-home)))
