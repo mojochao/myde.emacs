@@ -30,6 +30,7 @@
 (myde/load-module "auth-1password")
 
 ;; Data language modules
+(myde/load-module "data-json")
 (myde/load-module "data-terraform")
 (myde/load-module "data-toml")
 (myde/load-module "data-yaml")
