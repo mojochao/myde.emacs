@@ -4,46 +4,50 @@
 
 ;;; Code:
 
+(defun myde/load-module (name)
+  "Load the cfg.el for module NAME (without myde/ prefix)."
+  (load-file (expand-file-name (concat "myde/" name "/cfg.el") user-emacs-directory)))
+
 ;; Core modules
-(load-file (expand-file-name "myde/core-base/cfg.el"      user-emacs-directory))
-(load-file (expand-file-name "myde/core-ui/cfg.el"        user-emacs-directory))
-(load-file (expand-file-name "myde/core-ux/cfg.el"        user-emacs-directory))
-(load-file (expand-file-name "myde/core-org/cfg.el"       user-emacs-directory))
-(load-file (expand-file-name "myde/core-help/cfg.el"      user-emacs-directory))
-(load-file (expand-file-name "myde/core-terminals/cfg.el" user-emacs-directory))
-(load-file (expand-file-name "myde/core-dashboard/cfg.el" user-emacs-directory))
-(load-file (expand-file-name "myde/core-complete/cfg.el"  user-emacs-directory))
-(load-file (expand-file-name "myde/core-notes/cfg.el"     user-emacs-directory))
-(load-file (expand-file-name "myde/core-snippets/cfg.el"  user-emacs-directory))
-(load-file (expand-file-name "myde/core-projects/cfg.el"  user-emacs-directory))
-
-;; Auth modules
-(load-file (expand-file-name "myde/auth-1password/cfg.el" user-emacs-directory))
-
-;; Ebook modules
-(load-file (expand-file-name "myde/ebook-pdf/cfg.el"      user-emacs-directory))
-(load-file (expand-file-name "myde/ebook-epub/cfg.el"     user-emacs-directory))
-
-;; Data format modules
-(load-file (expand-file-name "myde/data-terraform/cfg.el" user-emacs-directory))
-(load-file (expand-file-name "myde/data-toml/cfg.el"      user-emacs-directory))
-(load-file (expand-file-name "myde/data-yaml/cfg.el"      user-emacs-directory))
-
-;; Programming base + language modules
-(load-file (expand-file-name "myde/prog-base/cfg.el"      user-emacs-directory))
-(load-file (expand-file-name "myde/prog-fish/cfg.el"      user-emacs-directory))
-(load-file (expand-file-name "myde/prog-elisp/cfg.el"     user-emacs-directory))
-(load-file (expand-file-name "myde/prog-go/cfg.el"        user-emacs-directory))
-(load-file (expand-file-name "myde/prog-python/cfg.el"    user-emacs-directory))
-(load-file (expand-file-name "myde/prog-elixir/cfg.el"    user-emacs-directory))
-
-;; Text format modules
-(load-file (expand-file-name "myde/text-markdown/cfg.el"  user-emacs-directory))
+(myde/load-module "core-base")
+(myde/load-module "core-ui")
+(myde/load-module "core-ux")
+(myde/load-module "core-org")
+(myde/load-module "core-help")
+(myde/load-module "core-terminals")
+(myde/load-module "core-dashboard")
+(myde/load-module "core-complete")
+(myde/load-module "core-notes")
+(myde/load-module "core-snippets")
+(myde/load-module "core-projects")
 
 ;; AI modules
-(load-file (expand-file-name "myde/ai-gptel/cfg.el"       user-emacs-directory))
-(load-file (expand-file-name "myde/ai-agents/cfg.el"      user-emacs-directory))
-(load-file (expand-file-name "myde/ai-claude/cfg.el"      user-emacs-directory))
+(myde/load-module "ai-gptel")
+(myde/load-module "ai-agents")
+(myde/load-module "ai-claude")
+
+;; Auth modules
+(myde/load-module "auth-1password")
+
+;; Data language modules
+(myde/load-module "data-terraform")
+(myde/load-module "data-toml")
+(myde/load-module "data-yaml")
+
+;; Programming language modules
+(myde/load-module "prog-base")
+(myde/load-module "prog-elisp")
+(myde/load-module "prog-elixir")
+(myde/load-module "prog-fish")
+(myde/load-module "prog-go")
+(myde/load-module "prog-python")
+
+;; Text format modules
+(myde/load-module "text-markdown")
+
+;; Ebook modules
+(myde/load-module "ebook-epub")
+(myde/load-module "ebook-pdf")
 
 (provide 'init)
 ;;; init.el ends here

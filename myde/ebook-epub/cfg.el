@@ -8,6 +8,7 @@
   (load-file (expand-file-name "myde/ebook-epub/lib.el" user-emacs-directory)))
 
 (use-package nov  ;; https://depp.brause.cc/nov.el
+  :after xdg
   :init
   (setq nov-text-width 80
         nov-place-file

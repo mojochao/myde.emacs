@@ -6,8 +6,6 @@
 
 ;; Startup configuration
 (setq warning-minimum-level :error)
-(save-place-mode)
-(savehist-mode)
 (setq recentf-max-saved-items 50)
 
 ;; Create missing directories automatically

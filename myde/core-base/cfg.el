@@ -90,6 +90,26 @@
   :commands (recentf-mode recentf-cleanup)
   :ensure nil)
 
+;; Remember last position within files
+(use-package saveplace
+  :after xdg
+  :init
+  (setq save-place-file
+        (expand-file-name "emacs/places.eld" (xdg-state-home)))
+  :config
+  (save-place-mode)
+  :ensure nil)
+
+;; Remember minibuffer history
+(use-package savehist
+  :after xdg
+  :init
+  (setq savehist-file
+        (expand-file-name "emacs/history" (xdg-state-home)))
+  :config
+  (savehist-mode)
+  :ensure nil)
+
 ;; Transient menus and popups
 (use-package transient
   :after xdg
