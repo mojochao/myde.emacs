@@ -36,6 +36,9 @@
 ;; Enable display of column numbers in buffer modeline
 (setq column-number-mode t)
 
+;; Show full file path (or default-directory for non-file buffers) in frame title
+(setq frame-title-format '("%b — " (:eval (or buffer-file-name default-directory))))
+
 ;; UI quality of life improvements
 (use-package spacious-padding  ;; https://github.com/protesilaos/spacious-padding
   :config
