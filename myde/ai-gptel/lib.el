@@ -6,7 +6,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defvar myde/openrouter-models
   '(anthropic/claude-haiku-4.5

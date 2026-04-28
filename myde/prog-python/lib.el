@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defun myde/python-ts-mode-setup ()
   "Set buffer-local settings for python-ts-mode buffers.

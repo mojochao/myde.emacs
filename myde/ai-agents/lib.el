@@ -6,7 +6,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-ai-agents)
 ;;; lib.el ends here

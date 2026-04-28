@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-core-complete)
 ;;; lib.el ends here

@@ -4,7 +4,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-ebook-pdf)
 ;;; lib.el ends here

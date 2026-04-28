@@ -5,7 +5,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-data-yaml)
 ;;; lib.el ends here

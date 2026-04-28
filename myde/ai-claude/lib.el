@@ -6,7 +6,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-ai-claude)
 ;;; lib.el ends here

@@ -4,9 +4,6 @@
 
 ;;; Code:
 
-;; Load myde.el functions
-(load-file (expand-file-name "myde.el" user-emacs-directory))
-
 ;; Core modules
 (load-file (expand-file-name "myde/core-base/cfg.el"      user-emacs-directory))
 (load-file (expand-file-name "myde/core-ui/cfg.el"        user-emacs-directory))

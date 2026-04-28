@@ -8,9 +8,7 @@
   (load-file (expand-file-name "myde/prog-base/lib.el" user-emacs-directory)))
 
 ;; Configure display of line numbers and current line highlighting
-(add-hook 'prog-mode-hook (lambda ()
-                            (display-line-numbers-mode t)
-                            (hl-line-mode t)))
+(add-hook 'prog-mode-hook #'myde/prog-mode-hook-function)
 (add-hook 'prog-mode-hook #'myde/delete-trailing-whitespace-setup)
 
 (provide 'myde-prog-base-cfg)

@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-core-snippets)
 ;;; lib.el ends here

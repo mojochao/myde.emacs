@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defun myde/emacs-lisp-mode-setup ()
   "Set buffer-local settings for emacs-lisp-mode buffers."

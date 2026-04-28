@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-core-terminals)
 ;;; lib.el ends here

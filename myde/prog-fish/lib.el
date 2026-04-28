@@ -4,7 +4,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-prog-fish)
 ;;; lib.el ends here

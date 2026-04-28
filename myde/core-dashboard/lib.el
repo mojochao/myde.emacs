@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defvar myde/banner-image-file
   (expand-file-name "myde/core-dashboard/myde-banner.png" user-emacs-directory)

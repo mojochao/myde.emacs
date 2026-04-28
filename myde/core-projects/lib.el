@@ -7,7 +7,15 @@
 
 ;;; Code:
 
-(require 'myde)
+(defun myde/eglot-add-workspace-config (server-key config)
+  "Upsert CONFIG for SERVER-KEY in `eglot-workspace-configuration'.
+Safe to call from multiple language modules independently; replaces
+any existing entry for SERVER-KEY without clobbering other languages."
+  (setq-default eglot-workspace-configuration
+                (cons (cons server-key config)
+                      (assq-delete-all server-key
+                                       (default-value
+                                         'eglot-workspace-configuration)))))
 
 (defun myde/neotree-project-root-toggle ()
   "Toggle NeoTree.  If opening, set the root to the current project root."

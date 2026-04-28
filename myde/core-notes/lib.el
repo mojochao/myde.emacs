@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defvar myde/denote-directory "~/org/notes/"
   "Root directory for denote notes.")

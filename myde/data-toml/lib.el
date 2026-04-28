@@ -5,7 +5,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defun myde/toml-ts-or-plain-mode ()
   "Use `toml-ts-mode' if tree-sitter is available, otherwise fall back to `toml-mode'."

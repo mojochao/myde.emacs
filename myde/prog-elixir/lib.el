@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defun myde/elixir-ts-ensure-grammars ()
   "Ensure Elixir and HEEx tree-sitter grammars are installed."

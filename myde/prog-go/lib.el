@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defun myde/go-ts-or-plain-mode ()
   "Use `go-ts-mode' if tree-sitter is available, otherwise fall back to `go-mode'."

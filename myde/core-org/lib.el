@@ -5,7 +5,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 ;; Org mode directories and files
 (defvar myde/org-directory "~/org/"

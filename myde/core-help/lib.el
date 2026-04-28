@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (provide 'myde-core-help)
 ;;; lib.el ends here

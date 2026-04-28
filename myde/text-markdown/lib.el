@@ -7,7 +7,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defun myde/markdown-mode-setup ()
   "Set buffer-local settings for markdown-mode buffers."

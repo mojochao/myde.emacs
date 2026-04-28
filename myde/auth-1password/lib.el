@@ -6,7 +6,6 @@
 
 ;;; Code:
 
-(require 'myde)
 
 (defun myde/auth-source-1password-construct-secret-reference
     (_backend _type host &optional user _port)
