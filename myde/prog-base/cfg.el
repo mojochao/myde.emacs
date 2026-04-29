@@ -11,5 +11,12 @@
 (add-hook 'prog-mode-hook #'myde/prog-mode-hook-function)
 (add-hook 'prog-mode-hook #'myde/delete-trailing-whitespace-setup)
 
+;; Consistent multi-language formatter foundation.
+;; Individual language modules register their formatter via apheleia-mode-alist.
+(use-package apheleia
+  :config
+  (apheleia-global-mode +1)
+  :ensure t)
+
 (provide 'myde-prog-base-cfg)
 ;;; cfg.el ends here
