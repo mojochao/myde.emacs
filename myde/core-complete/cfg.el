@@ -59,6 +59,7 @@
   :config
   (global-corfu-mode)
   (corfu-popupinfo-mode)
+  :diminish corfu-mode
   :ensure t)
 
 (provide 'myde-core-complete-cfg)

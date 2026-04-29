@@ -62,6 +62,7 @@
 (use-package whole-line-or-region  ;; https://github.com/purcell/whole-line-or-region
   :config
   (whole-line-or-region-global-mode)
+  :diminish whole-line-or-region-local-mode
   :ensure t)
 
 ;; Path action tool configuration

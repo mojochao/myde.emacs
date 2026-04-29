@@ -30,6 +30,7 @@
 (use-package which-key
   :init
   (which-key-mode)
+  :diminish which-key-mode
   :ensure nil)
 
 (provide 'myde-core-help-cfg)

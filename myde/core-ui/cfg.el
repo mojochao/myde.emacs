@@ -39,6 +39,13 @@
 ;; Show full file path (or default-directory for non-file buffers) in frame title
 (setq frame-title-format '("%b — " (:eval (or buffer-file-name default-directory))))
 
+;; Hide or shorten minor-mode lighters that convey no real-time information
+(use-package diminish
+  :config
+  (diminish 'eldoc-mode)
+  (diminish 'auto-revert-mode)
+  :ensure t)
+
 ;; UI quality of life improvements
 (use-package spacious-padding  ;; https://github.com/protesilaos/spacious-padding
   :config

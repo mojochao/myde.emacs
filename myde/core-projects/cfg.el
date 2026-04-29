@@ -25,6 +25,7 @@
   :bind (:map projectile-mode-map
               ("s-p"   . projectile-command-map)
               ("C-c p" . projectile-command-map))
+  :diminish projectile-mode
   :ensure t)
 
 ;; Built-in project management
@@ -38,6 +39,7 @@
 (use-package editorconfig
   :config
   (editorconfig-mode 1)
+  :diminish editorconfig-mode
   :ensure nil)
 
 ;; Declare optional functions referenced by neotree to suppress native compiler warnings
@@ -86,6 +88,7 @@
   :config
   (setq treesit-auto-install t) ; install grammars automatically, if missing
   (global-treesit-auto-mode)
+  :diminish treesit-auto-mode
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -120,6 +123,7 @@
   (global-flycheck-mode)
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  :diminish (flycheck-mode . " ✓")
   :ensure t)
 
 ;; flymake is used by eglot for LSP diagnostics.  Provide navigation bindings
@@ -157,8 +161,9 @@
   :ensure t)
 
 (use-package mise  ;; https://github.com/eki3z/mise.el
-  :ensure t
-  :hook (after-init . global-mise-mode))
+  :hook (after-init . global-mise-mode)
+  :diminish mise-mode
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Debugger support

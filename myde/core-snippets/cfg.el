@@ -19,6 +19,7 @@
   ;; expanded via `yas-insert-snippet' or the `yas-minor-mode-map' binding.
   (define-key yas-minor-mode-map (kbd "TAB") nil)
   (define-key yas-minor-mode-map [(tab)] nil)
+  :diminish yas-minor-mode
   :ensure t)
 
 (use-package yasnippet-classic-snippets  ;; https://elpa.gnu.org/packages/yasnippet-classic-snippets.html

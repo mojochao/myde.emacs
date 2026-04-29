@@ -84,6 +84,7 @@
           "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
   (add-hook 'kill-emacs-hook #'recentf-cleanup -90)
   :commands (recentf-mode recentf-cleanup)
+  :diminish recentf-mode
   :ensure nil)
 
 ;; Remember last position within files
@@ -94,6 +95,7 @@
         (expand-file-name "emacs/places.eld" (xdg-state-home)))
   :config
   (save-place-mode)
+  :diminish save-place-mode
   :ensure nil)
 
 ;; Remember minibuffer history
@@ -104,6 +106,7 @@
         (expand-file-name "emacs/history" (xdg-state-home)))
   :config
   (savehist-mode)
+  :diminish savehist-mode
   :ensure nil)
 
 ;; Transient menus and popups
@@ -126,6 +129,7 @@
   ;; (buffer-guardian-save-all-buffers-idle 30)           ;; Save all buffers after N seconds of user idle time. (Disabled by default)
   :hook
   (after-init . buffer-guardian-mode)
+  :diminish buffer-guardian-mode
   :ensure t)
 
 ;; macOS-specific setup
