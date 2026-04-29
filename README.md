@@ -1,4 +1,4 @@
-# My Development Environment
+# My Development Environment - Emacs
 
 My Development Environment, or MyDE for short, is my personal Emacs configuration
 for modern Emacs versions (minimum v30, compiled with native-compile support),
@@ -6,7 +6,8 @@ providing a consistent, convenient DX across Linux and macOS platforms.
 
 ## Installation
 
-Run the following commands to install MyDE configuration into your
+Run the following commands to install MyDE configuration into your local emacs
+config directory, `~/.config/emacs` by default
 
 ```shell
 git clone https://github.com/mojochao/myde.el
@@ -15,7 +16,7 @@ make link
 ```
 
 At this point, you should be able to launch Emacs, at which time packages
-will be downloaded and configured as defined by MyDE elisp configuration.
+will be downloaded and configured as defined by this elisp configuration.
 
 ## Organization
 
