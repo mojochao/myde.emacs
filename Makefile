@@ -18,7 +18,7 @@ SHELL = /usr/bin/env bash -o pipefail
 ROOT_DIR ?= $(shell git rev-parse --show-toplevel)
 
 # Emacs init directory symlink destination.
-EMACS_INIT_DIR ?= $(HOME)/.config/emacs
+EMACS_DIR ?= $(HOME)/.config/emacs
 
 # ==============================================================================
 # Build targets
@@ -43,17 +43,17 @@ help: ## Show this help
 
 .PHONY: vars
 vars: ## Show environment variables used by this Makefile
-	@echo "ROOT_DIR:        $(ROOT_DIR)"
-	@echo "EMACS_INIT_DIR:  $(EMACS_INIT_DIR)"
+	@echo "ROOT_DIR:   $(ROOT_DIR)"
+	@echo "EMACS_DIR:  $(EMACS_DIR)"
 
 ##@ MyDE config install targets
 
 .PHONY: link
 link: ## Symlink MyDE in emacs init directory
-	@echo 'linking config to $(EMACS_INIT_DIR)'
-	ln -fs $(ROOT_DIR) $(EMACS_INIT_DIR)
+	@echo 'linking config to $(EMACS_DIR)'
+	ln -fs $(ROOT_DIR) $(EMACS_DIR)
 
 .PHONY: unlink
 unlink: ## Unlink MyDE in emacs init directory
-	@echo 'unlinking config in $(EMACS_INIT_DIR)'
-	unlink $(EMACS_INIT_DIR)
+	@echo 'unlinking config in $(EMACS_DIR)'
+	unlink $(EMACS_DIR)
