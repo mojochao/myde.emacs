@@ -44,6 +44,7 @@
 (myde/load-module "prog-elisp")
 (myde/load-module "prog-clojure")
 (myde/load-module "prog-scheme")
+(myde/load-module "prog-clisp")
 (myde/load-module "prog-nushell")
 (myde/load-module "prog-erlang")
 (myde/load-module "prog-elixir")
