@@ -39,16 +39,20 @@
 
 ;; Programming language modules
 (myde/load-module "prog-base")
+(myde/load-module "prog-bash")
+(myde/load-module "prog-fish")
 (myde/load-module "prog-elisp")
+(myde/load-module "prog-clojure")
+(myde/load-module "prog-scheme")
+(myde/load-module "prog-nushell")
 (myde/load-module "prog-erlang")
 (myde/load-module "prog-elixir")
-(myde/load-module "prog-fish")
-(myde/load-module "prog-go")
-(myde/load-module "prog-python")
-(myde/load-module "prog-typescript")
-(myde/load-module "prog-javascript")
-(myde/load-module "prog-rust")
 (myde/load-module "prog-cpp")
+(myde/load-module "prog-go")
+(myde/load-module "prog-rust")
+(myde/load-module "prog-python")
+(myde/load-module "prog-javascript")
+(myde/load-module "prog-typescript")
 
 ;; Text format modules
 (myde/load-module "text-markdown")
