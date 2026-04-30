@@ -41,7 +41,7 @@
 ;;                    package system that every other module relies on.
 ;;   2. ai-*      --  base, gptel, agents, claude.
 ;;   3. auth-*    --  1password.
-;;   4. data-*    --  csv, json, terraform, toml, yaml.
+;;   4. data-*    --  csv, json, terraform, toml, xml, yaml.
 ;;   5. prog-*    --  base then language modules.  `prog-base' MUST
 ;;                    load before any language module.
 ;;   6. text-*    --  markdown.
@@ -92,6 +92,7 @@ Idempotent: re-evaluating `init.el' will not re-run module side effects."
 (myde/load-module "data-json")
 (myde/load-module "data-terraform")
 (myde/load-module "data-toml")
+(myde/load-module "data-xml")
 (myde/load-module "data-yaml")
 
 ;; Programming language modules
