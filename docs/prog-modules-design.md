@@ -204,29 +204,29 @@ All language modules follow the same keybinding prefix conventions:
 
 The same granularity convention is used across all language modules:
 
-| Key | Granularity | C# | Go | Python | Ruby | Elixir | Zig |
-|-----|-------------|-----|-----|--------|------|--------|-----|
-| `C-c t t` | point (finest) | — | `gotest-ts-run-dwim` | `python-pytest-function-dwim` | `rspec-verify-single` | `exunit-toggle-file-and-test` | — |
-| `C-c t f` | file | — | `gotest-ts-run-file` | `python-pytest-file-dwim` | `rspec-verify` | — | — |
-| `C-c t p` | package/project | `myde/csharp-run-tests` | `gotest-ts-run-package` | `python-pytest` | `rspec-verify-all` | — | `zig-test-all` |
-| `C-c t r` | repeat | — | `gotest-ts-repeat` | `python-pytest-repeat` | `rspec-rerun` | — | — |
-| `C-c t a` | all | — | — | — | — | `exunit-verify-all` | — |
-| `C-c t s` | single | — | — | — | — | `exunit-verify-single` | — |
-| `C-c t x` | last failed | — | — | `python-pytest-last-failed` | `rspec-verify-failures` | — | — |
-| `C-c t m` | menu | — | — | `python-pytest-dispatch` | — | — | — |
+| Key | Granularity | C# | Go | Lua | Python | Ruby | Elixir | Zig |
+|-----|-------------|-----|-----|-----|--------|------|--------|-----|
+| `C-c t t` | point (finest) | — | `gotest-ts-run-dwim` | — | `python-pytest-function-dwim` | `rspec-verify-single` | `exunit-toggle-file-and-test` | — |
+| `C-c t f` | file | — | `gotest-ts-run-file` | — | `python-pytest-file-dwim` | `rspec-verify` | — | — |
+| `C-c t p` | package/project | `myde/csharp-run-tests` | `gotest-ts-run-package` | — | `python-pytest` | `rspec-verify-all` | — | `zig-test-all` |
+| `C-c t r` | repeat | — | `gotest-ts-repeat` | — | `python-pytest-repeat` | `rspec-rerun` | — | — |
+| `C-c t a` | all | — | — | — | — | — | `exunit-verify-all` | — |
+| `C-c t s` | single | — | — | — | — | — | `exunit-verify-single` | — |
+| `C-c t x` | last failed | — | — | — | `python-pytest-last-failed` | `rspec-verify-failures` | — | — |
+| `C-c t m` | menu | — | — | — | `python-pytest-dispatch` | — | — | — |
 
 ### REPL keybindings (`C-c i`)
 
-| Key | Meaning | Go | Python | Ruby | Elixir |
-|-----|---------|-----|--------|------|--------|
-| `C-c i i` | start REPL | — | `run-python` | `inf-ruby` | `elixir-iex` |
-| `C-c i p` | project REPL | — | — | — | `elixir-iex-project` |
-| `C-c i l` | send line | — | — | — | `elixir-iex-send-line` |
-| `C-c i r` | send region | — | `python-shell-send-region` | `ruby-send-region` | `elixir-iex-send-region` |
-| `C-c i b` | send buffer | — | `python-shell-send-buffer` | `ruby-send-buffer` | `elixir-iex-send-buffer` |
-| `C-c i d` | send def | — | `python-shell-send-defun` | — | — |
-| `C-c i m` | reload module | — | — | — | `elixir-iex-reload-module` |
-| `C-c i s` | switch/set REPL | — | `python-shell-switch-to-shell` | `ruby-switch-to-inf` | `elixir-iex-set-repl` |
+| Key | Meaning | Go | Lua | Python | Ruby | Elixir |
+|-----|---------|-----|-----|--------|------|--------|
+| `C-c i i` | start REPL | — | `inf-lua` | `run-python` | `inf-ruby` | `elixir-iex` |
+| `C-c i p` | project REPL | — | — | — | — | `elixir-iex-project` |
+| `C-c i l` | send line | — | — | — | — | `elixir-iex-send-line` |
+| `C-c i r` | send region | — | `inf-lua-send-region` | `python-shell-send-region` | `ruby-send-region` | `elixir-iex-send-region` |
+| `C-c i b` | send buffer | — | `inf-lua-send-buffer` | `python-shell-send-buffer` | `ruby-send-buffer` | `elixir-iex-send-buffer` |
+| `C-c i d` | send def | — | — | `python-shell-send-defun` | — | — |
+| `C-c i m` | reload module | — | — | — | — | `elixir-iex-reload-module` |
+| `C-c i s` | switch/set REPL | — | `inf-lua-switch-to-repl` | `python-shell-switch-to-shell` | `ruby-switch-to-inf` | `elixir-iex-set-repl` |
 
 ## What stays in `init.el`
 
