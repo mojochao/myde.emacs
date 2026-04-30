@@ -26,8 +26,11 @@ MyDE uses a modular architecture where configuration is organized into self-cont
 
 Modules follow a `<category>-<name>` naming convention:
 
-- **`prog-*`** — Programming language modules (e.g. `prog-base`, `prog-go`, `prog-python`, `prog-elixir`, `prog-elisp`)
 - **`core-*`** — Core infrastructure and productivity tools (e.g. `core-base`, `core-ui`, `core-ux`, `core-complete`, `core-dashboard`, `core-projects`)
+- **`ai-*`** — AI assistant integration (e.g. `ai-base`, `ai-gptel`, `ai-claude`)
+- **`auth-*`** — Authentication and secrets (e.g. `auth-1password`)
+- **`data-*`** — Data format modules (e.g. `data-csv`, `data-json`, `data-toml`, `data-xml`, `data-yaml`)
+- **`prog-*`** — Programming language modules (e.g. `prog-base`, `prog-go`, `prog-python`, `prog-elixir`, `prog-elisp`)
 - **`text-*`** — Text format modules (e.g. `text-markdown`)
 - **`ebook-*`** — Ebook reader modules (e.g. `ebook-pdf`, `ebook-epub`)
 
@@ -76,3 +79,46 @@ Language modules follow consistent keybinding prefixes:
 | `C-c d *` | Debug (dape) — global | `C-c d d` start debugger |
 
 For detailed test and REPL keybinding granularity across languages, see `docs/prog-modules-design.md`.
+
+## External dependencies
+
+Several modules require external tools on PATH (or at a known path). Install these before starting Emacs.
+
+### LSP servers
+
+| Module | Tool | Install |
+|--------|------|---------|
+| `data-json` | `vscode-json-language-server` | `npm install -g vscode-langservers-extracted` |
+| `data-toml` | `taplo` | `brew install taplo` |
+| `data-xml` | `lemminx` | See below |
+| `prog-go` | `gopls` | `go install golang.org/x/tools/gopls@latest` |
+| `prog-python` | `pylsp` / `pyright` | `pip install python-lsp-server` |
+| `prog-rust` | `rust-analyzer` | `rustup component add rust-analyzer` |
+
+### LemMinX (XML language server)
+
+LemMinX is not available via Homebrew. It ships as a Java uber-JAR:
+
+```shell
+# Download the JAR
+mkdir -p ~/.local/share/lemminx
+curl -fL https://download.eclipse.org/lemminx/releases/0.31.1/org.eclipse.lemminx-uber.jar \
+     -o ~/.local/share/lemminx/lemminx-0.31.1-uber.jar
+
+# Create a wrapper script (requires Java — brew install openjdk)
+mkdir -p ~/.local/bin
+cat > ~/.local/bin/lemminx <<'EOF'
+#!/bin/sh
+exec /opt/homebrew/opt/openjdk/bin/java \
+  -jar "$HOME/.local/share/lemminx/lemminx-0.31.1-uber.jar" "$@"
+EOF
+chmod +x ~/.local/bin/lemminx
+```
+
+### XML tree-sitter grammar
+
+After first Emacs startup, install the XML tree-sitter grammar:
+
+```
+M-x treesit-install-language-grammar RET xml RET
+```
