@@ -39,10 +39,13 @@ All state, data, and cache is stored outside `user-emacs-directory` via the buil
 | Kind | Path |
 |------|------|
 | State (recentf, places, history, tramp, auto-save-list) | `$XDG_STATE_HOME/emacs/` |
-| Data (elpa, transient, tree-sitter) | `$XDG_DATA_HOME/emacs/` |
+| Data (transient, tree-sitter) | `$XDG_DATA_HOME/emacs/` |
 | Cache (eln-cache, url) | `$XDG_CACHE_HOME/emacs/` |
+| Packages (elpa) | `./elpa/` (repo root) |
 
-XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :config ...)`. Exception: `auto-save-list-file-prefix` must be set in `early-init.el` because Emacs creates the directory before init.el runs.
+XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :config ...)`. Exceptions:
+- `auto-save-list-file-prefix` must be set in `early-init.el` because Emacs creates the directory before init.el runs.
+- `elpa` is stored in the repo root (`./elpa/`) for easier debugging, package inspection, and agent access. It is git-ignored.
 
 ### Key conventions
 

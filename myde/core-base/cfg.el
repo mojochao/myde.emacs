@@ -34,7 +34,7 @@
   ;; Package initialization
   (require 'package)
   (setq package-user-dir
-        (expand-file-name "emacs/elpa" (xdg-data-home)))
+        (expand-file-name "elpa" user-emacs-directory))
 
   ;; Redirect native compilation cache
   (when (featurep 'native-compile)
