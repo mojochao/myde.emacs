@@ -5,8 +5,12 @@
 ;;; Code:
 
 (defun myde/load-module (name)
-  "Load the module NAME (without myde/ prefix)."
-  (load-file (expand-file-name (concat "myde/" name "/cfg.el") user-emacs-directory)))
+  "Load the module NAME (without myde/ prefix), if not already loaded.
+Idempotent: re-evaluating `init.el' will not re-run module side effects."
+  (let ((feature (intern (concat "myde-" name "-cfg"))))
+    (unless (featurep feature)
+      (load-file (expand-file-name (concat "myde/" name "/cfg.el")
+                                   user-emacs-directory)))))
 
 ;; Core modules
 (myde/load-module "core-base")
