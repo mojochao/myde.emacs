@@ -214,5 +214,13 @@
                  :console "integratedTerminal"))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package ob-typescript  ;; https://github.com/lurdan/ob-typescript
+  :after org
+  :ensure t)
+
 (provide 'myde-prog-typescript-cfg)
 ;;; cfg.el ends here

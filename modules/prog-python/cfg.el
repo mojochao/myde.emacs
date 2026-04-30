@@ -124,5 +124,16 @@
                  :justMyCode nil))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((python . t))))
+  :ensure nil)
+
 (provide 'myde-prog-python-cfg)
 ;;; cfg.el ends here

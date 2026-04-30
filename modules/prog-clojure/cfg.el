@@ -141,6 +141,18 @@
 ;; paredit and rainbow-delimiters are configured in prog-base
 ;; (shared across all Lisp-family languages)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+;; ob-clojure uses CIDER automatically when it is loaded
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((clojure . t))))
+  :ensure nil)
+
 (provide 'myde-prog-clojure-cfg)
 
 ;;; myde/prog-clojure/cfg.el ends here

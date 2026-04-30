@@ -149,5 +149,13 @@
   :hook (elixir-ts-mode . mix-minor-mode)
   :ensure t)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package ob-elixir  ;; https://github.com/zweifisch/ob-elixir
+  :after org
+  :ensure t)
+
 (provide 'myde-prog-elixir-cfg)
 ;;; cfg.el ends here

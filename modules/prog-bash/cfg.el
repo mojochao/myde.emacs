@@ -157,5 +157,16 @@
                  :trace nil))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((shell . t))))
+  :ensure nil)
+
 (provide 'myde-prog-bash-cfg)
 ;;; cfg.el ends here

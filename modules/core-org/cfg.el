@@ -35,5 +35,21 @@
   (org-return-follows-link t)
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package org
+  :config
+  (setq org-confirm-babel-evaluate nil)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((emacs-lisp . t))))
+  :ensure nil)
+
+(use-package ob-async  ;; https://github.com/astahlman/ob-async
+  :after org
+  :ensure t)
+
 (provide 'myde-core-org-cfg)
 ;;; cfg.el ends here

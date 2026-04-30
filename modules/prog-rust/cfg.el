@@ -106,5 +106,13 @@
                  :program ,#'myde/rust-dape-debug-program))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package ob-rust  ;; https://github.com/micanzhang/ob-rust
+  :after org
+  :ensure t)
+
 (provide 'myde-prog-rust-cfg)
 ;;; cfg.el ends here

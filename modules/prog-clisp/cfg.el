@@ -191,6 +191,19 @@
 ;;    - SLY/SLIME auto-detect available implementations
 ;;    - User picks at M-x sly / M-x slime startup
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+;; ob-lisp uses sly-eval when SLY is loaded (preferred over the SLIME default)
+(use-package org
+  :config
+  (setq org-babel-lisp-eval-fn #'sly-eval)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((lisp . t))))
+  :ensure nil)
+
 (provide 'myde-prog-clisp-cfg)
 
 ;;; myde/prog-clisp/cfg.el ends here

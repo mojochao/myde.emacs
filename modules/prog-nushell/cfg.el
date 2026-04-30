@@ -125,5 +125,15 @@
                '(nufmt . ("nufmt" "--stdin")))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+;; Requires the nu tree-sitter grammar: M-x treesit-install-language-grammar RET nu
+(use-package nushell-ts-babel  ;; https://github.com/herbertjones/nushell-ts-babel
+  :vc (:url "https://github.com/herbertjones/nushell-ts-babel" :rev :newest)
+  :after org
+  :if (treesit-language-available-p 'nu))
+
 (provide 'myde-prog-nushell-cfg)
 ;;; cfg.el ends here

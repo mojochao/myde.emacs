@@ -71,5 +71,13 @@
          ("\\.escript\\'" . erlang-mode))
   :ensure t)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package ob-erlang  ;; https://github.com/xfwduke/ob-erlang
+  :vc (:url "https://github.com/xfwduke/ob-erlang" :rev :newest)
+  :after org)
+
 (provide 'myde-prog-erlang-cfg)
 ;;; cfg.el ends here

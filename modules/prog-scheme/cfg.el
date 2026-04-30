@@ -155,6 +155,18 @@
 ;;    - When an error occurs (esp. Guile), Geiser shows *Geiser Dbg* buffer
 ;;    - Includes backtrace, frame inspection, breakpoints (not visual step-through)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+;; ob-scheme uses Geiser automatically when it is loaded
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((scheme . t))))
+  :ensure nil)
+
 (provide 'myde-prog-scheme-cfg)
 
 ;;; myde/prog-scheme/cfg.el ends here

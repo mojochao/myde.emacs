@@ -118,5 +118,13 @@
                  :program "."))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package ob-go  ;; https://github.com/pope/ob-go
+  :after org
+  :ensure t)
+
 (provide 'myde-prog-go-cfg)
 ;;; cfg.el ends here

@@ -29,5 +29,13 @@
   (fish-indent-offset 2)
   :ensure t)
 
+;; ob-shell supports fish as a shell variant via :shebang #!/usr/bin/env fish
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((shell . t))))
+  :ensure nil)
+
 (provide 'myde-prog-fish-cfg)
 ;;; cfg.el ends here

@@ -195,5 +195,16 @@
                  :console "integratedTerminal"))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((js . t))))
+  :ensure nil)
+
 (provide 'myde-prog-javascript-cfg)
 ;;; cfg.el ends here

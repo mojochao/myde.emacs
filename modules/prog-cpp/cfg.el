@@ -119,5 +119,16 @@
                  :program myde/cpp-dape-binary))
   :ensure nil)
 
+;; -----------------------------------------------------------------------------
+;; Org Babel
+;; -----------------------------------------------------------------------------
+
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((C . t))))
+  :ensure nil)
+
 (provide 'myde-prog-cpp-cfg)
 ;;; cfg.el ends here
