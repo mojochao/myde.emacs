@@ -12,9 +12,18 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-core-ux-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; Interaction quality-of-life: keyboard ergonomics, editing conveniences,
+;; and global behavioural defaults.
+;;
+;; Configures:
+;;   - macOS modifier swap: command → meta, option → super (GUI only)
+;;   - global-auto-revert-mode, delete-selection-mode, vc-follow-symlinks
+;;   - suppress kill-buffer-with-process and nonexistent-file confirmations
+;;   - expreg for semantic region expand/contract (C-= / C--)
+;;   - surround for Vim-style pair editing (M-' keymap)
+;;   - multiple-cursors for multi-point editing (C->, C-<, C-S-c C-S-c)
+;;   - whole-line-or-region to operate on the current line when no region is active
+;;   - pathaction for path-based action dispatch via .pathaction files
 
 
 ;;; Code:

@@ -13,19 +13,22 @@
 
 ;;; Commentary:
 
-;; Side-effect configuration for Clojure development via clojure-ts-mode,
-;; clojure-lsp (eglot), CIDER (nREPL), and apheleia formatting.
+;; Clojure development via clojure-ts-mode, clojure-lsp (eglot), CIDER, and apheleia.
+;; Entry point for the prog-clojure module; loads lib.el automatically.
 ;;
-;; Key design decisions:
+;; Requires clojure-lsp on PATH (brew install clojure-lsp).
+;; paredit and rainbow-delimiters are activated via prog-base (shared across all
+;; Lisp-family languages); only Clojure-specific packages are added here.
 ;;
-;; 1. clojure-ts-mode (modern, tree-sitter) + clojure-mode (CIDER dependency)
-;; 2. eglot + clojure-lsp for static analysis (LSP)
-;; 3. CIDER + nREPL for dynamic evaluation and testing
-;; 4. cljfmt (built-in, zero install) for formatting; zprint documented as opt-in
-;; 5. apheleia for consistent before-save formatting
-;; 6. paredit and rainbow-delimiters (configured in prog-base for all Lisp languages)
+;; Design decisions:
+;;   clojure-ts-mode (primary) — tree-sitter mode for .clj/.cljs/.cljc
+;;   clojure-mode (dependency) — loaded silently; required by CIDER
+;;   eglot + clojure-lsp       — static analysis LSP
+;;   CIDER + nREPL             — dynamic evaluation and interactive testing
+;;   apheleia + cljfmt         — format-on-save via clojure-lsp (zero extra install)
+;;   zprint (opt-in)           — commented alternative formatter; enable per-project
 ;;
-;; See myde/prog-clojure/lib.el for pure definitions.
+;; CIDER test keybindings (C-c t prefix): t=at-point, f=ns-tests, p=project, r=rerun.
 
 
 ;;; Code:

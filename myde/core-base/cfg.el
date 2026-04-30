@@ -12,9 +12,17 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-core-base-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; Foundation module loaded first; all other modules depend on the paths and
+;; package system established here.
+;;
+;; Configures:
+;;   - XDG-compliant paths for state/cache/data/eln via xdg.el (early require)
+;;   - ELPA package archives (MELPA, GNU, NonGNU) and package-initialize
+;;   - Native compilation cache redirected to $XDG_CACHE_HOME/emacs/eln-cache
+;;   - recentf, saveplace, savehist, transient with XDG-relative persistence files
+;;   - buffer-guardian for auto-save on focus loss (replaces backup files)
+;;   - exec-path-from-shell on macOS GUI (deferred to emacs-startup-hook)
+;;   - dired with GNU ls (gls) and --group-directories-first on macOS
 
 
 ;;; Code:

@@ -13,8 +13,12 @@
 
 ;;; Commentary:
 ;;;
-;;; Package configuration for Markdown editing support.
+;;; Package configuration for Markdown editing via markdown-mode.
 ;;; Entry point for the text-markdown module; loads lib.el automatically.
+;;;
+;;; .md and README.md files activate gfm-mode (GitHub-Flavored Markdown variant).
+;;; Requires multimarkdown on PATH for C-c C-e (markdown-do) rendering/export.
+;;; Line numbers and trailing-whitespace cleanup activate on all markdown buffers.
 
 
 ;;; Code:

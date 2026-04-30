@@ -12,9 +12,12 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-ebook-epub-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; ePub reading via nov.el.
+;; Entry point for the ebook-epub module; loads lib.el automatically.
+;;
+;; .epub files open in nov-mode.  Text width is capped at 80 columns.
+;; visual-line-mode and variable-pitch-mode activate for comfortable prose display.
+;; Reading position is persisted to $XDG_STATE_HOME/emacs/nov-places.
 
 
 ;;; Code:

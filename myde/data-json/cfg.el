@@ -12,9 +12,12 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; JSON and jq editing setup.
+;;; JSON and jq editing via json-ts-mode and jq-mode.
+;;; Entry point for the data-json module; loads lib.el automatically.
 ;;;
-;;; Requires vscode-json-language-server on PATH (npm: vscode-langservers-extracted).
+;;; Requires vscode-json-language-server on PATH (npm install -g vscode-langservers-extracted).
+;;; .json and .jsonl files use json-ts-mode; jsonl-mode is a derived mode defined in lib.el.
+;;; .jq files use jq-mode for jq query authoring.
 
 
 ;;; Code:

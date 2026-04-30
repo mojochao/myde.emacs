@@ -12,7 +12,12 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Terraform and HCL editing setup.
+;;; Terraform, HCL, and OpenTofu editing via terraform-mode.
+;;; Entry point for the data-terraform module; loads lib.el automatically.
+;;;
+;;; terraform-format-on-save-mode runs `terraform fmt` automatically on save.
+;;; Activates for .tf, .tfvars, .hcl, and .tofu files.
+;;; myde/treesit-remap-terraform enables tree-sitter parsing when grammars are available.
 
 
 ;;; Code:

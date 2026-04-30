@@ -13,10 +13,23 @@
 
 ;;; Commentary:
 ;;;
-;;; Package configuration for project management and project tree support:
-;;;   projectile + neotree
-;;;
+;;; Central infrastructure module for developer tooling.
 ;;; Entry point for the core-projects module; loads lib.el automatically.
+;;;
+;;; Language modules register their LSP servers, DAP configs, and formatters into
+;;; the frameworks configured here — only shared settings and keybindings live here.
+;;;
+;;; Configures:
+;;;   projectile + project.el — project discovery and navigation (C-c p / s-p)
+;;;   neotree                 — file-tree sidebar toggled with F8
+;;;   editorconfig            — project-wide formatting rules from .editorconfig
+;;;   treesit + treesit-auto  — tree-sitter grammar auto-install for all languages
+;;;   eglot                   — LSP client with shared C-c e keybindings
+;;;   flycheck + flymake      — diagnostics (flycheck global; flymake for eglot, C-c !)
+;;;   dotenv-mode             — .env and .envrc file editing
+;;;   mason + mise            — tool and runtime version management
+;;;   dap-mode + dape         — DAP debugger with shared C-c d keybindings
+;;;   magit + forge + git-modes — Git and GitHub/GitLab workflow
 
 
 ;;; Code:

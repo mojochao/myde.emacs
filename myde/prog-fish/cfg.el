@@ -12,9 +12,11 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-prog-fish-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; Fish shell script editing via fish-mode.
+;; Entry point for the prog-fish module; loads lib.el automatically.
+;;
+;; fish-mode provides syntax highlighting and indentation (offset: 2 spaces).
+;; No LSP or DAP configured — fish-mode alone is sufficient for Fish scripting.
 
 
 ;;; Code:

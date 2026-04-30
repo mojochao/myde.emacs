@@ -12,7 +12,9 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Shared AI module setup; loaded before all other ai-* modules.
+;;; Foundation for all ai-* modules; must be loaded before any other ai-* module.
+;;; Loads lib.el which defines shared AI variables (model lists, provider defaults, etc.).
+;;; Contains no package declarations of its own — see sibling ai-* modules.
 
 
 ;;; Code:

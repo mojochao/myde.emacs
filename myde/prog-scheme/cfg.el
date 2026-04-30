@@ -13,22 +13,21 @@
 
 ;;; Commentary:
 
-;; Side-effect configuration for Scheme development via geiser (REPL),
-;; implementation-specific LSP servers (eglot), schemat formatting (apheleia),
-;; and structural editing (paredit + rainbow-delimiters via prog-base).
+;; Scheme development via geiser REPL, implementation-specific LSP, and apheleia formatting.
+;; Entry point for the prog-scheme module; loads lib.el automatically.
 ;;
-;; Supports standard Scheme (.scm, .ss, .sls). Racket (.rkt) is deferred to prog-racket.
+;; Supports .scm, .ss, .sls (standard Scheme). Racket (.rkt) is out of scope here.
+;; paredit and rainbow-delimiters are activated via prog-base (shared across all
+;; Lisp-family languages); only Scheme-specific packages are added here.
 ;;
-;; Key design decisions:
-;;
-;; 1. scheme-mode (built-in) — base mode for all Scheme code
-;; 2. geiser + backends (guile, chicken, chez) — REPL/interactive evaluation
-;; 3. LSP via implementation-specific detection — scheme-langserver, guile-lsp-server, or chicken-lsp-server
-;; 4. schemat (opt-in) — cross-implementation formatter via apheleia
-;; 5. paredit + rainbow-delimiters (via prog-base) — structural S-expression editing
-;; 6. No DAP — debugging via Geiser's REPL-integrated debugger
-;;
-;; See myde/prog-scheme/lib.el for pure definitions.
+;; Design decisions:
+;;   scheme-mode (built-in)   — base mode for all Scheme code
+;;   geiser + guile/chicken/chez — REPL and interactive evaluation
+;;   eglot + auto-detected LSP — scheme-langserver, guile-lsp-server, or chicken-lsp-server
+;;                                (myde/prog-scheme-lsp-server finds the first available)
+;;   apheleia + schemat (opt-in) — formatter registered but only active when `schemat` is on PATH
+;;                                  install: cargo install schemat
+;;   No DAP               — debugging via Geiser's REPL-integrated *Geiser Dbg* buffer
 
 
 ;;; Code:

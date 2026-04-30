@@ -13,10 +13,18 @@
 
 ;;; Commentary:
 ;;;
-;;; Package configuration for the minibuffer and in-buffer completion stack:
-;;;   vertico + orderless + marginalia + consult + embark + corfu
-;;;
+;;; Package configuration for the minibuffer and in-buffer completion stack.
 ;;; Entry point for the core-complete module; loads lib.el automatically.
+;;;
+;;; Minibuffer completion:
+;;;   vertico    — vertical candidate list
+;;;   orderless  — space-separated fuzzy matching style
+;;;   marginalia — rich annotations in the minibuffer margin
+;;;   consult    — enhanced search/navigation commands (C-s, C-x b, M-y)
+;;;   embark     — context actions on minibuffer candidates (C-.)
+;;;
+;;; In-buffer completion:
+;;;   corfu      — popup completion-at-point UI with corfu-popupinfo (global)
 
 
 ;;; Code:

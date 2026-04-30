@@ -15,6 +15,17 @@
 ;;;
 ;;; Package configuration for Go development support.
 ;;; Entry point for the prog-go module; loads lib.el automatically.
+;;;
+;;; Requires gopls and dlv on PATH:
+;;;   go install golang.org/x/tools/gopls@latest
+;;;   go install github.com/go-delve/delve/cmd/dlv@latest
+;;;
+;;; Configures:
+;;;   treesit grammar          — go tree-sitter grammar (auto-installed)
+;;;   eglot + gopls            — LSP with staticcheck, gofumpt, inlay hints
+;;;   go-mode                  — mode launcher; gofmt runs on save
+;;;   gotest-ts                — test runner (C-c t t/f/p/r)
+;;;   dape + dlv               — DAP debugging (go-debug and go-test configs)
 
 
 ;;; Code:

@@ -12,9 +12,18 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-prog-rust-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; Rust development via rustic, rust-analyzer LSP, and codelldb debugger.
+;; Entry point for the prog-rust module; loads lib.el automatically.
+;;
+;; Requires rust-analyzer on PATH (rustup component add rust-analyzer).
+;; Debugging requires codelldb on PATH (mason or manual install).
+;;
+;; Configures:
+;;   treesit grammar          — rust grammar (auto-installed via treesit-auto)
+;;   eglot + rust-analyzer    — LSP with clippy-on-save, inlay hints, proc-macro support
+;;   rustic                   — primary Rust mode (eglot LSP client, rustfmt on save)
+;;   C-c t t / C-c t p        — current test and full cargo test via rustic-cargo
+;;   dape + codelldb          — DAP debugging (rust-debug and rust-test configs)
 
 
 ;;; Code:

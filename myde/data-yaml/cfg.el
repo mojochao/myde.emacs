@@ -12,7 +12,12 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; YAML mode setup for .yaml and .yml files.
+;;; YAML editing via yaml-mode for .yaml and .yml files.
+;;; Entry point for the data-yaml module; loads lib.el automatically.
+;;;
+;;; yaml-mode provides syntax highlighting and indentation.
+;;; No LSP is configured — add a yaml-language-server eglot entry in a
+;;; project's .dir-locals.el if schema validation is needed.
 
 
 ;;; Code:

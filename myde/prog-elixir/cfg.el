@@ -15,6 +15,19 @@
 ;;;
 ;;; Package configuration for Elixir and Phoenix (HEEx) development support.
 ;;; Entry point for the prog-elixir module; loads lib.el automatically.
+;;;
+;;; Depends on: prog-erlang (elixir-ts-mode :after erlang)
+;;; elixir-ls is resolved per-project via mise (myde/mise-exec-which).
+;;;
+;;; Configures:
+;;;   elixir-ts-mode + heex-ts-mode — tree-sitter modes for .ex/.exs/.heex files
+;;;   eglot + elixir-ls             — LSP (completions, types, code actions)
+;;;   dap-mode dap-elixir           — DAP debugging adapter
+;;;   exunit                        — ExUnit test runner (C-c t prefix)
+;;;   elixir-iex                    — IEx REPL via eat (C-c i prefix)
+;;;   mix                           — Mix task dispatch minor mode
+;;;   flycheck-credo                — Credo style linting
+;;;   flycheck-dialyxir             — Dialyzer type analysis
 
 
 ;;; Code:

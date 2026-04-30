@@ -12,9 +12,21 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-prog-cpp-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; C/C++ and CMake development via tree-sitter modes, clangd LSP, and codelldb debugger.
+;; Entry point for the prog-cpp module; loads lib.el automatically.
+;;
+;; Requires clangd on PATH (brew install llvm or mise install).
+;; Debugging requires codelldb on PATH (mason or manual install).
+;;
+;; Configures:
+;;   treesit grammars         — c, cpp, cmake (auto-installed via treesit-auto)
+;;   eglot + clangd           — LSP with --clang-tidy and detailed completion style
+;;   c++-ts-mode              — .cpp/.cc/.cxx/.hpp/.hh/.hxx/.h files
+;;   c-ts-mode                — .c files
+;;   cmake-ts-mode            — CMakeLists.txt and .cmake files
+;;   C-c t p                  — run tests (myde/cpp-run-tests)
+;;   C-c o                    — toggle between header and implementation (ff-find-other-file)
+;;   dape + codelldb          — DAP native debugging (cpp-debug config)
 
 
 ;;; Code:

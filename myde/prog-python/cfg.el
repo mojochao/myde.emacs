@@ -16,8 +16,16 @@
 ;;; Package configuration for Python development support.
 ;;; Entry point for the prog-python module; loads lib.el automatically.
 ;;;
-;;; Requires per-project mise.toml with Python version and venv activation.
-;;; See python-ide-plan.md for full setup instructions.
+;;; Requires basedpyright-langserver on PATH (pip install basedpyright or via mise).
+;;; Per-project mise.toml must activate the correct Python version and venv so
+;;; that eglot and ruff resolve the right interpreter and installed packages.
+;;;
+;;; Configures:
+;;;   eglot + basedpyright   — LSP with workspace-mode type checking and inlay hints
+;;;   python-ts-mode          — tree-sitter mode for .py files; C-c i REPL bindings
+;;;   ruff-format             — format-on-save (replaces black + isort)
+;;;   python-pytest           — pytest runner (C-c t prefix, dispatch via C-c t m)
+;;;   dape + debugpy          — DAP debugging (python-debug and python-test configs)
 
 
 ;;; Code:

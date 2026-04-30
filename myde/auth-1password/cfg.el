@@ -12,8 +12,13 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Package configuration for 1Password secret management integration via auth-source-1password.
+;;; Package configuration for 1Password secret management via auth-source-1password.
 ;;; Entry point for the auth-1password module; loads lib.el automatically.
+;;;
+;;; Bridges Emacs's auth-source system to the 1Password CLI (op).
+;;; Secrets are read from the "My API credentials" vault.
+;;; Required by ai-gptel for its OpenRouter and Mistral API keys.
+;;; Requires the 1Password CLI (op) on PATH with an active session.
 
 
 ;;; Code:

@@ -12,9 +12,18 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-prog-base-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; Programming foundation shared by all language modules.
+;; Entry point for the prog-base module; loads lib.el automatically.
+;;
+;; Configures:
+;;   apheleia           — global format-on-save dispatcher; individual language
+;;                        modules register their formatter in apheleia-mode-alist
+;;   paredit            — structural S-expression editing for Lisp-family modes
+;;                        (emacs-lisp, lisp, scheme, clojure, clojure-ts, cider,
+;;                        sly, slime)
+;;   rainbow-delimiters — nested-parenthesis colorization for the same Lisp modes
+;;   prog-mode hooks    — line numbers and trailing-whitespace cleanup on all
+;;                        programming buffers
 
 
 ;;; Code:

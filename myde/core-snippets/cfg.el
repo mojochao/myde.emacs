@@ -13,8 +13,13 @@
 
 ;;; Commentary:
 ;;;
-;;; Snippets configuration for yasnippets support.
+;;; Package configuration for yasnippet snippet expansion.
 ;;; Entry point for the core-snippets module; loads lib.el automatically.
+;;;
+;;; TAB is explicitly unbound from yas-minor-mode-map to avoid conflicts with
+;;; comint/REPL completion (e.g. inf-elixir).  Use yas-insert-snippet instead.
+;;; yasnippet-classic-snippets provides a curated set of community snippets.
+;;; Project-local snippets in <user-emacs-directory>/snippets/ are also loaded.
 
 
 ;;; Code:

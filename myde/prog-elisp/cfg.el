@@ -15,6 +15,16 @@
 ;;;
 ;;; Package configuration for Emacs Lisp development support.
 ;;; Entry point for the prog-elisp module; loads lib.el automatically.
+;;;
+;;; paredit and rainbow-delimiters are activated via prog-base (shared across
+;;; all Lisp-family languages); only Elisp-specific packages are added here.
+;;;
+;;; Configures:
+;;;   buttercup    — BDD-style test authoring (deferred)
+;;;   package-lint — package metadata and dependency validation (deferred)
+;;;   cask-mode    — Cask project file editing (deferred)
+;;;   eask-mode    — Eask project file editing (deferred)
+;;;   dash, s, seq, plz — common Elisp utility libraries (deferred)
 
 
 ;;; Code:

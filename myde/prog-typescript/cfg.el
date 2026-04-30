@@ -16,11 +16,21 @@
 ;;; Package configuration for TypeScript/TSX development support.
 ;;; Entry point for the prog-typescript module; loads lib.el automatically.
 ;;;
-;;; LSP is multiplexed via rassumfrassum's tslint preset, which combines
-;;; typescript-language-server and vscode-eslint-language-server into a single
-;;; stdio endpoint that eglot treats as one server.  The tslint preset includes
-;;; custom ESLint initialization logic that is not available in the manual
-;;; composition form (rass -- ts-ls -- eslint-ls).
+;;; Requires rass (npm install -g @rass/cli) and @vscode/js-debug for debugging.
+;;;
+;;; LSP is multiplexed via rass tslint, which combines typescript-language-server
+;;; (completions, types, inlay hints, code actions) with vscode-eslint-language-server
+;;; (ESLint diagnostics) into a single stdio endpoint eglot treats as one server.
+;;; The tslint preset includes custom ESLint initialization not available in the
+;;; manual composition form (rass -- ts-ls -- eslint-ls).
+;;;
+;;; Configures:
+;;;   eglot + rass tslint    — multiplexed LSP for typescript-ts-mode and tsx-ts-mode
+;;;   add-node-modules-path  — project-local node_modules/.bin on exec-path
+;;;   apheleia + prettier    — format-on-save
+;;;   jest-test-mode         — Jest test runner (C-c t prefix)
+;;;   ts-comint              — TypeScript REPL (C-c i prefix)
+;;;   dape + @vscode/js-debug — DAP debugging (ts-node-script and ts-jest configs)
 
 
 ;;; Code:

@@ -16,12 +16,23 @@
 ;;; Package configuration for JavaScript/JSX development support.
 ;;; Entry point for the prog-javascript module; loads lib.el automatically.
 ;;;
-;;; LSP is multiplexed via rassumfrassum's tslint preset, identical to the
-;;; prog-typescript module.  typescript-language-server handles JS natively.
-;;; :checkJs t enables JSDoc-based type inference for plain JS projects.
+;;; Requires rass (npm install -g @rass/cli) and @vscode/js-debug for debugging.
 ;;;
-;;; js-ts-mode covers both .js and .jsx — the javascript tree-sitter grammar
+;;; LSP is multiplexed via rass tslint, which combines typescript-language-server
+;;; (completions, JSDoc types, inlay hints, code actions) with vscode-eslint-language-server
+;;; (ESLint diagnostics) into a single stdio endpoint eglot treats as one server.
+;;; :checkJs t enables JSDoc-based type inference in plain JS projects.
+;;;
+;;; js-ts-mode covers both .js and .jsx — the JavaScript tree-sitter grammar
 ;;; has native JSX node types; no separate grammar or mode is needed.
+;;;
+;;; Configures:
+;;;   eglot + rass tslint    — multiplexed LSP
+;;;   add-node-modules-path  — project-local node_modules/.bin on exec-path
+;;;   apheleia + prettier    — format-on-save
+;;;   jest-test-mode         — Jest test runner (C-c t prefix)
+;;;   nodejs-repl            — Node.js REPL (C-c i prefix)
+;;;   dape + @vscode/js-debug — DAP debugging (node-script and node-jest configs)
 
 
 ;;; Code:

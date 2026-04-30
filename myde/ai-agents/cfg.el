@@ -12,8 +12,12 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Package configuration for AI agent tools.
+;;; Package configuration for AI agent tools (acp, agent-shell).
 ;;; Entry point for the ai-agents module; loads lib.el automatically.
+;;;
+;;; Both packages require transient for their UI:
+;;;   acp         — AI command palette for code-related tasks
+;;;   agent-shell — AI-powered shell command assistant
 
 
 ;;; Code:

@@ -12,7 +12,12 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; TOML mode setup with tree-sitter parsing and LSP support via eglot.
+;;; TOML editing with tree-sitter parsing and LSP via eglot + taplo.
+;;; Entry point for the data-toml module; loads lib.el automatically.
+;;;
+;;; Requires taplo on PATH (brew install taplo or cargo install taplo-cli).
+;;; Activates for .toml and Cargo.lock files.  Falls back to plain toml-mode
+;;; when the tree-sitter grammar has not been installed.
 
 
 ;;; Code:

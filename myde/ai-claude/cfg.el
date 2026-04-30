@@ -12,8 +12,13 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Package configuration for Claude AI integration via claude-code-ide.
+;;; Package configuration for Claude Code IDE integration via claude-code-ide.
 ;;; Entry point for the ai-claude module; loads lib.el automatically.
+;;;
+;;; claude-code-ide provides an Emacs interface to the Claude Code CLI.
+;;; The transient dispatch menu is bound to C-c c.
+;;; claude-code-ide-emacs-tools-setup registers Emacs-side MCP tool handlers.
+;;; Installed from git via :vc — not available on MELPA.
 
 
 ;;; Code:

@@ -12,7 +12,12 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Org mode package setup and keybindings.
+;;; Org mode configuration for task management, notes, and agenda.
+;;; Entry point for the core-org module; loads lib.el automatically.
+;;;
+;;; org-directory is set from myde/org-directory (defined in lib.el).
+;;; org-return-follows-link is enabled so RET opens links without C-c C-o.
+;;; visual-line-mode and trailing-whitespace cleanup activate on every org buffer.
 
 
 ;;; Code:

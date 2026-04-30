@@ -12,7 +12,11 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; CSV and TSV editing setup.
+;;; CSV and TSV editing via csv-mode.
+;;; Entry point for the data-csv module; loads lib.el automatically.
+;;;
+;;; csv-mode activates for .csv and .tsv files and provides column-aligned
+;;; display, field navigation, and sort/reverse-sort operations.
 
 
 ;;; Code:

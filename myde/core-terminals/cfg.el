@@ -13,8 +13,15 @@
 
 ;;; Commentary:
 ;;;
-;;; Package configuration for terminals support.
+;;; Package configuration for in-Emacs terminal emulators.
 ;;; Entry point for the core-terminals module; loads lib.el automatically.
+;;;
+;;; Provides two terminal options (both loaded on demand via M-x):
+;;;   eat   — fast terminal using Emacs's built-in terminal emulation
+;;;   vterm — libvterm-based full terminal (requires C library at compile time)
+;;;
+;;; hl-line-mode is disabled in all terminal-like modes (vterm, term, eshell,
+;;; ansi-term, comint) to avoid visual noise in interactive shells.
 
 
 ;;; Code:

@@ -12,9 +12,17 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-core-ui-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; Visual appearance: frame chrome, theme system, icons, and fonts.
+;;
+;; Configures:
+;;   - Frame startup: inhibit splash, set size (120×50), hide scrollbar/toolbar
+;;   - menubar hidden in TUI and in GUI on non-macOS systems
+;;   - Active theme: batppuccin-frappe; additional themes deferred on demand
+;;   - auto-dark on Linux for automatic light/dark switching with batppuccin
+;;   - nerd-icons (universal) and all-the-icons (GUI only) for icon support
+;;   - show-font for font preview (C-c s f preview, C-c s t tabulated)
+;;   - spacious-padding for comfortable UI spacing
+;;   - diminish to suppress minor-mode lighters in the modeline
 
 
 ;;; Code:

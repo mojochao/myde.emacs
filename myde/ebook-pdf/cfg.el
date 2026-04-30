@@ -12,9 +12,15 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-ebook-pdf-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; PDF viewing and annotation via pdf-tools.
+;; Entry point for the ebook-pdf module; loads lib.el automatically.
+;;
+;; Compiles and installs the epdfinfo server automatically on first load.
+;; Configures fit-width display, 1.1× zoom steps, and continuous scrolling.
+;; Extra keybindings in pdf-view-mode-map:
+;;   C-s — isearch within the PDF text layer
+;;   h   — add highlight markup annotation
+;;   t   — add text annotation
 
 
 ;;; Code:

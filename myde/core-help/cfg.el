@@ -13,8 +13,14 @@
 
 ;;; Commentary:
 ;;;
-;;; Help/docs packages configuration for user help support.
+;;; Package configuration for interactive documentation and keybinding discovery.
 ;;; Entry point for the core-help module; loads lib.el automatically.
+;;;
+;;; Configures:
+;;;   eldoc     — auto-display disabled (idle-delay = ∞); docs shown on demand
+;;;   eldoc-box — floating child-frame popup (C-c e h at point, C-c e q to dismiss)
+;;;   helpful   — richer *Help* buffers replacing C-h f/F/k/v and C-c C-d
+;;;   which-key — minibuffer key-sequence hints displayed after a short delay
 
 
 ;;; Code:

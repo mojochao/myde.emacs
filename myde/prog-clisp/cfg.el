@@ -13,21 +13,23 @@
 
 ;;; Commentary:
 
-;; Side-effect configuration for Common Lisp development via SLY (primary REPL),
-;; SLIME (fallback REPL), FiveAM (test framework), and optional cl-lsp (LSP).
+;; Common Lisp development via SLY (primary REPL), SLIME (fallback), and optional LSP.
+;; Entry point for the prog-clisp module; loads lib.el automatically.
 ;;
-;; Key design decisions:
+;; paredit and rainbow-delimiters are activated via prog-base (shared across all
+;; Lisp-family languages); only CL-specific packages are added here.
 ;;
-;; 1. lisp-mode (built-in) — base mode for all CL code (.lisp, .cl, .asd)
-;; 2. SLY (primary REPL) — modern interactive evaluation with stickers (live feedback)
-;; 3. SLIME (fallback REPL) — larger ecosystem, 20+ years stable (if SLY unavailable)
-;; 4. FiveAM (test framework) — mature v1.1, interactive, QuickCheck-style properties
-;; 5. cl-lsp (optional LSP) — requires Roswell; SLIME/SLY superior for interactive CL
-;; 6. SLDB (integrated debugger) — built into SLY/SLIME; superior to DAP
-;; 7. cl-indent.el (built-in formatter) — zero deps, handles &body macros
-;; 8. paredit + rainbow-delimiters (via prog-base) — structural S-expression editing
+;; Design decisions:
+;;   lisp-mode (built-in)     — base mode for .lisp, .cl, .asd files
+;;   SLY (primary REPL)       — modern interactive evaluation with stickers
+;;   SLIME (fallback REPL)    — activated only when SLY is absent
+;;   FiveAM                   — CL test framework; run via REPL or asdf:test-system
+;;   cl-indent.el (built-in)  — CL indentation with &body macro support; zero deps
+;;   eglot + cl-lsp (opt-in)  — LSP via Roswell; skipped when `ros` is not on PATH
+;;   SLDB (integrated)        — debugger built into SLY/SLIME; no DAP needed
 ;;
-;; See myde/prog-clisp/lib.el for pure definitions.
+;; Keybindings (C-c i prefix): i=start REPL, r=eval-region, b=eval-buffer,
+;;   e=eval-last-expression, d=documentation, z=switch-to-repl.
 
 
 ;;; Code:

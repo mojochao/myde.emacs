@@ -12,9 +12,19 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;; Side-effect configuration for the `myde-prog-erlang-cfg' module:
-;; use-package declarations, hooks, and keybindings.  Loads the
-;; sister lib.el for definitions.
+;; Erlang development via erlang-mode, ELP LSP, and erlang-shell REPL.
+;; Entry point for the prog-erlang module; loads lib.el automatically.
+;;
+;; Requires ELP (elp) on PATH (brew install erlang-ls/tap/elp).
+;; erlang-mode ships with the Erlang/OTP distribution (tools/emacs).
+;; This module is a dependency of prog-elixir (elixir-ts-mode :after erlang).
+;;
+;; Configures:
+;;   treesit grammar          — Erlang grammar (registered for future ts-mode)
+;;   eglot + elp              — LSP (completions, types, cross-references)
+;;   erlang-mode              — .erl, .hrl, .escript files with flycheck
+;;   C-c i i / C-c i s        — erlang-shell REPL; C-c i r for region send
+;;   C-c t p                  — project test runner (myde/erlang-run-tests)
 
 
 ;;; Code:

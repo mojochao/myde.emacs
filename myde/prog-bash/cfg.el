@@ -16,14 +16,17 @@
 ;;; Package configuration for Bash script development support.
 ;;; Entry point for the prog-bash module; loads lib.el automatically.
 ;;;
-;;; bash-language-server natively integrates shellcheck (lint diagnostics and
-;;; code actions) and shfmt (format document).  When both tools are on PATH,
-;;; they are invoked automatically — no separate flycheck/flymake setup needed.
+;;; Requires bash-language-server, shellcheck, and shfmt on PATH.
+;;; bash-language-server natively integrates both tools: shellcheck surfaces
+;;; SC* diagnostics and code-fix actions; shfmt handles format-document requests.
+;;; apheleia runs shfmt directly for format-on-save (async, point-preserving).
 ;;;
-;;; apheleia handles format-on-save via shfmt directly (point-preservation,
-;;; async) rather than delegating through the LSP format request.
+;;; .sh, .bash, and .bats files activate bash-ts-mode (BATS scripts are valid bash).
+;;; Overrides the sh → shell-script-mode mapping from core-base so that bash
+;;; shebangs activate bash-ts-mode instead.
 ;;;
-;;; Debugging requires the bash-debug DAP adapter vsix (see lib.el for setup).
+;;; Debugging requires the bash-debug DAP adapter vsix (rogalmic/vscode-bash-debug).
+;;; See lib.el for one-time installation instructions.
 
 
 ;;; Code:

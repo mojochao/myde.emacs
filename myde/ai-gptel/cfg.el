@@ -12,8 +12,16 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Package configuration for GPtel AI assistant with OpenRouter backend and related tools.
+;;; Package configuration for GPtel AI assistant with OpenRouter backend.
 ;;; Entry point for the ai-gptel module; loads lib.el automatically.
+;;;
+;;; Depends on: auth-1password (API key secrets), core-projects (magit, forge, markdown-mode)
+;;;
+;;; Configures:
+;;;   gptel            — LLM chat client; backend is OpenRouter, default model kimi-k2.6
+;;;   gptel-forge-prs  — AI-assisted PR review integrated with forge
+;;;   gptel-magit      — AI-generated commit messages inside magit buffers
+;;;   minuet           — FIM completions via Mistral Codestral API (M-i overlay, M-y minibuffer)
 
 
 ;;; Code:
