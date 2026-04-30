@@ -12,7 +12,7 @@ custom.el
 eln-cache
 
 # Package directory (elpa) - stored in repo root for debugging/grepping
-# Configured in myde/core-base/cfg.el to use user-emacs-directory
+# Configured in modules/core-base/cfg.el to use user-emacs-directory
 elpa
 
 # Note: State, data, and cache files use XDG directories:

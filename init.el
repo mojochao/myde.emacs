@@ -22,7 +22,7 @@
 ;;
 ;; This file is intentionally thin: its only job is to load each module
 ;; in the correct order via `myde/load-module'.  Modules live under
-;; `myde/<category>-<name>/' and consist of two files:
+;; `modules/<category>-<name>/' and consist of two files:
 ;;
 ;;   lib.el  --  pure definitions (defun, defvar, defcustom),
 ;;               provides `myde-<category>-<name>'.
@@ -50,7 +50,7 @@
 ;; After all modules load, the Emacs server is started if not already
 ;; running, so `emacsclient' can connect from the command line.
 ;;
-;; To add a new module: create `myde/<category>-<name>/{lib,cfg}.el'
+;; To add a new module: create `modules/<category>-<name>/{lib,cfg}.el'
 ;; following the conventions in CLAUDE.md, then add a single
 ;; `(myde/load-module "<category>-<name>")' line below in the
 ;; appropriate section.
@@ -58,11 +58,11 @@
 ;;; Code:
 
 (defun myde/load-module (name)
-  "Load the module NAME (without myde/ prefix), if not already loaded.
+  "Load the module NAME (without modules/ prefix), if not already loaded.
 Idempotent: re-evaluating `init.el' will not re-run module side effects."
   (let ((feature (intern (concat "myde-" name "-cfg"))))
     (unless (featurep feature)
-      (load-file (expand-file-name (concat "myde/" name "/cfg.el")
+      (load-file (expand-file-name (concat "modules/" name "/cfg.el")
                                    user-emacs-directory)))))
 
 ;; Core modules

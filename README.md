@@ -20,7 +20,7 @@ will be downloaded and configured as defined by this elisp configuration.
 
 ## Organization
 
-MyDE uses a modular architecture where configuration is organized into self-contained modules under the `myde/` directory.
+MyDE uses a modular architecture where configuration is organized into self-contained modules under the `modules/` directory.
 
 ### Module categories
 
@@ -58,12 +58,12 @@ Each module contains:
 
 | Module path | lib.el feature | cfg.el feature |
 |-------------|---|---|
-| `myde/core-base/lib.el` | `myde-core-base` | `myde-core-base-cfg` |
-| `myde/prog-go/lib.el` | `myde-prog-go` | `myde-prog-go-cfg` |
-| `myde/core-dashboard/lib.el` | `myde-core-dashboard` | `myde-core-dashboard-cfg` |
-| `myde/core-ui/lib.el` | `myde-core-ui` | `myde-core-ui-cfg` |
-| `myde/text-markdown/lib.el` | `myde-text-markdown` | `myde-text-markdown-cfg` |
-| `myde/ebook-pdf/lib.el` | `myde-ebook-pdf` | `myde-ebook-pdf-cfg` |
+| `modules/core-base/lib.el` | `myde-core-base` | `myde-core-base-cfg` |
+| `modules/prog-go/lib.el` | `myde-prog-go` | `myde-prog-go-cfg` |
+| `modules/core-dashboard/lib.el` | `myde-core-dashboard` | `myde-core-dashboard-cfg` |
+| `modules/core-ui/lib.el` | `myde-core-ui` | `myde-core-ui-cfg` |
+| `modules/text-markdown/lib.el` | `myde-text-markdown` | `myde-text-markdown-cfg` |
+| `modules/ebook-pdf/lib.el` | `myde-ebook-pdf` | `myde-ebook-pdf-cfg` |
 
 Pattern: `myde-<category>-<name>` for lib, `myde-<category>-<name>-cfg` for cfg.
 

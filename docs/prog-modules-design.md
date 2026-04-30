@@ -3,7 +3,7 @@
 ## Overview
 
 Language-specific Emacs configuration is organized into self-contained modules
-under `myde/`. Each module covers one language ecosystem and is independently
+under `modules/`. Each module covers one language ecosystem and is independently
 loadable. `init.el` remains the authoritative entry point but is reduced to
 shared infrastructure; it delegates all language concerns to the modules.
 
@@ -12,7 +12,7 @@ shared infrastructure; it delegates all language concerns to the modules.
 ```
 myde.el              core library (shared utilities, hooks, conventions)
 init.el              top-level config; loads shared tools then language modules
-myde/
+modules/
 ├── prog-elixir/
 │   ├── lib.el       library functions for Elixir support
 │   └── cfg.el       package configuration for Elixir support
@@ -68,12 +68,12 @@ Always ends with `(provide 'myde-prog-<lang>-cfg)`.
 | File | Feature symbol |
 |------|----------------|
 | `myde.el` | `myde` |
-| `myde/prog-go/lib.el` | `myde-prog-go` |
-| `myde/prog-go/cfg.el` | `myde-prog-go-cfg` |
-| `myde/prog-python/lib.el` | `myde-prog-python` |
-| `myde/prog-python/cfg.el` | `myde-prog-python-cfg` |
-| `myde/prog-elixir/lib.el` | `myde-prog-elixir` |
-| `myde/prog-elixir/cfg.el` | `myde-prog-elixir-cfg` |
+| `modules/prog-go/lib.el` | `myde-prog-go` |
+| `modules/prog-go/cfg.el` | `myde-prog-go-cfg` |
+| `modules/prog-python/lib.el` | `myde-prog-python` |
+| `modules/prog-python/cfg.el` | `myde-prog-python-cfg` |
+| `modules/prog-elixir/lib.el` | `myde-prog-elixir` |
+| `modules/prog-elixir/cfg.el` | `myde-prog-elixir-cfg` |
 
 The pattern is `myde-<category>-<name>` for lib and `myde-<category>-<name>-cfg`
 for cfg.
@@ -83,9 +83,9 @@ for cfg.
 `init.el` loads each module with a bare `load-file`:
 
 ```elisp
-(load-file (expand-file-name "myde/prog-go/cfg.el"     user-emacs-directory))
-(load-file (expand-file-name "myde/prog-python/cfg.el" user-emacs-directory))
-(load-file (expand-file-name "myde/prog-elixir/cfg.el" user-emacs-directory))
+(load-file (expand-file-name "modules/prog-go/cfg.el"     user-emacs-directory))
+(load-file (expand-file-name "modules/prog-python/cfg.el" user-emacs-directory))
+(load-file (expand-file-name "modules/prog-elixir/cfg.el" user-emacs-directory))
 ```
 
 `load-file` is used rather than `require` because the files are named `lib.el`
@@ -119,7 +119,7 @@ grammar source:
   :config (setq treesit-extra-load-path ...)
   :ensure nil)
 
-;; in myde/prog-python/cfg.el
+;; in modules/prog-python/cfg.el
 (use-package treesit
   :config
   (add-to-list 'treesit-language-source-alist '(python ...))
@@ -139,7 +139,7 @@ adds its hooks, server program, and workspace config using
   :config (setq eglot-autoshutdown t ...)
   :ensure nil)
 
-;; in myde/prog-python/cfg.el
+;; in modules/prog-python/cfg.el
 (use-package eglot
   :hook (python-ts-mode . eglot-ensure)
   :config
@@ -160,7 +160,7 @@ configurations:
   :config (setq dape-buffer-window-arrangement 'right)
   :ensure t)
 
-;; in myde/prog-go/cfg.el
+;; in modules/prog-go/cfg.el
 (use-package dape
   :config
   (add-to-list 'dape-configs '(go-debug ...))
@@ -255,9 +255,9 @@ The same granularity convention is used across all language modules:
 
 ## Adding a new language module
 
-1. Create `myde/prog-<lang>/` directory
+1. Create `modules/prog-<lang>/` directory
 2. Write `lib.el` — define functions, `(require 'myde)`, `(provide 'myde-prog-<lang>)`
 3. Write `cfg.el` — load guard, `use-package` blocks, `(provide 'myde-prog-<lang>-cfg)`
-4. Add `(load-file ... "myde/prog-<lang>/cfg.el" ...)` to the language module
+4. Add `(load-file ... "modules/prog-<lang>/cfg.el" ...)` to the language module
    section of `init.el`
 5. Follow the `C-c t *` and `C-c i *` keybinding conventions

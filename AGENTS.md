@@ -25,13 +25,13 @@ MyDE is a modular Emacs configuration targeting **Emacs 30+ compiled with native
    - Startup screen suppression
    - See file for complete optimization details
 2. `init.el` — Defines `myde/load-module` and calls it for every module in order.
-3. Each `myde/<category>-<name>/cfg.el` — The public entry point for a module.
+3. Each `modules/<category>-<name>/cfg.el` — The public entry point for a module.
 
 **Performance:** Startup completes in ~1.16ms (Emacs init time), ~72ms wall-clock including binary load.
 
 ### Module system
 
-Modules live under `myde/<category>-<name>/` and contain exactly two files:
+Modules live under `modules/<category>-<name>/` and contain exactly two files:
 
 - `lib.el` — Pure definitions (`defun`, `defvar`, `defcustom`). Provides `myde-<category>-<name>`.
 - `cfg.el` — All side effects: `use-package` declarations, hooks, keybindings. Begins with a `featurep` guard that loads its own `lib.el`. Provides `myde-<category>-<name>-cfg`.
@@ -109,6 +109,6 @@ These ordering constraints must be preserved in `core-base/cfg.el`:
 
 ### Adding a module
 
-1. Create `myde/<category>-<name>/lib.el` ending with `(provide 'myde-<category>-<name>)`.
-2. Create `myde/<category>-<name>/cfg.el` with a `featurep` guard at top and `(provide 'myde-<category>-<name>-cfg)` at bottom.
+1. Create `modules/<category>-<name>/lib.el` ending with `(provide 'myde-<category>-<name>)`.
+2. Create `modules/<category>-<name>/cfg.el` with a `featurep` guard at top and `(provide 'myde-<category>-<name>-cfg)` at bottom.
 3. Add `(myde/load-module "<category>-<name>")` to `init.el` in the appropriate section.
