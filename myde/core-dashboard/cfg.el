@@ -17,8 +17,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
-  :init
-  (dashboard-setup-startup-hook)
+  :hook (after-init . dashboard-setup-startup-hook)
   :config
   (setq dashboard-startup-banner (cons myde/banner-image-file myde/banner-text-file))
   (setq dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")

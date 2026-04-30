@@ -103,9 +103,7 @@
               ("C-c e r" . eglot-rename)
               ("C-c e f" . eglot-format)
               ("C-c e i" . eglot-find-implementation)
-              ("C-c e t" . eglot-find-typeDefinition)
-              ("C-c e h" . eldoc-box-help-at-point)
-              ("C-c e q" . eldoc-box-quit-frame))
+              ("C-c e t" . eglot-find-typeDefinition))
   :config
   ;; Performance optimizations
   (setq eglot-autoshutdown t

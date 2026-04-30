@@ -28,14 +28,6 @@ adds project root markers for mono-repos, and registers tree-sitter grammar."
     (add-to-list 'treesit-language-source-alist
       '(clojure "https://github.com/tree-sitter/tree-sitter-clojure"))))
 
-(defun myde/prog-clojure-format-buffer-maybe ()
-  "Guard function for apheleia before-save formatting.
-
-Only formats if eglot is managing the buffer (clojure-lsp is active).
-Prevents format errors when eglot is unavailable."
-  (and (memq major-mode '(clojure-mode clojure-ts-mode clojurescript-mode))
-       (bound-and-true-p eglot--managed-mode)))
-
 (defun myde/prog-clojure-cider-setup ()
   "Configure CIDER for Clojure development.
 

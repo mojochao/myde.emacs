@@ -35,7 +35,9 @@
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 (setq package-install-upgrade-built-in t)
 (package-initialize)
-(unless package-archive-contents
+;; Refresh package archives only on first run (empty package-user-dir).
+;; Avoids blocking startup once packages are installed.
+(unless (file-exists-p package-user-dir)
   (package-refresh-contents))
 
 ;; Load user customizations after the package system is initialized so that
@@ -53,9 +55,6 @@
 ;; URL library configuration (cookies, cache)
 (setq url-configuration-directory
       (expand-file-name "emacs/url/" (xdg-cache-home)))
-
-;; Increase subprocess read buffer size for LSP throughput (default is 4096).
-(setq read-process-output-max (* 1024 1024))  ; 1 MiB
 
 ;; Auto-detect shebang comments and use shell-script-mode appropriately.
 (dolist (interp '("bash" "sh" "zsh"))

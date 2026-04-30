@@ -16,6 +16,8 @@
   :ensure nil)
 
 (use-package eldoc-box  ;; https://github.com/casouri/eldoc-box
+  :bind (("C-c e h" . eldoc-box-help-at-point)
+         ("C-c e q" . eldoc-box-quit-frame))
   :ensure t)
 
 (use-package helpful  ;; https://github.com/Wilfred/helpful
