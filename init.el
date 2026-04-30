@@ -77,6 +77,7 @@ Idempotent: re-evaluating `init.el' will not re-run module side effects."
 (myde/load-module "core-notes")
 (myde/load-module "core-snippets")
 (myde/load-module "core-projects")
+(myde/load-module "core-spell")
 
 ;; AI modules
 (myde/load-module "ai-base")
