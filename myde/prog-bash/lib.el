@@ -1,5 +1,16 @@
 ;;; lib.el --- Bash support library for myde -*- no-byte-compile: t; lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.el
+;; Keywords: convenience, configuration
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
 ;;;
 ;;; Library functions for Bash script development support.
@@ -18,6 +29,7 @@
 ;;; bash-language-server automatically invokes shellcheck (lint diagnostics and
 ;;; code actions) and shfmt (format document) when both are on PATH.  No
 ;;; separate flymake-shellcheck or flycheck-shellcheck is needed.
+
 
 ;;; Code:
 

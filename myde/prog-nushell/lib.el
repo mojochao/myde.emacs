@@ -1,5 +1,16 @@
 ;;; lib.el --- Nushell support library for myde -*- no-byte-compile: t; lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.el
+;; Keywords: convenience, configuration
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
 ;;;
 ;;; Library functions for Nushell script development support.
@@ -12,6 +23,7 @@
 ;;; NOTE: nufmt is pre-alpha and can corrupt scripts.  It is registered in
 ;;; apheleia but not auto-enabled on save.  Users can invoke M-x
 ;;; apheleia-format-buffer manually or opt-in per-project via .dir-locals.el.
+
 
 ;;; Code:
 

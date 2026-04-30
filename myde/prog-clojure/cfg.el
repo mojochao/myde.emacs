@@ -1,5 +1,16 @@
 ;;; myde/prog-clojure/cfg.el --- Clojure development environment configuration -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.el
+;; Keywords: convenience, configuration
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
 
 ;; Side-effect configuration for Clojure development via clojure-ts-mode,
@@ -15,6 +26,7 @@
 ;; 6. paredit and rainbow-delimiters (configured in prog-base for all Lisp languages)
 ;;
 ;; See myde/prog-clojure/lib.el for pure definitions.
+
 
 ;;; Code:
 

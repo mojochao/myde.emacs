@@ -1,5 +1,16 @@
 ;;; myde/prog-clisp/cfg.el --- Common Lisp development environment configuration -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.el
+;; Keywords: convenience, configuration
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
 
 ;; Side-effect configuration for Common Lisp development via SLY (primary REPL),
@@ -17,6 +28,7 @@
 ;; 8. paredit + rainbow-delimiters (via prog-base) — structural S-expression editing
 ;;
 ;; See myde/prog-clisp/lib.el for pure definitions.
+
 
 ;;; Code:
 

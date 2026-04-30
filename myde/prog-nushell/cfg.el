@@ -1,5 +1,16 @@
 ;;; cfg.el --- Nushell package configuration for myde -*- no-byte-compile: t; lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.el
+;; Keywords: convenience, configuration
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
 ;;;
 ;;; Package configuration for Nushell script development support.
@@ -10,6 +21,7 @@
 ;;; nufmt (pre-alpha formatter) is registered in apheleia but NOT auto-enabled.
 ;;; Users can invoke M-x apheleia-format-buffer manually or opt-in per-project
 ;;; via .dir-locals.el if they accept the pre-alpha risks.
+
 
 ;;; Code:
 

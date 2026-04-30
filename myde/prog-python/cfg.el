@@ -1,5 +1,16 @@
 ;;; cfg.el --- Python package configuration for myde -*- no-byte-compile: t; lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.el
+;; Keywords: convenience, configuration
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
 ;;;
 ;;; Package configuration for Python development support.
@@ -7,6 +18,7 @@
 ;;;
 ;;; Requires per-project mise.toml with Python version and venv activation.
 ;;; See python-ide-plan.md for full setup instructions.
+
 
 ;;; Code:
 

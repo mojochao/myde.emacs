@@ -1,6 +1,59 @@
 ;;; init.el --- Loaded after early-init.el -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.el
+;; Keywords: convenience, configuration
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
+;;
+;; Main initialization file for MyDE — *MY* Development Environment.
+;;
+;; Loaded by Emacs after `early-init.el' has set up startup-time
+;; optimizations (GC, file-name-handler-alist, package archives, frame
+;; parameters) and XDG path redirection.
+;;
+;; This file is intentionally thin: its only job is to load each module
+;; in the correct order via `myde/load-module'.  Modules live under
+;; `myde/<category>-<name>/' and consist of two files:
+;;
+;;   lib.el  --  pure definitions (defun, defvar, defcustom),
+;;               provides `myde-<category>-<name>'.
+;;   cfg.el  --  side effects (use-package, hooks, keybindings),
+;;               provides `myde-<category>-<name>-cfg'.
+;;
+;; `myde/load-module' is idempotent: it checks the cfg feature symbol
+;; before loading, so re-evaluating this file will not re-run module
+;; side effects.
+;;
+;; Module load order matters.  Categories are loaded in this sequence:
+;;
+;;   1. core-*    --  base, UI, UX, org, help, terminals, dashboard,
+;;                    completion, notes, snippets, projects.
+;;                    `core-base' MUST load first; it initializes the
+;;                    package system that every other module relies on.
+;;   2. ai-*      --  base, gptel, agents, claude.
+;;   3. auth-*    --  1password.
+;;   4. data-*    --  csv, json, terraform, toml, yaml.
+;;   5. prog-*    --  base then language modules.  `prog-base' MUST
+;;                    load before any language module.
+;;   6. text-*    --  markdown.
+;;   7. ebook-*   --  epub, pdf.
+;;
+;; After all modules load, the Emacs server is started if not already
+;; running, so `emacsclient' can connect from the command line.
+;;
+;; To add a new module: create `myde/<category>-<name>/{lib,cfg}.el'
+;; following the conventions in CLAUDE.md, then add a single
+;; `(myde/load-module "<category>-<name>")' line below in the
+;; appropriate section.
 
 ;;; Code:
 
