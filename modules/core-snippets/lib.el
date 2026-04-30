@@ -19,6 +19,13 @@
 
 ;;; Code:
 
+(defun myde/register-snippets (dir mode)
+  "Register DIR as the flat snippet directory for MODE.
+DIR should contain yasnippet snippet files directly with no mode-name subdir.
+Safe to call before yasnippet has loaded."
+  (with-eval-after-load 'yasnippet
+    (when (file-directory-p dir)
+      (yas--load-directory-1 dir mode nil))))
 
 (provide 'myde-core-snippets)
 ;;; lib.el ends here

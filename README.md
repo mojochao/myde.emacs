@@ -67,6 +67,26 @@ Each module contains:
 
 Pattern: `myde-<category>-<name>` for lib, `myde-<category>-<name>-cfg` for cfg.
 
+### Snippets
+
+Snippets are managed by `core-snippets` (yasnippet + yasnippet-classic-snippets). Language modules store custom snippets flat under their module directory — no mode-name subdirectory:
+
+```
+modules/prog-go/snippets/func
+modules/prog-go/snippets/iferr
+modules/prog-elixir/snippets/defmodule
+```
+
+Each module that has snippets registers them near the bottom of its `cfg.el`:
+
+```elisp
+(myde/register-snippets
+ (expand-file-name "snippets" (file-name-directory load-file-name))
+ 'the-major-mode)
+```
+
+`myde/register-snippets` is defined in `core-snippets/lib.el`.
+
 ### Keybinding conventions
 
 Language modules follow consistent keybinding prefixes:

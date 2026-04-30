@@ -19,7 +19,7 @@
 ;;; TAB is explicitly unbound from yas-minor-mode-map to avoid conflicts with
 ;;; comint/REPL completion (e.g. inf-elixir).  Use yas-insert-snippet instead.
 ;;; yasnippet-classic-snippets provides a curated set of community snippets.
-;;; Project-local snippets in <user-emacs-directory>/snippets/ are also loaded.
+;;; Per-module snippets are registered via myde/register-snippets in each module.
 
 
 ;;; Code:
@@ -30,7 +30,6 @@
 (use-package yasnippet  ;; https://github.com/joaotavora/yasnippet
   :hook (after-init . yas-global-mode)
   :config
-  (setq yas-snippet-dirs (cons (expand-file-name "snippets" user-emacs-directory) yas-snippet-dirs))
   ;; Do not bind TAB globally for snippet expansion -- it conflicts with
   ;; comint/REPL completion (e.g. inf-elixir).  Snippets can still be
   ;; expanded via `yas-insert-snippet' or the `yas-minor-mode-map' binding.

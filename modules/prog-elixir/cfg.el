@@ -157,5 +157,9 @@
   :after org
   :ensure t)
 
+(myde/register-snippets
+ (expand-file-name "snippets" (file-name-directory load-file-name))
+ 'elixir-ts-mode)
+
 (provide 'myde-prog-elixir-cfg)
 ;;; cfg.el ends here

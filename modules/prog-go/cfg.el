@@ -126,5 +126,9 @@
   :after org
   :ensure t)
 
+(myde/register-snippets
+ (expand-file-name "snippets" (file-name-directory load-file-name))
+ 'go-ts-mode)
+
 (provide 'myde-prog-go-cfg)
 ;;; cfg.el ends here

@@ -64,6 +64,20 @@ XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :conf
 - `myde/eglot-add-workspace-config` in `core-projects/lib.el` upserts LSP workspace config without clobbering other modules' settings.
 - **Never use lambdas as hook functions.** Always define a named function (e.g., `myde/foo-mode-hook`) in the module's `lib.el` and reference it by name in `cfg.el`.
 
+### Snippets
+
+Snippets are managed by `core-snippets` (yasnippet + yasnippet-classic-snippets). Language modules that have custom snippets store them flat under `modules/<category>-<name>/snippets/` — no mode-name subdirectory.
+
+Each such module registers its snippets near the bottom of its `cfg.el`:
+
+```elisp
+(myde/register-snippets
+ (expand-file-name "snippets" (file-name-directory load-file-name))
+ 'the-major-mode)
+```
+
+`myde/register-snippets` is defined in `core-snippets/lib.el`; it defers to `yas--load-directory-1` and is safe to call before yasnippet has loaded.
+
 ### Adding a module
 
 1. Create `modules/<category>-<name>/lib.el` ending with `(provide 'myde-<category>-<name>)`.
