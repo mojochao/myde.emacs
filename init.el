@@ -44,7 +44,7 @@
 ;;   4. data-*    --  csv, json, terraform, toml, xml, yaml.
 ;;   5. prog-*    --  base then language modules.  `prog-base' MUST
 ;;                    load before any language module.
-;;   6. text-*    --  markdown.
+;;   6. text-*    --  asciidoc, markdown.
 ;;   7. ebook-*   --  epub, pdf.
 ;;
 ;; After all modules load, the Emacs server is started if not already
@@ -116,6 +116,7 @@ Idempotent: re-evaluating `init.el' will not re-run module side effects."
 (myde/load-module "prog-nushell")
 
 ;; Text format modules
+(myde/load-module "text-asciidoc")
 (myde/load-module "text-markdown")
 
 ;; Ebook modules

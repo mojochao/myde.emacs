@@ -48,5 +48,18 @@ can block startup."
     (error (message "myde: exec-path-from-shell setup failed: %s"
                     (error-message-string err)))))
 
+(defun myde/treesit-install-language-grammar (lang)
+  "Install tree-sitter grammar for LANG into the XDG data directory.
+
+`treesit-install-language-grammar' has no customization variable to override
+its default install directory (`user-emacs-directory/tree-sitter/').  Rather
+than advising the built-in, this wrapper passes the XDG path explicitly.
+Use this command instead of the built-in to keep grammars out of the repo."
+  (interactive
+   (list (intern (completing-read "Language: "
+                                  (mapcar #'car treesit-language-source-alist)))))
+  (treesit-install-language-grammar
+   lang (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
+
 (provide 'myde-core-base)
 ;;; lib.el ends here

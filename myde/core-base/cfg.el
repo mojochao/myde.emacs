@@ -150,6 +150,17 @@
   :diminish buffer-guardian-mode
   :ensure t)
 
+;; Tree-sitter grammar storage — redirect load path to XDG data dir.
+;; `treesit-extra-load-path' tells Emacs where to find compiled grammars.
+;; Use `myde/treesit-install-language-grammar' (defined in lib.el) to install
+;; grammars; it passes the XDG path explicitly, avoiding the need for advice.
+(use-package treesit
+  :init
+  (let ((dir (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
+    (make-directory dir :parents)
+    (setq treesit-extra-load-path (list dir)))
+  :ensure nil)
+
 ;; macOS-specific setup
 (use-package emacs
   :if (string= system-type "darwin")
