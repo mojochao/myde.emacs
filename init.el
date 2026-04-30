@@ -5,7 +5,7 @@
 ;;; Code:
 
 (defun myde/load-module (name)
-  "Load the cfg.el for module NAME (without myde/ prefix)."
+  "Load the module NAME (without myde/ prefix)."
   (load-file (expand-file-name (concat "myde/" name "/cfg.el") user-emacs-directory)))
 
 ;; Core modules
@@ -39,13 +39,10 @@
 
 ;; Programming language modules
 (myde/load-module "prog-base")
-(myde/load-module "prog-bash")
-(myde/load-module "prog-fish")
 (myde/load-module "prog-elisp")
 (myde/load-module "prog-clojure")
 (myde/load-module "prog-scheme")
 (myde/load-module "prog-clisp")
-(myde/load-module "prog-nushell")
 (myde/load-module "prog-erlang")
 (myde/load-module "prog-elixir")
 (myde/load-module "prog-cpp")
@@ -55,6 +52,11 @@
 (myde/load-module "prog-javascript")
 (myde/load-module "prog-typescript")
 
+;; Shell language modules
+(myde/load-module "prog-bash")
+(myde/load-module "prog-fish")
+(myde/load-module "prog-nushell")
+
 ;; Text format modules
 (myde/load-module "text-markdown")
 
@@ -62,5 +64,9 @@
 (myde/load-module "ebook-epub")
 (myde/load-module "ebook-pdf")
 
+;; Start emacs server if not already running
+(unless (server-running-p) (server-start))
+
+;; That's all Folks!
 (provide 'init)
 ;;; init.el ends here
