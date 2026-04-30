@@ -61,7 +61,6 @@
                       :includeCompletionsWithSnippetText t
                       :completeFunctionCalls t
                       :includeAutomaticOptionalChainCompletions t)))))
-  (add-hook 'before-save-hook #'myde/javascript-eglot-format-buffer)
   :bind (:map eglot-mode-map
               ("C-c e r" . eglot-rename)
               ("C-c e a" . eglot-code-actions)
@@ -77,7 +76,8 @@
 
 (use-package js
   :hook ((js-ts-mode . myde/js-ts-mode-setup)
-         (js-ts-mode . myde/delete-trailing-whitespace-setup))
+         (js-ts-mode . myde/delete-trailing-whitespace-setup)
+         (js-ts-mode . myde/javascript-format-on-save-setup))
   :mode (("\\.js\\'"  . js-ts-mode)
          ("\\.jsx\\'" . js-ts-mode))
   :ensure nil)

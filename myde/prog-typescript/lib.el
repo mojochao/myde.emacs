@@ -31,12 +31,13 @@
               fill-column 100))
 
 (defun myde/typescript-eglot-format-buffer ()
-  "Format buffer via eglot when in a TypeScript/TSX mode and eglot is active.
-Safe to add to `before-save-hook' globally; it is a no-op outside of
-typescript-ts-mode/tsx-ts-mode buffers and buffers where eglot is not managing."
-  (when (and (memq major-mode '(typescript-ts-mode tsx-ts-mode))
-             (bound-and-true-p eglot--managed-mode))
+  "Format buffer via eglot when eglot is managing the buffer."
+  (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
+
+(defun myde/typescript-format-on-save-setup ()
+  "Install buffer-local before-save formatting for TypeScript/TSX modes."
+  (add-hook 'before-save-hook #'myde/typescript-eglot-format-buffer nil t))
 
 (defun myde/typescript-mode-hook ()
   "Shared hook for typescript-ts-mode and tsx-ts-mode buffers.

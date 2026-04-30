@@ -96,14 +96,9 @@
   (add-to-list 'apheleia-mode-alist
     '(scheme-mode . schemat))
 
-  ;; Before-save guard: Only format if schemat is on PATH and eglot is active
-  ;; This allows schemat to be optional; skips silently if absent
-  (defun myde/prog-scheme-before-save-hook ()
-    "Guard hook for schemat formatting in Scheme buffers."
-    (when (myde/prog-scheme-format-buffer-maybe)
-      (apheleia-format-buffer 'schemat)))
-  (add-hook 'scheme-mode-hook
-    (lambda () (add-hook 'before-save-hook #'myde/prog-scheme-before-save-hook nil t))))
+  ;; Buffer-local before-save formatter: schemat runs only if available and eglot
+  ;; is managing the buffer (see myde/prog-scheme-format-buffer-maybe).
+  (add-hook 'scheme-mode-hook #'myde/prog-scheme-format-on-save-setup))
 
 ;; Standard keybindings for geiser (C-c i prefix)
 ;; These are defaults from geiser but can be customized here if needed

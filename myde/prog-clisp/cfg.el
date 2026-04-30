@@ -46,8 +46,7 @@
   :mode (("\\.lisp\\'" . lisp-mode)
          ("\\.cl\\'" . lisp-mode)
          ("\\.asd\\'" . lisp-mode))
-  :hook ((lisp-mode . (lambda () (myde/prog-clisp-sly-init)))
-         (lisp-mode . (lambda () (setq indent-tabs-mode nil)))))
+  :hook (lisp-mode . myde/prog-clisp-lisp-mode-setup))
 
 ;; SLY: Primary REPL for interactive Common Lisp development
 ;; Modern UX, stickers (live feedback), excellent debugger integration

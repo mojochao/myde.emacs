@@ -42,12 +42,12 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package c-ts-mode
-  :config
-  (add-hook 'before-save-hook #'myde/cpp-eglot-format-buffer)
   :hook ((c++-ts-mode . myde/cpp-ts-mode-setup)
          (c++-ts-mode . myde/delete-trailing-whitespace-setup)
+         (c++-ts-mode . myde/cpp-format-on-save-setup)
          (c-ts-mode   . myde/c-ts-mode-setup)
-         (c-ts-mode   . myde/delete-trailing-whitespace-setup))
+         (c-ts-mode   . myde/delete-trailing-whitespace-setup)
+         (c-ts-mode   . myde/cpp-format-on-save-setup))
   :bind ((:map c++-ts-mode-map
                ("C-c t p" . myde/cpp-run-tests)
                ("C-c o"   . ff-find-other-file))

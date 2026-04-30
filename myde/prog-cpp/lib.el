@@ -17,12 +17,13 @@
               compile-command "cmake --build build"))
 
 (defun myde/cpp-eglot-format-buffer ()
-  "Format buffer via eglot when in a C/C++ ts mode and eglot is active.
-Safe to add to `before-save-hook' globally; no-op outside C/C++ buffers
-and buffers where eglot is not managing."
-  (when (and (memq major-mode '(c++-ts-mode c-ts-mode))
-             (bound-and-true-p eglot--managed-mode))
+  "Format buffer via eglot when eglot is managing the buffer."
+  (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
+
+(defun myde/cpp-format-on-save-setup ()
+  "Install buffer-local before-save formatting for C/C++ ts modes."
+  (add-hook 'before-save-hook #'myde/cpp-eglot-format-buffer nil t))
 
 (defun myde/cpp-run-tests ()
   "Build and run CTest tests for the current project."

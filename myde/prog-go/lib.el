@@ -22,12 +22,13 @@
               compile-command "go test ./..."))
 
 (defun myde/go-eglot-format-buffer ()
-  "Format buffer via eglot when in go-ts-mode and eglot is active.
-Safe to add to `before-save-hook' globally; it is a no-op outside
-of go-ts-mode buffers and buffers where eglot is not managing."
-  (when (and (eq major-mode 'go-ts-mode)
-             (bound-and-true-p eglot--managed-mode))
+  "Format buffer via eglot when eglot is managing the buffer."
+  (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
+
+(defun myde/go-format-on-save-setup ()
+  "Install buffer-local before-save formatting for go-ts-mode."
+  (add-hook 'before-save-hook #'myde/go-eglot-format-buffer nil t))
 
 (provide 'myde-prog-go)
 ;;; lib.el ends here

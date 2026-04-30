@@ -30,6 +30,11 @@ tree-sitter grammar for future commonlisp-ts-mode compatibility."
     (add-to-list 'treesit-language-source-alist
       '(commonlisp "https://github.com/tree-sitter/tree-sitter-commonlisp"))))
 
+(defun myde/prog-clisp-lisp-mode-setup ()
+  "Buffer-local setup for `lisp-mode': initialize SLY and disable hard tabs."
+  (myde/prog-clisp-sly-init)
+  (setq indent-tabs-mode nil))
+
 (defun myde/prog-clisp-sly-init ()
   "Configure SLY for interactive Common Lisp development.
 

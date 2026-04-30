@@ -31,15 +31,10 @@ adds project root markers for mono-repos, and registers tree-sitter grammar."
 (defun myde/prog-clojure-cider-setup ()
   "Configure CIDER for Clojure development.
 
-Disables CIDER's auto-format (apheleia handles formatting),
-sets formatter preference (cljfmt by default), and ensures
-eldoc ordering favors CIDER's rich documentation."
-  ;; Disable CIDER auto-format; apheleia handles formatting
-  (setq cider-auto-mode nil)
-
-  ;; Set formatter to cljfmt (built into clojure-lsp)
-  ;; Users who prefer zprint can customize this or set via .dir-locals.el
-  (setq cider-format-code-options {:style :default}))
+Disables CIDER's auto-format (apheleia handles formatting via cljfmt).
+Users who prefer zprint can override `cider-format-code-options' via
+.dir-locals.el — see prog-clojure/cfg.el for a worked example."
+  (setq cider-auto-mode nil))
 
 (provide 'myde-prog-clojure)
 

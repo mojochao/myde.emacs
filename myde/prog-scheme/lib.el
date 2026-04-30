@@ -61,6 +61,17 @@ This allows schemat to be optional; formatting silently skips if binary is absen
        (executable-find "schemat")
        (bound-and-true-p eglot--managed-mode)))
 
+(declare-function apheleia-format-buffer "apheleia")
+
+(defun myde/prog-scheme-before-save-hook ()
+  "Guarded schemat formatter for scheme buffers; skips if schemat absent."
+  (when (myde/prog-scheme-format-buffer-maybe)
+    (apheleia-format-buffer 'schemat)))
+
+(defun myde/prog-scheme-format-on-save-setup ()
+  "Install buffer-local before-save formatting for scheme-mode."
+  (add-hook 'before-save-hook #'myde/prog-scheme-before-save-hook nil t))
+
 (provide 'myde-prog-scheme)
 
 ;;; myde/prog-scheme/lib.el ends here

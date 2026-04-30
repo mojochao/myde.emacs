@@ -48,12 +48,11 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package go-mode  ;; https://github.com/dominikh/go-mode.el
-  :config
-  (add-hook 'before-save-hook #'myde/go-eglot-format-buffer)
   :custom
   (go-ts-mode-indent-offset 4)
   :hook
-  ((go-ts-mode . myde/go-ts-mode-setup))
+  ((go-ts-mode . myde/go-ts-mode-setup)
+   (go-ts-mode . myde/go-format-on-save-setup))
   :mode
   (("\\.go\\'" . myde/go-ts-or-plain-mode))
   :ensure t)

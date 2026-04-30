@@ -77,7 +77,6 @@
                       :includeCompletionsWithSnippetText t
                       :completeFunctionCalls t
                       :includeAutomaticOptionalChainCompletions t)))))
-  (add-hook 'before-save-hook #'myde/typescript-eglot-format-buffer)
   :bind (:map eglot-mode-map
               ("C-c e r" . eglot-rename)
               ("C-c e a" . eglot-code-actions)
@@ -92,7 +91,9 @@
   :hook ((typescript-ts-mode . myde/typescript-ts-mode-setup)
          (tsx-ts-mode        . myde/tsx-ts-mode-setup)
          (typescript-ts-mode . myde/delete-trailing-whitespace-setup)
-         (tsx-ts-mode        . myde/delete-trailing-whitespace-setup))
+         (tsx-ts-mode        . myde/delete-trailing-whitespace-setup)
+         (typescript-ts-mode . myde/typescript-format-on-save-setup)
+         (tsx-ts-mode        . myde/typescript-format-on-save-setup))
   :mode (("\\.ts\\'"  . typescript-ts-mode)
          ("\\.tsx\\'" . tsx-ts-mode))
   :ensure nil)
