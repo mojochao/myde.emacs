@@ -65,6 +65,7 @@
 (myde/load-module "ebook-pdf")
 
 ;; Start emacs server if not already running
+(require 'server)
 (unless (server-running-p) (server-start))
 
 ;; That's all Folks!
