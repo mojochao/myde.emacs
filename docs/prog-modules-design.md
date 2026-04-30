@@ -19,9 +19,12 @@ modules/
 ├── prog-go/
 │   ├── lib.el       library functions for Go support
 │   └── cfg.el       package configuration for Go support
-└── prog-python/
-    ├── lib.el       library functions for Python support
-    └── cfg.el       package configuration for Python support
+├── prog-python/
+│   ├── lib.el       library functions for Python support
+│   └── cfg.el       package configuration for Python support
+└── prog-ruby/
+    ├── lib.el       library functions for Ruby support
+    └── cfg.el       package configuration for Ruby support
 ```
 
 The `prog-` prefix is a namespace convention for programming language modules.
@@ -74,6 +77,8 @@ Always ends with `(provide 'myde-prog-<lang>-cfg)`.
 | `modules/prog-python/cfg.el` | `myde-prog-python-cfg` |
 | `modules/prog-elixir/lib.el` | `myde-prog-elixir` |
 | `modules/prog-elixir/cfg.el` | `myde-prog-elixir-cfg` |
+| `modules/prog-ruby/lib.el` | `myde-prog-ruby` |
+| `modules/prog-ruby/cfg.el` | `myde-prog-ruby-cfg` |
 
 The pattern is `myde-<category>-<name>` for lib and `myde-<category>-<name>-cfg`
 for cfg.
@@ -199,29 +204,29 @@ All language modules follow the same keybinding prefix conventions:
 
 The same granularity convention is used across all language modules:
 
-| Key | Granularity | Go | Python | Elixir | Zig |
-|-----|-------------|-----|--------|--------|-----|
-| `C-c t t` | point (finest) | `gotest-ts-run-dwim` | `python-pytest-function-dwim` | `exunit-toggle-file-and-test` | — |
-| `C-c t f` | file | `gotest-ts-run-file` | `python-pytest-file-dwim` | — | — |
-| `C-c t p` | package/project | `gotest-ts-run-package` | `python-pytest` | — | `zig-test-all` |
-| `C-c t r` | repeat | `gotest-ts-repeat` | `python-pytest-repeat` | — | — |
-| `C-c t a` | all | — | — | `exunit-verify-all` | — |
-| `C-c t s` | single | — | — | `exunit-verify-single` | — |
-| `C-c t x` | last failed | — | `python-pytest-last-failed` | — | — |
-| `C-c t m` | menu | — | `python-pytest-dispatch` | — | — |
+| Key | Granularity | Go | Python | Ruby | Elixir | Zig |
+|-----|-------------|-----|--------|------|--------|-----|
+| `C-c t t` | point (finest) | `gotest-ts-run-dwim` | `python-pytest-function-dwim` | `rspec-verify-single` | `exunit-toggle-file-and-test` | — |
+| `C-c t f` | file | `gotest-ts-run-file` | `python-pytest-file-dwim` | `rspec-verify` | — | — |
+| `C-c t p` | package/project | `gotest-ts-run-package` | `python-pytest` | `rspec-verify-all` | — | `zig-test-all` |
+| `C-c t r` | repeat | `gotest-ts-repeat` | `python-pytest-repeat` | `rspec-rerun` | — | — |
+| `C-c t a` | all | — | — | — | `exunit-verify-all` | — |
+| `C-c t s` | single | — | — | — | `exunit-verify-single` | — |
+| `C-c t x` | last failed | — | `python-pytest-last-failed` | `rspec-verify-failures` | — | — |
+| `C-c t m` | menu | — | `python-pytest-dispatch` | — | — | — |
 
 ### REPL keybindings (`C-c i`)
 
-| Key | Meaning | Go | Python | Elixir |
-|-----|---------|-----|--------|--------|
-| `C-c i i` | start REPL | — | `run-python` | `elixir-iex` |
-| `C-c i p` | project REPL | — | — | `elixir-iex-project` |
-| `C-c i l` | send line | — | — | `elixir-iex-send-line` |
-| `C-c i r` | send region | — | `python-shell-send-region` | `elixir-iex-send-region` |
-| `C-c i b` | send buffer | — | `python-shell-send-buffer` | `elixir-iex-send-buffer` |
-| `C-c i d` | send def | — | `python-shell-send-defun` | — |
-| `C-c i m` | reload module | — | — | `elixir-iex-reload-module` |
-| `C-c i s` | switch/set REPL | — | `python-shell-switch-to-shell` | `elixir-iex-set-repl` |
+| Key | Meaning | Go | Python | Ruby | Elixir |
+|-----|---------|-----|--------|------|--------|
+| `C-c i i` | start REPL | — | `run-python` | `inf-ruby` | `elixir-iex` |
+| `C-c i p` | project REPL | — | — | — | `elixir-iex-project` |
+| `C-c i l` | send line | — | — | — | `elixir-iex-send-line` |
+| `C-c i r` | send region | — | `python-shell-send-region` | `ruby-send-region` | `elixir-iex-send-region` |
+| `C-c i b` | send buffer | — | `python-shell-send-buffer` | `ruby-send-buffer` | `elixir-iex-send-buffer` |
+| `C-c i d` | send def | — | `python-shell-send-defun` | — | — |
+| `C-c i m` | reload module | — | — | — | `elixir-iex-reload-module` |
+| `C-c i s` | switch/set REPL | — | `python-shell-switch-to-shell` | `ruby-switch-to-inf` | `elixir-iex-set-repl` |
 
 ## What stays in `init.el`
 
