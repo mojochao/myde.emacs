@@ -9,5 +9,15 @@
               fill-column 100
               compile-command "cargo test"))
 
+(declare-function dape-cwd "dape")
+
+(defun myde/rust-dape-debug-program ()
+  "Resolve the debug binary path for the current Rust project.
+Used as the `:program' callback for dape Rust debug configurations."
+  (expand-file-name
+   (concat "target/debug/"
+           (file-name-nondirectory (directory-file-name (dape-cwd))))
+   (dape-cwd)))
+
 (provide 'myde-prog-rust)
 ;;; lib.el ends here

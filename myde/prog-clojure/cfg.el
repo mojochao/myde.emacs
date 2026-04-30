@@ -55,6 +55,8 @@
 
 (use-package eglot
   :ensure nil  ;; Built-in to Emacs 29+
+  :hook ((clojure-ts-mode . eglot-ensure)
+         (clojure-mode . eglot-ensure))
   :config
   ;; Register clojure-lsp server for Clojure modes
   ;; Requires: brew install clojure-lsp
@@ -63,11 +65,7 @@
   (add-to-list 'eglot-server-programs
     '(clojure-mode . ("clojure-lsp")))
   (add-to-list 'eglot-server-programs
-    '(clojurescript-mode . ("clojure-lsp")))
-
-  ;; Enable eglot for Clojure files
-  (add-hook 'clojure-ts-mode-hook 'eglot-ensure)
-  (add-hook 'clojure-mode-hook 'eglot-ensure))
+    '(clojurescript-mode . ("clojure-lsp"))))
 
 (use-package cider
   :ensure t
@@ -123,10 +121,7 @@
   ;; ((clojure-ts-mode
   ;;   (apheleia-formatter . zprint)
   ;;   (cider-format-code-options . {:style :community})))
-
-  ;; Before-save formatting guard: only format if eglot is managing buffer
-  (add-to-list 'apheleia-mode-alist
-    '(clojure-ts-mode apheleia-formatters (cljfmt))))
+  )
 
 ;; paredit and rainbow-delimiters are configured in prog-base
 ;; (shared across all Lisp-family languages)

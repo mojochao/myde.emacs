@@ -16,15 +16,18 @@
 (defvar myde/highlight-file "~/org/highlights.org"
   "File for storing highlights.")
 
-;; Org agenda files
-(defun myde/find-org-agenda-files (root-dir)
-  "Find org agenda files (currently hardcoded for known projects)."
-  '("/home/agooch/Projects/platykus/org/tasks.org"
-    "/home/agooch/Projects/myde/org/tasks.org"
-    "/home/agooch/Projects/mydc/org/tasks.org"
-    "/home/agooch/Projects/playdate/org/tasks.org"
-    "/home/agooch/Projects/life/org/tasks.org"
-    "/home/agooch/Projects/dayjob/org/tasks.org"))
+(defcustom myde/projects-directory (expand-file-name "~/org/projects/")
+  "Root directory under which per-project `tasks.org' files are discovered."
+  :type 'directory
+  :group 'myde)
+
+(defun myde/find-org-agenda-files (&optional root-dir)
+  "Return list of `tasks.org' files under ROOT-DIR.
+ROOT-DIR defaults to `myde/projects-directory'.  Returns nil if the
+directory does not exist."
+  (let ((dir (or root-dir myde/projects-directory)))
+    (when (file-directory-p dir)
+      (directory-files-recursively dir "\\`tasks\\.org\\'"))))
 
 ;; Org-related utility functions
 (defun myde/delete-trailing-whitespace-setup ()

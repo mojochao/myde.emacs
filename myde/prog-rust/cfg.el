@@ -60,21 +60,16 @@
 (use-package dape
   :config
   (add-to-list 'dape-configs
-               '(rust-debug
+               `(rust-debug
                  modes (rustic-mode rust-ts-mode rust-mode)
                  command "codelldb"
                  command-args ("--port" :port)
                  port :autoport
                  :type "lldb"
                  :request "launch"
-                 :program (lambda ()
-                            (expand-file-name
-                             (concat "target/debug/"
-                                     (file-name-nondirectory
-                                      (directory-file-name (dape-cwd))))
-                             (dape-cwd)))))
+                 :program ,#'myde/rust-dape-debug-program))
   (add-to-list 'dape-configs
-               '(rust-test
+               `(rust-test
                  modes (rustic-mode rust-ts-mode rust-mode)
                  command "codelldb"
                  command-args ("--port" :port)
@@ -82,12 +77,7 @@
                  :type "lldb"
                  :request "launch"
                  :args ["--test"]
-                 :program (lambda ()
-                            (expand-file-name
-                             (concat "target/debug/"
-                                     (file-name-nondirectory
-                                      (directory-file-name (dape-cwd))))
-                             (dape-cwd)))))
+                 :program ,#'myde/rust-dape-debug-program))
   :ensure nil)
 
 (provide 'myde-prog-rust-cfg)
