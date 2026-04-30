@@ -106,6 +106,7 @@ Idempotent: re-evaluating `init.el' will not re-run module side effects."
 (myde/load-module "prog-cpp")
 (myde/load-module "prog-go")
 (myde/load-module "prog-rust")
+(myde/load-module "prog-zig")
 (myde/load-module "prog-python")
 (myde/load-module "prog-javascript")
 (myde/load-module "prog-typescript")
