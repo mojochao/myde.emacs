@@ -5,7 +5,6 @@
 
 ;;; Code:
 
-
 ;; Org mode directories and files
 (defvar myde/org-directory "~/org/"
   "Main org mode directory.")
@@ -31,8 +30,9 @@ directory does not exist."
 
 ;; Org-related utility functions
 (defun myde/delete-trailing-whitespace-setup ()
-  "Delete trailing whitespace on save in org-mode."
+  "Delete trailing whitespace on save in `org-mode`."
   (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
 
+;; That's all Folks!
 (provide 'myde-core-org)
 ;;; lib.el ends here
