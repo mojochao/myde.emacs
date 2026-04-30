@@ -65,11 +65,8 @@
 (setq load-prefer-newer t)
 
 ;; use-package configuration for fast startup:
-;; - Minimize macro expansion output to reduce init overhead
-(setq use-package-expand-minimally t
-      use-package-verbose nil
-      use-package-minimum-reported-time (if init-file-debug 0 0.1)
-      use-package-ensure-function #'package-install)
+(setq use-package-verbose nil
+      use-package-minimum-reported-time (if init-file-debug 0 0.1))
 
 ;;;; Frame setup (avoid redraw overhead)
 
@@ -142,12 +139,6 @@
         (expand-file-name "emacs/auto-save-list/.saves-" state-home)))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-
-;;;; Security settings
-
-(setq gnutls-verify-error t)
-(setq tls-checktrust t)
-(setq gnutls-min-prime-bits 3072)
 
 ;;;; Miscellaneous optimizations
 

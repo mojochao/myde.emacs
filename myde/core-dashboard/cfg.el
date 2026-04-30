@@ -17,7 +17,6 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
-  :commands (dashboard-insert-startupify-lists)
   :init
   (dashboard-setup-startup-hook)
   :config

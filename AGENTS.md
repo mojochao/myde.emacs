@@ -64,6 +64,49 @@ XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :conf
 - `myde/eglot-add-workspace-config` in `core-projects/lib.el` upserts LSP workspace config without clobbering other modules' settings.
 - **Never use lambdas as hook functions.** Always define a named function (e.g., `myde/foo-mode-hook`) in the module's `lib.el` and reference it by name in `cfg.el`.
 
+### Platform support
+
+This config targets both **Linux** and **macOS**. Platform-specific code is guarded with
+`(when (memq window-system '(mac ns)) ...)` or `(string= system-type "darwin")`.
+
+Key macOS-specific concerns:
+- GUI apps on macOS do not inherit the login shell's `PATH`. `exec-path-from-shell` is
+  installed and initialized via `emacs-startup-hook` (deferred, non-blocking) in
+  `core-base/cfg.el` for `mac`/`ns` window systems only.
+- Homebrew paths differ by architecture: `/usr/local/bin` (Intel) vs `/opt/homebrew/bin`
+  (Apple Silicon). Always use `executable-find` rather than hardcoded paths.
+- macOS dired requires GNU `ls` (`gls` from `coreutils`) for `--group-directories-first`.
+  The path is resolved via `(executable-find "gls")`.
+
+### Package system invariants
+
+These ordering constraints must be preserved in `core-base/cfg.el`:
+
+1. `(require 'package)` and `(package-initialize)` run first.
+2. `(unless package-archive-contents (package-refresh-contents))` runs immediately after
+   — never before — `package-initialize`. If `package-initialize` comes after the guard,
+   `package-archive-contents` is always nil and archive indexes are re-downloaded on
+   every startup.
+3. `custom.el` is loaded after `package-initialize` because `package-vc-selected-packages`
+   has a `:set` handler that calls `package-vc-install`, which requires an initialized
+   package system.
+
+### use-package constraints (Emacs 30)
+
+- **Do not set `use-package-ensure-function` to `#'package-install`.** Emacs 30's
+  built-in `use-package` calls ensure functions with three arguments `(name ensure-value
+  state)`; `package-install` only accepts one or two. The correct default is
+  `use-package-ensure-elpa` — do not override it.
+- **Do not set `use-package-expand-minimally t`** in production. It strips
+  `condition-case` from `:config` blocks, making errors silent and extremely hard to
+  diagnose. Useful only for byte-compilation inspection.
+- **Do not add `:commands` to startup-screen packages.** `:commands` implies `:defer t`,
+  which prevents the package from loading at startup — exactly when it is needed.
+- **Always verify hook target functions exist** in the installed package before using
+  `:hook (event . fn)`. The function must be exported (autoloaded or `require`d). A
+  non-existent hook target produces `custom-initialize-reset: Invalid function: <fn>`
+  at startup, which can be mistaken for an unrelated error.
+
 ### Adding a module
 
 1. Create `myde/<category>-<name>/lib.el` ending with `(provide 'myde-<category>-<name>)`.

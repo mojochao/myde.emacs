@@ -154,10 +154,8 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package mason  ;; https://github.com/mason-org/mason.el
-  :hook (after-init . mason-setup)
-  :config
-  (setq mason-dir
-        (expand-file-name "emacs/mason" (xdg-data-home)))
+  :custom
+  (mason-dir (expand-file-name "emacs/mason" (xdg-data-home)))
   :ensure t)
 
 (use-package mise  ;; https://github.com/eki3z/mise.el

@@ -7,56 +7,52 @@
 (unless (featurep 'myde-core-base)
   (load-file (expand-file-name "lib.el" (file-name-directory load-file-name))))
 
-;; XDG directory support and built-in configuration
-;; It is important that this is loaded early before we set locations
-;; for the various state files written by emacs and external packages.
-(use-package xdg
-  :ensure nil)
+;; XDG directory support — load early so all XDG paths are available immediately.
+(require 'xdg)
 
-(use-package emacs
-  :after xdg
-  :config
-  ;; Load user customizations
-  (let* ((path (expand-file-name "custom.el" user-emacs-directory))
-         (exists (file-exists-p path)))
-    (setq custom-file path)
-    (when exists
-      (load-file custom-file)))
+;; Disable backup files (handled by buffer-guardian)
+(setq make-backup-files nil)
 
-  ;; Disable backup files (handled by buffer-guardian)
-  (setq make-backup-files nil)
+;; Store backups in XDG state directory
+(let ((backup-dir (expand-file-name "emacs/backup" (xdg-state-home))))
+  (setq backup-directory-alist `(("." . ,backup-dir)))
+  (make-directory backup-dir :parents))
 
-  ;; Store backups in XDG state directory
-  (setq backup-directory (expand-file-name "emacs/backup" (xdg-state-home))
-        backup-directory-alist `(("." . ,backup-directory)))
-  (make-directory backup-directory :parents)
+;; Package initialization — must run before custom.el is loaded because
+;; package-vc-selected-packages' :set function triggers package-vc--ensure,
+;; which calls package-vc-install and requires an initialized package system.
+(require 'package)
+(setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
 
-  ;; Package initialization
-  (require 'package)
-  (setq package-user-dir
-        (expand-file-name "elpa" user-emacs-directory))
+;; Redirect native compilation cache
+(when (featurep 'native-compile)
+  (startup-redirect-eln-cache
+   (expand-file-name "emacs/eln-cache" (xdg-cache-home))))
 
-  ;; Redirect native compilation cache
-  (when (featurep 'native-compile)
-    (startup-redirect-eln-cache
-     (expand-file-name "emacs/eln-cache" (xdg-cache-home))))
-  
-  (setq package-archives
-        '(("melpa"  . "https://melpa.org/packages/")
-          ("gnu"    . "https://elpa.gnu.org/packages/")
-          ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-  (setq package-install-upgrade-built-in t)
-  (unless package-archive-contents
-    (package-refresh-contents))
-  (package-initialize)
+(setq package-archives
+      '(("melpa"  . "https://melpa.org/packages/")
+        ("gnu"    . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+(setq package-install-upgrade-built-in t)
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
 
-  ;; TRAMP connection cache
-  (setq tramp-persistency-file-name
-        (expand-file-name "emacs/tramp" (xdg-state-home)))
+;; Load user customizations after the package system is initialized so that
+;; package-vc-selected-packages' :set handler can find installed packages.
+(let* ((path (expand-file-name "custom.el" user-emacs-directory))
+       (exists (file-exists-p path)))
+  (setq custom-file path)
+  (when exists
+    (load-file custom-file)))
 
-  ;; URL library configuration (cookies, cache)
-  (setq url-configuration-directory
-        (expand-file-name "emacs/url/" (xdg-cache-home))))
+;; TRAMP connection cache
+(setq tramp-persistency-file-name
+      (expand-file-name "emacs/tramp" (xdg-state-home)))
+
+;; URL library configuration (cookies, cache)
+(setq url-configuration-directory
+      (expand-file-name "emacs/url/" (xdg-cache-home)))
 
 ;; Increase subprocess read buffer size for LSP throughput (default is 4096).
 (setq read-process-output-max (* 1024 1024))  ; 1 MiB
@@ -69,11 +65,10 @@
 ;; NOTE: This is only needed on macOS where GUI applications don't inherit
 ;; the shell environment. On Linux, Emacs already has the correct environment
 ;; from the login shell via execve.
-(use-package exec-path-from-shell  ;; https://github.com/purcell/exec-path-from-shell
-  :if (memq window-system '(mac ns))  ;; macOS GUI only
-  :config
-  (exec-path-from-shell-initialize)
-  :ensure t)
+;; Installation and initialization are both deferred to emacs-startup-hook so
+;; that neither the package download nor the shell subprocess can block init.
+(when (memq window-system '(mac ns))
+  (add-hook 'emacs-startup-hook #'myde/exec-path-from-shell-startup-hook 90))
 
 ;; Recent files management
 (use-package recentf
@@ -93,7 +88,6 @@
 
 ;; Remember last position within files
 (use-package saveplace
-  :after xdg
   :init
   (setq save-place-file
         (expand-file-name "emacs/places.eld" (xdg-state-home)))
@@ -104,7 +98,6 @@
 
 ;; Remember minibuffer history
 (use-package savehist
-  :after xdg
   :init
   (setq savehist-file
         (expand-file-name "emacs/history" (xdg-state-home)))
@@ -115,7 +108,6 @@
 
 ;; Transient menus and popups
 (use-package transient
-  :after xdg
   :init
   (let ((dir (expand-file-name "emacs/transient" (xdg-data-home))))
     (setq transient-levels-file  (expand-file-name "levels.el"  dir)
@@ -141,7 +133,8 @@
   :if (string= system-type "darwin")
   :config
   (setq dired-use-ls-dired t)
-  (setq insert-directory-program "/usr/local/bin/gls")
+  (setq insert-directory-program
+        (or (executable-find "gls") insert-directory-program))
   (setq dired-listing-switches "-aBhl --group-directories-first")
   :ensure nil)
 
