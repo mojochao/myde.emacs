@@ -25,6 +25,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package buttercup  ;; https://github.com/jorgenschaefer/emacs-buttercup
+  :defer t
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -32,12 +33,15 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package package-lint  ;; https://github.com/purcell/package-lint
+  :defer t
   :ensure t)
 
 (use-package cask-mode  ;; https://github.com/Wilfred/cask-mode
+  :defer t
   :ensure t)
 
 (use-package eask-mode  ;; https://github.com/emacs-eask/eask-mode
+  :defer t
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -45,15 +49,19 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package dash  ;; https://github.com/magnars/dash.el
+  :defer t
   :ensure t)
 
 (use-package s  ;; https://github.com/magnars/s.el
+  :defer t
   :ensure t)
 
 (use-package seq  ;; https://elpa.gnu.org/packages/seq.html
+  :defer t
   :ensure t)
 
 (use-package plz  ;; https://github.com/alphapapa/plz.el
+  :defer t
   :ensure t)
 
 (provide 'myde-prog-elisp-cfg)

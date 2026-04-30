@@ -11,9 +11,9 @@
   (load-file (expand-file-name "lib.el" (file-name-directory load-file-name))))
 
 (use-package yasnippet  ;; https://github.com/joaotavora/yasnippet
+  :hook (after-init . yas-global-mode)
   :config
   (setq yas-snippet-dirs (cons (expand-file-name "snippets" user-emacs-directory) yas-snippet-dirs))
-  (yas-global-mode 1)
   ;; Do not bind TAB globally for snippet expansion -- it conflicts with
   ;; comint/REPL completion (e.g. inf-elixir).  Snippets can still be
   ;; expanded via `yas-insert-snippet' or the `yas-minor-mode-map' binding.

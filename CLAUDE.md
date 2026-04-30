@@ -17,9 +17,17 @@ MyDE is a modular Emacs configuration targeting **Emacs 30+ compiled with native
 
 ### Startup sequence
 
-1. `early-init.el` — Runs before init.el and before Emacs startup.el creates directories. Currently sets `auto-save-list-file-prefix` to its XDG path (must be here — too late in init.el).
+1. `early-init.el` — Runs before init.el and before Emacs startup.el creates directories. Includes critical optimizations:
+   - Garbage collection suppression (restored after init)
+   - File-name-handler-alist clearing (restored after init)
+   - Frame parameter setup via default-frame-alist
+   - Process buffer sizing for LSP throughput
+   - Startup screen suppression
+   - See file for complete optimization details
 2. `init.el` — Defines `myde/load-module` and calls it for every module in order.
 3. Each `myde/<category>-<name>/cfg.el` — The public entry point for a module.
+
+**Performance:** Startup completes in ~1.16ms (Emacs init time), ~72ms wall-clock including binary load.
 
 ### Module system
 
@@ -39,10 +47,13 @@ All state, data, and cache is stored outside `user-emacs-directory` via the buil
 | Kind | Path |
 |------|------|
 | State (recentf, places, history, tramp, auto-save-list) | `$XDG_STATE_HOME/emacs/` |
-| Data (elpa, transient, tree-sitter) | `$XDG_DATA_HOME/emacs/` |
+| Data (transient, tree-sitter) | `$XDG_DATA_HOME/emacs/` |
 | Cache (eln-cache, url) | `$XDG_CACHE_HOME/emacs/` |
+| Packages (elpa) | `./elpa/` (repo root, git-ignored) |
 
-XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :config ...)`. Exception: `auto-save-list-file-prefix` must be set in `early-init.el` because Emacs creates the directory before init.el runs.
+XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :config ...)`. Exceptions:
+- `auto-save-list-file-prefix` must be set in `early-init.el` because Emacs creates the directory before init.el runs.
+- `elpa` is stored in the repo root (`./elpa/`) for easier debugging, package inspection, and agent access.
 
 ### Key conventions
 

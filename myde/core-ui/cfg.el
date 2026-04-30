@@ -48,8 +48,7 @@
 
 ;; UI quality of life improvements
 (use-package spacious-padding  ;; https://github.com/protesilaos/spacious-padding
-  :config
-  (spacious-padding-mode 1)
+  :hook (after-init . spacious-padding-mode)
   :ensure t)
 
 ;; Icons support
@@ -67,14 +66,17 @@
    ("C-c s t" . show-font-tabulated))
   :ensure t)
 
-;; Themes support
+;; Themes support (only active theme and preview are loaded; others defer on demand)
 (use-package easy-theme-preview  ;; https://github.com/ayys/easy-theme-preview.el
+  :defer t
   :ensure t)
 
 (use-package color-theme-sanityinc-tomorrow  ;; https://github.com/purcell/color-theme-sanityinc-tomorrow
+  :defer t
   :ensure t)
 
 (use-package doom-themes ;; https://github.com/doomemacs/themes
+  :defer t
   :custom
   (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
   (doom-themes-enable-italic t) ; if nil, italics is universally disabled
@@ -87,9 +89,11 @@
   :ensure t)
 
 (use-package ef-themes  ;; https://github.com/protesilaos/ef-themes
+  :defer t
   :ensure t)
 
 (use-package jetbrains-darcula-theme  ;; https://github.com/ianyepan/jetbrains-darcula-emacs-theme
+  :defer t
   :ensure t)
 
 (use-package batppuccin
@@ -98,7 +102,7 @@
   :ensure t)
 
 (use-package auto-dark
-  :after (batppuccin-latte-theme batppuccin-mocha-theme)
+  :after batppuccin
   :if (string= system-type "linux")
   :custom
   (auto-dark-themes '((batppuccin-frappe) (batppuccin-latte)))

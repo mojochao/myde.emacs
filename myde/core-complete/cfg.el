@@ -17,8 +17,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package vertico  ;; https://github.com/minad/vertico
-  :init
-  (vertico-mode)
+  :hook (after-init . vertico-mode)
   :ensure t)
 
 (use-package orderless  ;; https://github.com/oantolin/orderless
@@ -29,8 +28,7 @@
   :ensure t)
 
 (use-package marginalia  ;; https://github.com/minad/marginalia
-  :init
-  (marginalia-mode)
+  :hook (after-init . marginalia-mode)
   :ensure t)
 
 (use-package consult  ;; https://github.com/minad/consult
@@ -56,8 +54,8 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package corfu  ;; https://github.com/minad/corfu
+  :hook (after-init . global-corfu-mode)
   :config
-  (global-corfu-mode)
   (corfu-popupinfo-mode)
   :diminish corfu-mode
   :ensure t)

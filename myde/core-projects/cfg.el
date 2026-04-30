@@ -17,8 +17,8 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package projectile  ;; https://github.com/bbatsov/projectile
+  :hook (after-init . projectile-mode)
   :config
-  (projectile-mode +1)
   (setq projectile-project-search-path '("~/Projects/"))
   (setq projectile-known-projects-file
         (expand-file-name "emacs/projectile-bookmarks.eld" (xdg-data-home)))
@@ -37,8 +37,7 @@
 
 ;; EditorConfig support for project-wide formatting rules
 (use-package editorconfig
-  :config
-  (editorconfig-mode 1)
+  :hook (after-init . editorconfig-mode)
   :diminish editorconfig-mode
   :ensure nil)
 
@@ -85,9 +84,9 @@
   :ensure nil)
 
 (use-package treesit-auto  ;; https://github.com/renzmann/treesit-auto
+  :hook (after-init . global-treesit-auto-mode)
   :config
   (setq treesit-auto-install t) ; install grammars automatically, if missing
-  (global-treesit-auto-mode)
   :diminish treesit-auto-mode
   :ensure t)
 
@@ -108,8 +107,12 @@
               ("C-c e h" . eldoc-box-help-at-point)
               ("C-c e q" . eldoc-box-quit-frame))
   :config
+  ;; Performance optimizations
   (setq eglot-autoshutdown t
-        eglot-events-buffer-size 0)
+        eglot-sync-connect 0                               ;; non-blocking LSP connect
+        eglot-report-progress nil                          ;; no progress messages
+        eglot-events-buffer-config '(:size 0 :format short) ;; no event logging
+        jsonrpc-event-hook nil)                            ;; no per-message hooks
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -118,9 +121,7 @@
 
 ;; Flycheck (on-the-fly syntax checking)
 (use-package flycheck  ;; https://github.com/flycheck/flycheck
-  :after transient
-  :init
-  (global-flycheck-mode)
+  :hook (after-init . global-flycheck-mode)
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   :diminish (flycheck-mode . " ✓")
@@ -153,11 +154,10 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package mason  ;; https://github.com/mason-org/mason.el
-  :init
+  :hook (after-init . mason-setup)
+  :config
   (setq mason-dir
         (expand-file-name "emacs/mason" (xdg-data-home)))
-  :config
-  (mason-setup)
   :ensure t)
 
 (use-package mise  ;; https://github.com/eki3z/mise.el

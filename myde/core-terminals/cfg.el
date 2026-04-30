@@ -7,7 +7,7 @@
 
 ;;; Code:
 
-(unless (featurep 'myde-core-notes)
+(unless (featurep 'myde-core-terminals)
   (load-file (expand-file-name "lib.el" (file-name-directory load-file-name))))
 
 (use-package emacs
@@ -26,5 +26,5 @@
   (vterm)
   :ensure t)
 
-(provide 'myde-core-notes-cfg)
+(provide 'myde-core-terminals-cfg)
 ;;; cfg.el ends here

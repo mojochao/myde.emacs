@@ -66,7 +66,11 @@
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
 
 ;; Environment variables from shell initialization
+;; NOTE: This is only needed on macOS where GUI applications don't inherit
+;; the shell environment. On Linux, Emacs already has the correct environment
+;; from the login shell via execve.
 (use-package exec-path-from-shell  ;; https://github.com/purcell/exec-path-from-shell
+  :if (memq window-system '(mac ns))  ;; macOS GUI only
   :config
   (exec-path-from-shell-initialize)
   :ensure t)

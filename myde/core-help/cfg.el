@@ -28,8 +28,7 @@
   :ensure t)
 
 (use-package which-key
-  :init
-  (which-key-mode)
+  :hook (after-init . which-key-mode)
   :diminish which-key-mode
   :ensure nil)
 
