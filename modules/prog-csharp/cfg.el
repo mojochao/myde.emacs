@@ -109,9 +109,10 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package ob-csharp  ;; https://github.com/thomas-villagers/ob-csharp
-  :vc (:url "https://github.com/thomas-villagers/ob-csharp" :rev :newest)
+  :vc (:url "https://github.com/thomas-villagers/ob-csharp" :rev :newest :lisp-dir "src")
+  :load-path "elpa/ob-csharp/src"
   :after org
-  :ensure nil)
+  :ensure t)
 
 (provide 'myde-prog-csharp-cfg)
 ;;; cfg.el ends here

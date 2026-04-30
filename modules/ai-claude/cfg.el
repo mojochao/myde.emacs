@@ -35,7 +35,8 @@
   ("C-c c" . claude-code-ide-menu) ; Set your favorite keybinding
   :config
   (claude-code-ide-emacs-tools-setup)
-  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest))
+  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+  :ensure t)
 
 (provide 'myde-ai-claude-cfg)
 ;;; cfg.el ends here

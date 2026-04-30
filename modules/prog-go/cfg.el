@@ -89,7 +89,7 @@
               ("C-c t f" . gotest-ts-run-file)
               ("C-c t p" . gotest-ts-run-package)
               ("C-c t r" . gotest-ts-repeat))
-  :ensure nil)
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Debugging via dape + dlv

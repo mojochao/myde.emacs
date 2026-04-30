@@ -86,7 +86,7 @@
          (zig-ts-mode . myde/zig-format-on-save-setup))
   :bind (:map zig-ts-mode-map
               ("C-c t p" . zig-test-all))
-  :ensure nil)
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Debugging via dape + codelldb
@@ -112,7 +112,7 @@
 (use-package ob-zig  ;; https://github.com/jolby/ob-zig.el
   :vc (:url "https://github.com/jolby/ob-zig.el" :rev :newest)
   :after org
-  :ensure nil)
+  :ensure t)
 
 (provide 'myde-prog-zig-cfg)
 ;;; cfg.el ends here

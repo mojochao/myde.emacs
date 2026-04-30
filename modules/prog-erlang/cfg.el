@@ -77,7 +77,8 @@
 
 (use-package ob-erlang  ;; https://github.com/xfwduke/ob-erlang
   :vc (:url "https://github.com/xfwduke/ob-erlang" :rev :newest)
-  :after org)
+  :after org
+  :ensure t)
 
 (provide 'myde-prog-erlang-cfg)
 ;;; cfg.el ends here

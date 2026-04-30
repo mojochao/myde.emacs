@@ -133,7 +133,8 @@
 (use-package nushell-ts-babel  ;; https://github.com/herbertjones/nushell-ts-babel
   :vc (:url "https://github.com/herbertjones/nushell-ts-babel" :rev :newest)
   :after org
-  :if (treesit-language-available-p 'nu))
+  :if (treesit-language-available-p 'nu)
+  :ensure t)
 
 (provide 'myde-prog-nushell-cfg)
 ;;; cfg.el ends here
