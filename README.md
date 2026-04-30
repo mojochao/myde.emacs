@@ -30,7 +30,7 @@ Modules follow a `<category>-<name>` naming convention:
 - **`ai-*`** — AI assistant integration (e.g. `ai-base`, `ai-gptel`, `ai-claude`)
 - **`auth-*`** — Authentication and secrets (e.g. `auth-1password`)
 - **`data-*`** — Data format modules (e.g. `data-csv`, `data-json`, `data-toml`, `data-xml`, `data-yaml`)
-- **`prog-*`** — Programming language modules (e.g. `prog-base`, `prog-go`, `prog-rust`, `prog-zig`, `prog-python`, `prog-ruby`, `prog-elixir`, `prog-elisp`)
+- **`prog-*`** — Programming language modules (e.g. `prog-base`, `prog-go`, `prog-rust`, `prog-zig`, `prog-python`, `prog-ruby`, `prog-elixir`, `prog-elisp`, `prog-csharp`)
 - **`text-*`** — Text format modules (e.g. `text-markdown`)
 - **`ebook-*`** — Ebook reader modules (e.g. `ebook-pdf`, `ebook-epub`)
 
@@ -91,6 +91,7 @@ Several modules require external tools on PATH (or at a known path). Install the
 | `data-json` | `vscode-json-language-server` | `npm install -g vscode-langservers-extracted` |
 | `data-toml` | `taplo` | `brew install taplo` |
 | `data-xml` | `lemminx` | See below |
+| `prog-csharp` | `csharp-ls` | `dotnet tool install -g csharp-ls` |
 | `prog-go` | `gopls` | `go install golang.org/x/tools/gopls@latest` |
 | `prog-python` | `pylsp` / `pyright` | `pip install python-lsp-server` |
 | `prog-ruby` | `ruby-lsp` | `gem install ruby-lsp` |
@@ -102,6 +103,7 @@ Several modules require external tools on PATH (or at a known path). Install the
 | Module | Tool | Install |
 |--------|------|---------|
 | `prog-cpp` | `codelldb` | `mise use -g codelldb` |
+| `prog-csharp` | `netcoredbg` | https://github.com/Samsung/netcoredbg |
 | `prog-go` | `dlv` | `go install github.com/go-delve/delve/cmd/dlv@latest` |
 | `prog-ruby` | `rdbg` | `gem install debug` |
 | `prog-rust` | `codelldb` | `mise use -g codelldb` |

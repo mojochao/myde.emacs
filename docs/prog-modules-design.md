@@ -204,16 +204,16 @@ All language modules follow the same keybinding prefix conventions:
 
 The same granularity convention is used across all language modules:
 
-| Key | Granularity | Go | Python | Ruby | Elixir | Zig |
-|-----|-------------|-----|--------|------|--------|-----|
-| `C-c t t` | point (finest) | `gotest-ts-run-dwim` | `python-pytest-function-dwim` | `rspec-verify-single` | `exunit-toggle-file-and-test` | — |
-| `C-c t f` | file | `gotest-ts-run-file` | `python-pytest-file-dwim` | `rspec-verify` | — | — |
-| `C-c t p` | package/project | `gotest-ts-run-package` | `python-pytest` | `rspec-verify-all` | — | `zig-test-all` |
-| `C-c t r` | repeat | `gotest-ts-repeat` | `python-pytest-repeat` | `rspec-rerun` | — | — |
-| `C-c t a` | all | — | — | — | `exunit-verify-all` | — |
-| `C-c t s` | single | — | — | — | `exunit-verify-single` | — |
-| `C-c t x` | last failed | — | `python-pytest-last-failed` | `rspec-verify-failures` | — | — |
-| `C-c t m` | menu | — | `python-pytest-dispatch` | — | — | — |
+| Key | Granularity | C# | Go | Python | Ruby | Elixir | Zig |
+|-----|-------------|-----|-----|--------|------|--------|-----|
+| `C-c t t` | point (finest) | — | `gotest-ts-run-dwim` | `python-pytest-function-dwim` | `rspec-verify-single` | `exunit-toggle-file-and-test` | — |
+| `C-c t f` | file | — | `gotest-ts-run-file` | `python-pytest-file-dwim` | `rspec-verify` | — | — |
+| `C-c t p` | package/project | `myde/csharp-run-tests` | `gotest-ts-run-package` | `python-pytest` | `rspec-verify-all` | — | `zig-test-all` |
+| `C-c t r` | repeat | — | `gotest-ts-repeat` | `python-pytest-repeat` | `rspec-rerun` | — | — |
+| `C-c t a` | all | — | — | — | — | `exunit-verify-all` | — |
+| `C-c t s` | single | — | — | — | — | `exunit-verify-single` | — |
+| `C-c t x` | last failed | — | — | `python-pytest-last-failed` | `rspec-verify-failures` | — | — |
+| `C-c t m` | menu | — | — | `python-pytest-dispatch` | — | — | — |
 
 ### REPL keybindings (`C-c i`)
 
