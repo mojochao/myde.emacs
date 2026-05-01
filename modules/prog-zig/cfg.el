@@ -67,7 +67,6 @@
 
 (use-package zig-mode  ;; https://github.com/ziglang/zig-mode
   :hook ((zig-mode . myde-zig-mode-setup)
-         (zig-mode . myde-delete-trailing-whitespace-setup)
          (zig-mode . myde-zig-format-on-save-setup))
   :bind (:map zig-mode-map
               ("C-c t p" . zig-test-all))
@@ -82,7 +81,6 @@
 (use-package zig-ts-mode  ;; https://github.com/emacsmirror/zig-ts-mode
   :vc (:url "https://github.com/emacsmirror/zig-ts-mode" :rev :newest)
   :hook ((zig-ts-mode . myde-zig-mode-setup)
-         (zig-ts-mode . myde-delete-trailing-whitespace-setup)
          (zig-ts-mode . myde-zig-format-on-save-setup))
   :bind (:map zig-ts-mode-map
               ("C-c t p" . zig-test-all))

@@ -68,7 +68,6 @@
 
 (use-package ruby-mode
   :hook ((ruby-mode . myde-ruby-mode-setup)
-         (ruby-mode . myde-delete-trailing-whitespace-setup)
          (ruby-mode . myde-ruby-format-on-save-setup))
   :bind (:map ruby-mode-map
               ("C-c i i" . inf-ruby)
@@ -88,7 +87,6 @@
 
 (use-package ruby-ts-mode
   :hook ((ruby-ts-mode . myde-ruby-mode-setup)
-         (ruby-ts-mode . myde-delete-trailing-whitespace-setup)
          (ruby-ts-mode . myde-ruby-format-on-save-setup))
   :bind (:map ruby-ts-mode-map
               ("C-c i i" . inf-ruby)

@@ -59,7 +59,6 @@
 
 (use-package erlang  ;; https://github.com/erlang/otp (tools/emacs)
   :hook ((erlang-mode . myde-erlang-mode-setup)
-         (erlang-mode . myde-delete-trailing-whitespace-setup)
          (erlang-mode . flycheck-mode))
   :bind (:map erlang-mode-map
               ("C-c i i" . erlang-shell)

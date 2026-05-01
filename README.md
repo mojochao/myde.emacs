@@ -40,16 +40,45 @@ Each module contains:
 - `lib.el` — Library code (functions, variables, customizations)
 - `cfg.el` — Configuration code (the public entry point)
 
+### Module loading and toggles
+
+`init.el` is declarative. The full set of modules is described by a single ordered list, `myde-modules`, whose entries are built with `(myde/m "<category>-<name>" "<description>")`. The list order is the load order.
+
+Two operators consume the list:
+
+- `(myde-customize myde-modules)` generates a `defcustom myde-module-<name>-enabled nil` toggle for every **toggleable** module (i.e. anything not `core-*` and not `*-base`). The toggles live in the `myde-modules` customization group.
+- `(myde-initialize myde-modules)` walks the list in order and loads each module that should be loaded.
+
+Loading rules:
+
+| Module kind         | Has a toggle? | Loaded when                                                |
+|---------------------|---------------|------------------------------------------------------------|
+| `core-*`            | No            | Always                                                     |
+| `*-base` (non-core) | No            | Any sibling module in the same category has its toggle on  |
+| Other               | Yes (default **`nil`**) | Its toggle is non-nil                            |
+
+> **Heads up:** toggles default to `nil`. A fresh install with no `custom.el` loads only the `core-*` modules. Opt modules in via `M-x customize-group RET myde-modules RET` (or by setting variables in `custom.el`).
+
+The module-system machinery (the `myde-module` `cl-defstruct`, the `myde/m` constructor, `myde-customize`, `myde-initialize`, and `myde-load-module`) lives in `modules.el` at the repo root and is loaded by `init.el` via `(load-file ...)` before the descriptor list is declared.
+
+### Adding a module
+
+1. Create `modules/<category>-<name>/lib.el` ending with `(provide 'myde-<category>-<name>)`.
+2. Create `modules/<category>-<name>/cfg.el` with a `featurep` guard at top and `(provide 'myde-<category>-<name>-cfg)` at bottom.
+3. Add a `(myde/m "<category>-<name>" "<one-line description>")` entry to `myde-modules` in `init.el`, in the desired load position. The `defcustom` toggle is generated automatically.
+
 ### File conventions
 
 **`lib.el`**
-- Contains pure library code: `defun`, `defvar`, `defcustom`
+- Contains named definitions and built-in Emacs initialization: `defun`, `defvar`,
+  `defcustom`, `setq`, and direct built-in mode/variable setup. No `use-package`,
+  no external package hooks, no keybindings.
 - Does not require other modules (all utilities are distributed across modules)
 - Provides a feature symbol: `(provide 'myde-<category>-<name>)`
 - Hook functions must be defined here as named functions (e.g., `myde/foo-mode-hook`) — never use lambdas as hook functions
 
 **`cfg.el`**
-- Contains all configuration with side effects: `use-package` declarations, hooks, etc.
+- Contains external package wiring: `use-package` declarations, hooks, keybindings, etc.
 - Loads its own `lib.el` via a `featurep` guard
 - Is the sole public entry point — `init.el` loads only `cfg.el`
 - Provides a feature symbol: `(provide 'myde-<category>-<name>-cfg)`
@@ -111,7 +140,6 @@ Several modules require external tools on PATH (or at a known path). Install the
 | `data-json` | `vscode-json-language-server` | `npm install -g vscode-langservers-extracted` |
 | `data-toml` | `taplo` | `brew install taplo` |
 | `data-xml` | `lemminx` | See below |
-| `prog-csharp` | `csharp-ls` | `dotnet tool install -g csharp-ls` |
 | `prog-go` | `gopls` | `go install golang.org/x/tools/gopls@latest` |
 | `prog-lua` | `lua-language-server` | `brew install lua-language-server` |
 | `prog-python` | `pylsp` / `pyright` | `pip install python-lsp-server` |
@@ -124,7 +152,6 @@ Several modules require external tools on PATH (or at a known path). Install the
 | Module | Tool | Install |
 |--------|------|---------|
 | `prog-cpp` | `codelldb` | `mise use -g codelldb` |
-| `prog-csharp` | `netcoredbg` | https://github.com/Samsung/netcoredbg |
 | `prog-go` | `dlv` | `go install github.com/go-delve/delve/cmd/dlv@latest` |
 | `prog-ruby` | `rdbg` | `gem install debug` |
 | `prog-rust` | `codelldb` | `mise use -g codelldb` |

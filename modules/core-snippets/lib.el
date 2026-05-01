@@ -1,4 +1,4 @@
-;;; lib.el --- Snippits support library for myde -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; lib.el --- Snippets support library for myde -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
 

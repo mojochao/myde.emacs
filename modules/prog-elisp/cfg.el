@@ -38,7 +38,6 @@
 
 (use-package emacs
   :hook ((emacs-lisp-mode . myde-emacs-lisp-mode-setup)
-         (emacs-lisp-mode . myde-delete-trailing-whitespace-setup)
          (emacs-lisp-mode . flycheck-mode))
   :ensure nil)
 

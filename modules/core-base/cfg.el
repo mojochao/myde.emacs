@@ -53,9 +53,17 @@
    (expand-file-name "emacs/eln-cache" (xdg-cache-home))))
 
 (setq package-archives
-      '(("melpa"  . "https://melpa.org/packages/")
-        ("gnu"    . "https://elpa.gnu.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+      '(("gnu"          . "https://elpa.gnu.org/packages/")
+        ("nongnu"       . "https://elpa.nongnu.org/nongnu/")
+        ("melpa"        . "https://melpa.org/packages/")
+        ("melpa-stable" . "https://stable.melpa.org/packages/")))
+
+(setq package-archive-priorities
+      '(("gnu"    . 99)
+        ("nongnu" . 80)
+        ("melpa"  . 70)
+        ("melpa-stable" . 50)))
+
 (setq package-install-upgrade-built-in t)
 (package-initialize)
 ;; Refresh package archives only on first run (empty package-user-dir).

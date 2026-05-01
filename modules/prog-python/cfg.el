@@ -68,7 +68,6 @@
 
 (use-package python
   :hook ((python-ts-mode . myde-python-ts-mode-setup)
-         (python-ts-mode . myde-delete-trailing-whitespace-setup)
          (python-ts-mode . flycheck-mode))
   :bind (:map python-ts-mode-map
               ("C-c i i" . run-python)

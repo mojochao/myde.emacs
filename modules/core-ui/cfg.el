@@ -28,7 +28,7 @@
 ;;; Code:
 
 (unless (featurep 'myde-core-ui)
-  (load-file (expand-file-name "modules/core-ui/lib.el" user-emacs-directory)))
+  (load-file (expand-file-name "lib.el" (file-name-directory load-file-name))))
 
 ;; Disable startup splash screen and initial scratch message
 (setq inhibit-startup-message t

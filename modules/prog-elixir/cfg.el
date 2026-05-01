@@ -82,15 +82,13 @@
          ("\\.heex\\'" . elixir-ts-mode))
   :hook ((elixir-ts-mode . myde-elixir-ts-ensure-grammars)
          (elixir-ts-mode . flycheck-mode)
-         (elixir-ts-mode . myde-delete-trailing-whitespace-setup)
          (elixir-ts-mode . yas-minor-mode))
   :ensure nil)
 
 (use-package heex-ts-mode  ;; https://github.com/wkirschbaum/heex-ts-mode
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
-  :hook ((heex-ts-mode . myde-delete-trailing-whitespace-setup)
-         (heex-ts-mode . yas-minor-mode))
+  :hook ((heex-ts-mode . yas-minor-mode))
   :ensure t)
 
 ;; -----------------------------------------------------------------------------

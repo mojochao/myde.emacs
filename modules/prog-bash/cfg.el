@@ -100,8 +100,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package sh-script
-  :hook ((bash-ts-mode . myde-bash-ts-mode-setup)
-         (bash-ts-mode . myde-delete-trailing-whitespace-setup))
+  :hook ((bash-ts-mode . myde-bash-ts-mode-setup))
   :mode (("\\.sh\\'"   . bash-ts-mode)
          ("\\.bash\\'" . bash-ts-mode)
          ("\\.bats\\'" . bash-ts-mode))

@@ -83,10 +83,7 @@
               ("C-c i x" . myde-nushell-run-buffer))
   :config
   (add-to-list 'interpreter-mode-alist '("nu" . nushell-mode))
-  :ensure t)
-
-;; Add trailing whitespace cleanup
-(add-hook 'nushell-mode-hook #'myde-delete-trailing-whitespace-setup)
+     :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Formatting via apheleia + nufmt (OPT-IN ONLY)

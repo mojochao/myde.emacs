@@ -42,14 +42,16 @@ any existing entry for SERVER-KEY without clobbering other languages."
 
 (defun myde-neotree-refresh ()
   "Refresh neotree if visible."
-  (when (neo-global--window-exists-p)
+  (when (and (fboundp 'neo-global--window-exists-p)
+             (neo-global--window-exists-p))
     (neo-buffer--refresh)))
 
 (defun myde-neotree-window-size-change-function (frame)
   "Sync `neo-window-width' when FRAME is resized."
-  (let ((neo-window (neo-global--get-window)))
-    (unless (null neo-window)
-      (setq neo-window-width (window-width neo-window)))))
+  (when (fboundp 'neo-global--get-window)
+    (let ((neo-window (neo-global--get-window)))
+      (unless (null neo-window)
+        (setq neo-window-width (window-width neo-window))))))
 
 (provide 'myde-core-projects)
 ;;; lib.el ends here

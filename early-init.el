@@ -44,20 +44,8 @@
 
 ;; Prevent package.el from auto-initializing before init.el runs.
 ;; This prevents package-initialize from running twice (once here, once in init.el).
+;; Package archive configuration is handled by core-base/cfg.el.
 (setq package-enable-at-startup nil)
-
-;; Use package archives with priority: GNU > NonGNU > MELPA > MELPA-stable
-(setq package-archives
-      '(("gnu"          . "https://elpa.gnu.org/packages/")
-        ("nongnu"       . "https://elpa.nongnu.org/nongnu/")
-        ("melpa"        . "https://melpa.org/packages/")
-        ("melpa-stable" . "https://stable.melpa.org/packages/")))
-
-(setq package-archive-priorities
-      '(("gnu"    . 99)
-        ("nongnu" . 80)
-        ("melpa"  . 70)
-        ("melpa-stable" . 50)))
 
 ;;;; Load preference and use-package optimization
 

@@ -40,11 +40,6 @@ directory does not exist."
     (when (file-directory-p dir)
       (directory-files-recursively dir "\\`tasks\\.org\\'"))))
 
-;; Org-related utility functions
-(defun myde-delete-trailing-whitespace-setup ()
-  "Delete trailing whitespace on save in `org-mode`."
-  (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
-
 ;; That's all Folks!
 (provide 'myde-core-org)
 ;;; lib.el ends here

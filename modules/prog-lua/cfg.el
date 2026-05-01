@@ -71,7 +71,6 @@
 
 (use-package lua-mode  ;; https://github.com/immerrr/lua-mode
   :hook ((lua-mode . myde-lua-mode-setup)
-         (lua-mode . myde-delete-trailing-whitespace-setup)
          (lua-mode . myde-lua-format-on-save-setup))
   :bind (:map lua-mode-map
               ("C-c i i" . inf-lua)
@@ -87,7 +86,6 @@
 
 (use-package lua-ts-mode  ;; built-in Emacs 29+
   :hook ((lua-ts-mode . myde-lua-mode-setup)
-         (lua-ts-mode . myde-delete-trailing-whitespace-setup)
          (lua-ts-mode . myde-lua-format-on-save-setup))
   :bind (:map lua-ts-mode-map
               ("C-c i i" . inf-lua)

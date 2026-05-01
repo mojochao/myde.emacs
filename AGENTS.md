@@ -24,8 +24,9 @@ MyDE is a modular Emacs configuration targeting **Emacs 30+ compiled with native
    - Process buffer sizing for LSP throughput
    - Startup screen suppression
    - See file for complete optimization details
-2. `init.el` — Defines `myde/load-module` and calls it for every module in order.
-3. Each `modules/<category>-<name>/cfg.el` — The public entry point for a module.
+2. `init.el` — Loads `modules.el` via `(load-file ...)`, declares the ordered `myde-modules` descriptor list, then calls `myde-customize` (generates `defcustom` toggles) and `myde-initialize` (loads each enabled module in order).
+3. `modules.el` — Defines the module system: the `myde-module` `cl-defstruct`, the `myde/m` constructor, the `myde-customize` macro, and the `myde-initialize` / `myde-load-module` functions. Provides feature `myde-modules`.
+4. Each `modules/<category>-<name>/cfg.el` — The public entry point for a module.
 
 **Performance:** Startup completes in ~1.16ms (Emacs init time), ~72ms wall-clock including binary load.
 
@@ -33,12 +34,34 @@ MyDE is a modular Emacs configuration targeting **Emacs 30+ compiled with native
 
 Modules live under `modules/<category>-<name>/` and contain exactly two files:
 
-- `lib.el` — Pure definitions (`defun`, `defvar`, `defcustom`). Provides `myde-<category>-<name>`.
-- `cfg.el` — All side effects: `use-package` declarations, hooks, keybindings. Begins with a `featurep` guard that loads its own `lib.el`. Provides `myde-<category>-<name>-cfg`.
+- `lib.el` — Named definitions and built-in Emacs initialization: `defun`, `defvar`,
+  `defcustom`, `setq`, and direct built-in mode/variable setup. No `use-package`
+  declarations, no external package hooks, no keybindings. Provides `myde-<category>-<name>`.
+- `cfg.el` — External package wiring: `use-package` declarations, hooks, keybindings.
+  Begins with a `featurep` guard that loads its own `lib.el`. Provides `myde-<category>-<name>-cfg`.
 
 `init.el` loads only `cfg.el` files. The `featurep` guard makes loading idempotent.
 
 Categories: `core-*`, `prog-*`, `text-*`, `ebook-*`, `data-*`, `ai-*`, `auth-*`.
+
+#### Declarative module loading
+
+`init.el` is declarative. Its core is a single `defconst myde-modules` whose value is a list of `myde-module` descriptors built with `(myde/m "<category>-<name>" "<description>")`. List order is load order.
+
+Two operators consume that list:
+
+- `(myde-customize myde-modules)` — macro. Expands to a `progn` of `defcustom myde-module-<name>-enabled nil ...` forms, one per **toggleable** descriptor (i.e. neither `core-*` nor `*-base`). Toggles live in the `myde-modules` customization group and **default to `nil`** — users opt modules in via `M-x customize-group RET myde-modules` or `custom.el`.
+- `(myde-initialize myde-modules)` — function. Walks the list in order calling `myde-load-module` on each name.
+
+Loading rules enforced by `myde-load-module`:
+
+| Module kind | Toggle generated? | Loaded when |
+|-------------|-------------------|-------------|
+| `core-*`    | No                | Always |
+| `*-base` (non-core) | No        | Any sibling in the same category has its toggle on |
+| Other       | Yes (`myde-module-<name>-enabled`, default `nil`) | Toggle is non-nil |
+
+The `*-base` auto-load is implemented by `myde-module-category-enabled-p`, which scans interned symbols matching `myde-module-<category>-*-enabled`.
 
 ### XDG compliance
 
@@ -111,4 +134,4 @@ These ordering constraints must be preserved in `core-base/cfg.el`:
 
 1. Create `modules/<category>-<name>/lib.el` ending with `(provide 'myde-<category>-<name>)`.
 2. Create `modules/<category>-<name>/cfg.el` with a `featurep` guard at top and `(provide 'myde-<category>-<name>-cfg)` at bottom.
-3. Add `(myde/load-module "<category>-<name>")` to `init.el` in the appropriate section.
+3. Add a `(myde/m "<category>-<name>" "<one-line description>")` entry to `myde-modules` in `init.el`, in the desired load position. The `defcustom` toggle is generated automatically (unless the module is `core-*` or `*-base`).

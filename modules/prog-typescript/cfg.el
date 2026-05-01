@@ -112,8 +112,6 @@
 (use-package typescript-ts-mode
   :hook ((typescript-ts-mode . myde-typescript-ts-mode-setup)
          (tsx-ts-mode        . myde-tsx-ts-mode-setup)
-         (typescript-ts-mode . myde-delete-trailing-whitespace-setup)
-         (tsx-ts-mode        . myde-delete-trailing-whitespace-setup)
          (typescript-ts-mode . myde-typescript-format-on-save-setup)
          (tsx-ts-mode        . myde-typescript-format-on-save-setup))
   :mode (("\\.ts\\'"  . typescript-ts-mode)

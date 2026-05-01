@@ -29,7 +29,7 @@
 ;;; Code:
 
 (unless (featurep 'myde-prog-base)
-  (load-file (expand-file-name "modules/prog-base/lib.el" user-emacs-directory)))
+  (load-file (expand-file-name "lib.el" (file-name-directory load-file-name))))
 
 ;; Configure display of line numbers and current line highlighting
 (add-hook 'prog-mode-hook #'myde-prog-mode-hook-function)

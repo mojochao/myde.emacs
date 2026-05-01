@@ -72,10 +72,8 @@
 
 (use-package c-ts-mode
   :hook ((c++-ts-mode . myde-cpp-ts-mode-setup)
-         (c++-ts-mode . myde-delete-trailing-whitespace-setup)
          (c++-ts-mode . myde-cpp-format-on-save-setup)
          (c-ts-mode   . myde-c-ts-mode-setup)
-         (c-ts-mode   . myde-delete-trailing-whitespace-setup)
          (c-ts-mode   . myde-cpp-format-on-save-setup))
   :bind ((:map c++-ts-mode-map
                ("C-c t p" . myde-cpp-run-tests)
