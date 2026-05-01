@@ -47,6 +47,16 @@
 ;; Package archive configuration is handled by core-base/cfg.el.
 (setq package-enable-at-startup nil)
 
+;;;; Native compilation cache redirection
+
+;; Must happen in early-init.el before any compilation occurs.
+;; Redirect eln-cache to XDG_CACHE_HOME instead of user-emacs-directory.
+(when (featurep 'native-compile)
+  (startup-redirect-eln-cache
+   (expand-file-name "emacs/eln-cache"
+                     (or (getenv "XDG_CACHE_HOME")
+                         (expand-file-name ".cache" "~")))))
+
 ;;;; Load preference and use-package optimization
 
 ;; Prefer newer compiled files (.elc, .eln) over their .el sources.

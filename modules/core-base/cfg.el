@@ -16,13 +16,14 @@
 ;; package system established here.
 ;;
 ;; Configures:
-;;   - XDG-compliant paths for state/cache/data/eln via xdg.el (early require)
+;;   - XDG-compliant paths for state/cache/data via xdg.el (early require)
 ;;   - ELPA package archives (MELPA, GNU, NonGNU) and package-initialize
-;;   - Native compilation cache redirected to $XDG_CACHE_HOME/emacs/eln-cache
 ;;   - recentf, saveplace, savehist, transient with XDG-relative persistence files
 ;;   - buffer-guardian for auto-save on focus loss (replaces backup files)
 ;;   - exec-path-from-shell on macOS GUI (deferred to emacs-startup-hook)
 ;;   - dired with GNU ls (gls) and --group-directories-first on macOS
+;;
+;; Note: Native compilation cache redirection happens in early-init.el
 
 
 ;;; Code:
@@ -46,11 +47,6 @@
 ;; which calls package-vc-install and requires an initialized package system.
 (require 'package)
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
-
-;; Redirect native compilation cache
-(when (featurep 'native-compile)
-  (startup-redirect-eln-cache
-   (expand-file-name "emacs/eln-cache" (xdg-cache-home))))
 
 (setq package-archives
       '(("gnu"          . "https://elpa.gnu.org/packages/")

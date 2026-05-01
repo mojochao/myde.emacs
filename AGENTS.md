@@ -20,6 +20,7 @@ MyDE is a modular Emacs configuration targeting **Emacs 30+ compiled with native
 1. `early-init.el` — Runs before init.el and before Emacs startup.el creates directories. Includes critical optimizations:
    - Garbage collection suppression (restored after init)
    - File-name-handler-alist clearing (restored after init)
+   - Native compilation cache redirection to `$XDG_CACHE_HOME/emacs/eln-cache` (must happen before any compilation)
    - Frame parameter setup via default-frame-alist
    - Process buffer sizing for LSP throughput
    - Startup screen suppression
@@ -76,6 +77,7 @@ All state, data, and cache is stored outside `user-emacs-directory` via the buil
 
 XDG paths are set in `core-base/cfg.el` via `(use-package emacs :after xdg :config ...)`. Exceptions:
 - `auto-save-list-file-prefix` must be set in `early-init.el` because Emacs creates the directory before init.el runs.
+- Native compilation cache (`eln-cache`) redirection must happen in `early-init.el` before any compilation occurs.
 - `elpa` is stored in the repo root (`./elpa/`) for easier debugging, package inspection, and agent access. It is git-ignored.
 
 ### Key conventions
