@@ -14,13 +14,13 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for Emacs Lisp development support.
-;;; Loaded by myde/prog-elisp/cfg.el before package configuration.
+;;; Loaded by myde-prog-elisp/cfg.el before package configuration.
 
 
 ;;; Code:
 
 
-(defun myde/emacs-lisp-mode-setup ()
+(defun myde-emacs-lisp-mode-setup ()
   "Set buffer-local settings for emacs-lisp-mode buffers."
   (setq-local fill-column 80
               tab-width 2

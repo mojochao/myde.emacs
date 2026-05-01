@@ -19,27 +19,27 @@
 
 ;;; Code:
 
-(defun myde/ruby-ts-or-plain-mode ()
+(defun myde-ruby-ts-or-plain-mode ()
   "Use `ruby-ts-mode' if tree-sitter is available, otherwise fall back to `ruby-mode'."
   (if (treesit-ready-p 'ruby)
       (ruby-ts-mode)
     (ruby-mode)))
 
-(defun myde/ruby-mode-setup ()
+(defun myde-ruby-mode-setup ()
   "Set buffer-local settings for ruby-mode and ruby-ts-mode buffers."
   (setq-local tab-width 2
               indent-tabs-mode nil
               fill-column 120
               compile-command "bundle exec rspec"))
 
-(defun myde/ruby-eglot-format-buffer ()
+(defun myde-ruby-eglot-format-buffer ()
   "Format buffer via eglot when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
 
-(defun myde/ruby-format-on-save-setup ()
+(defun myde-ruby-format-on-save-setup ()
   "Install buffer-local before-save formatting for ruby buffers."
-  (add-hook 'before-save-hook #'myde/ruby-eglot-format-buffer nil t))
+  (add-hook 'before-save-hook #'myde-ruby-eglot-format-buffer nil t))
 
 (provide 'myde-prog-ruby)
 ;;; lib.el ends here

@@ -17,7 +17,7 @@
 ;;; Entry point for the prog-elixir module; loads lib.el automatically.
 ;;;
 ;;; Depends on: prog-erlang (elixir-ts-mode :after erlang)
-;;; elixir-ls is resolved per-project via mise (myde/mise-exec-which).
+;;; elixir-ls is resolved per-project via mise (myde-mise-exec-which).
 ;;;
 ;;; Configures:
 ;;;   elixir-ts-mode + heex-ts-mode — tree-sitter modes for .ex/.exs/.heex files
@@ -56,9 +56,9 @@
          (heex-ts-mode   . eglot-ensure))
   :config
   (add-to-list 'eglot-server-programs
-               '(elixir-ts-mode . (lambda (dir) (myde/mise-exec-which dir "elixir-ls"))))
+               '(elixir-ts-mode . (lambda (dir) (myde-mise-exec-which dir "elixir-ls"))))
   (add-to-list 'eglot-server-programs
-               '(heex-ts-mode . (lambda (dir) (myde/mise-exec-which dir "elixir-ls"))))
+               '(heex-ts-mode . (lambda (dir) (myde-mise-exec-which dir "elixir-ls"))))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -80,16 +80,16 @@
   :mode (("\\.ex\\'"   . elixir-ts-mode)
          ("\\.exs\\'"  . elixir-ts-mode)
          ("\\.heex\\'" . elixir-ts-mode))
-  :hook ((elixir-ts-mode . myde/elixir-ts-ensure-grammars)
+  :hook ((elixir-ts-mode . myde-elixir-ts-ensure-grammars)
          (elixir-ts-mode . flycheck-mode)
-         (elixir-ts-mode . myde/delete-trailing-whitespace-setup)
+         (elixir-ts-mode . myde-delete-trailing-whitespace-setup)
          (elixir-ts-mode . yas-minor-mode))
   :ensure nil)
 
 (use-package heex-ts-mode  ;; https://github.com/wkirschbaum/heex-ts-mode
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
-  :hook ((heex-ts-mode . myde/delete-trailing-whitespace-setup)
+  :hook ((heex-ts-mode . myde-delete-trailing-whitespace-setup)
          (heex-ts-mode . yas-minor-mode))
   :ensure t)
 
@@ -157,7 +157,7 @@
   :after org
   :ensure t)
 
-(myde/register-snippets
+(myde-register-snippets
  (expand-file-name "snippets" (file-name-directory load-file-name))
  'elixir-ts-mode)
 

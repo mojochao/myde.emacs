@@ -72,7 +72,7 @@
   :config
   (add-to-list 'eglot-server-programs
                '((bash-ts-mode) . ("bash-language-server" "start")))
-  (myde/eglot-add-workspace-config
+  (myde-eglot-add-workspace-config
    :bashIde '(:shellcheckEnabled t
               :shellcheckArguments []
               :shfmt (:ignoreEditorconfig nil
@@ -100,16 +100,16 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package sh-script
-  :hook ((bash-ts-mode . myde/bash-ts-mode-setup)
-         (bash-ts-mode . myde/delete-trailing-whitespace-setup))
+  :hook ((bash-ts-mode . myde-bash-ts-mode-setup)
+         (bash-ts-mode . myde-delete-trailing-whitespace-setup))
   :mode (("\\.sh\\'"   . bash-ts-mode)
          ("\\.bash\\'" . bash-ts-mode)
          ("\\.bats\\'" . bash-ts-mode))
   :bind (:map bash-ts-mode-map
-              ("C-c i i" . myde/bash-open-shell)
-              ("C-c i r" . myde/bash-send-region)
-              ("C-c i b" . myde/bash-send-buffer)
-              ("C-c i x" . myde/bash-run-buffer))
+              ("C-c i i" . myde-bash-open-shell)
+              ("C-c i r" . myde-bash-send-region)
+              ("C-c i b" . myde-bash-send-buffer)
+              ("C-c i x" . myde-bash-run-buffer))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -118,7 +118,7 @@
 ;; apheleia itself is configured in prog-base.  Here we register shfmt as the
 ;; formatter for bash-ts-mode buffers.  apheleia's shfmt entry reads sh-shell
 ;; and sh-basic-offset, so indentation follows the buffer-local settings set
-;; by myde/bash-ts-mode-setup.
+;; by myde-bash-ts-mode-setup.
 ;; -----------------------------------------------------------------------------
 
 (use-package apheleia

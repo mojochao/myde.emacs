@@ -19,7 +19,7 @@
 
 ;;; Code:
 
-(defun myde/rust-mode-setup ()
+(defun myde-rust-mode-setup ()
   "Set buffer-local settings for rustic-mode buffers."
   (setq-local tab-width 4
               indent-tabs-mode nil
@@ -28,7 +28,7 @@
 
 (declare-function dape-cwd "dape")
 
-(defun myde/rust-dape-debug-program ()
+(defun myde-rust-dape-debug-program ()
   "Resolve the debug binary path for the current Rust project.
 Used as the `:program' callback for dape Rust debug configurations."
   (expand-file-name

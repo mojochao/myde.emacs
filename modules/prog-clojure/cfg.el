@@ -1,4 +1,4 @@
-;;; myde/prog-clojure/cfg.el --- Clojure development environment configuration -*- lexical-binding: t; -*-
+;;; myde-prog-clojure/cfg.el --- Clojure development environment configuration -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
 
@@ -48,7 +48,7 @@
   :after myde-prog-clojure
   :config
   ;; Add Clojure-specific project root markers
-  (myde/prog-clojure-setup))
+  (myde-prog-clojure-setup))
 
 ;; Load clojure-mode silently (required as CIDER's undeclared dependency)
 ;; Future: clojure-ts-mode will subsume clojure-mode (Emacs 32+)
@@ -89,7 +89,7 @@
   :hook (clojure-ts-mode . cider-mode)
   :config
   ;; Setup CIDER configuration
-  (myde/prog-clojure-cider-setup)
+  (myde-prog-clojure-cider-setup)
 
   ;; Disable CIDER's eldoc display for symbol-at-point to let CIDER's
   ;; eldoc (arglists, docstrings) take precedence when active
@@ -129,7 +129,7 @@
   ;; (add-to-list 'apheleia-mode-alist
   ;;   '(clojure-mode . zprint))
   ;;
-  ;; Then configure CIDER formatter in myde/prog-clojure-cider-setup:
+  ;; Then configure CIDER formatter in myde-prog-clojure-cider-setup:
   ;; (setq cider-format-code-options {:style :community})
   ;;
   ;; Or via .dir-locals.el in project root:
@@ -155,4 +155,4 @@
 
 (provide 'myde-prog-clojure-cfg)
 
-;;; myde/prog-clojure/cfg.el ends here
+;;; myde-prog-clojure/cfg.el ends here

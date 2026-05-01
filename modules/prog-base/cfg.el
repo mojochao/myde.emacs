@@ -32,8 +32,8 @@
   (load-file (expand-file-name "modules/prog-base/lib.el" user-emacs-directory)))
 
 ;; Configure display of line numbers and current line highlighting
-(add-hook 'prog-mode-hook #'myde/prog-mode-hook-function)
-(add-hook 'prog-mode-hook #'myde/delete-trailing-whitespace-setup)
+(add-hook 'prog-mode-hook #'myde-prog-mode-hook-function)
+(add-hook 'prog-mode-hook #'myde-delete-trailing-whitespace-setup)
 
 ;; Consistent multi-language formatter foundation.
 ;; Individual language modules register their formatter via apheleia-mode-alist.

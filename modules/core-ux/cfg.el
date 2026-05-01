@@ -57,7 +57,7 @@
       (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
 
 ;; Global keyboard remap
-(global-set-key [remap keyboard-quit] #'myde/keyboard-quit)
+(global-set-key [remap keyboard-quit] #'myde-keyboard-quit)
 
 ;; Expand/contract region with semantic awareness
 (use-package expreg  ;; https://github.com/casouri/expreg

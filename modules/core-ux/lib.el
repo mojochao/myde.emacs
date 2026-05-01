@@ -32,7 +32,7 @@
 
 ;; Smart keyboard quit that closes minibuffer
 ;; https://emacsredux.com/blog/2025/06/01/let-s-make-keyboard-quit-smarter/
-(defun myde/keyboard-quit ()
+(defun myde-keyboard-quit ()
   "A smarter version of the built-in `keyboard-quit'.
 
 The generic `keyboard-quit' does not do the expected thing when

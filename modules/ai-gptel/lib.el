@@ -13,12 +13,12 @@
 
 ;;; Commentary:
 ;;; Library for GPtel AI assistant integration with OpenRouter and other providers.
-;;; Loaded by myde/ai-gptel/cfg.el before package configuration.
+;;; Loaded by myde-ai-gptel/cfg.el before package configuration.
 
 
 ;;; Code:
 
-(defun myde/gptel-api-key-from-environment (&optional var)
+(defun myde-gptel-api-key-from-environment (&optional var)
   "Get API key from environment variable.
 If VAR is provided, use that environment variable.
 Otherwise, derive the variable name from the current gptel-backend type."

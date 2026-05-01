@@ -14,9 +14,9 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for JavaScript/JSX development support.
-;;; Loaded by myde/prog-javascript/cfg.el before package configuration.
+;;; Loaded by myde-prog-javascript/cfg.el before package configuration.
 ;;;
-;;; All external dependencies are shared with myde/prog-typescript — no
+;;; All external dependencies are shared with myde-prog-typescript — no
 ;;; additional global installs are required beyond what that module needs:
 ;;;
 ;;;   npm install -g typescript-language-server typescript
@@ -37,22 +37,22 @@
 
 ;;; Code:
 
-(defun myde/js-ts-mode-setup ()
+(defun myde-js-ts-mode-setup ()
   "Set buffer-local settings for js-ts-mode buffers."
   (setq-local indent-tabs-mode nil
               tab-width 2
               fill-column 100))
 
-(defun myde/javascript-eglot-format-buffer ()
+(defun myde-javascript-eglot-format-buffer ()
   "Format buffer via eglot when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
 
-(defun myde/javascript-format-on-save-setup ()
+(defun myde-javascript-format-on-save-setup ()
   "Install buffer-local before-save formatting for js-ts-mode."
-  (add-hook 'before-save-hook #'myde/javascript-eglot-format-buffer nil t))
+  (add-hook 'before-save-hook #'myde-javascript-eglot-format-buffer nil t))
 
-(defun myde/javascript-mode-hook ()
+(defun myde-javascript-mode-hook ()
   "Hook for js-ts-mode buffers.
 Enables inlay hints when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)

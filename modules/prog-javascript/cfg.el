@@ -63,7 +63,7 @@
 
 (use-package eglot
   :hook ((js-ts-mode . eglot-ensure)
-         (js-ts-mode . myde/javascript-mode-hook))
+         (js-ts-mode . myde-javascript-mode-hook))
   :config
   (add-to-list 'eglot-server-programs
                `((js-ts-mode)
@@ -98,9 +98,9 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package js
-  :hook ((js-ts-mode . myde/js-ts-mode-setup)
-         (js-ts-mode . myde/delete-trailing-whitespace-setup)
-         (js-ts-mode . myde/javascript-format-on-save-setup))
+  :hook ((js-ts-mode . myde-js-ts-mode-setup)
+         (js-ts-mode . myde-delete-trailing-whitespace-setup)
+         (js-ts-mode . myde-javascript-format-on-save-setup))
   :mode (("\\.js\\'"  . js-ts-mode)
          ("\\.jsx\\'" . js-ts-mode))
   :ensure nil)

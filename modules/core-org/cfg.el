@@ -15,7 +15,7 @@
 ;;; Org mode configuration for task management, notes, and agenda.
 ;;; Entry point for the core-org module; loads lib.el automatically.
 ;;;
-;;; org-directory is set from myde/org-directory (defined in lib.el).
+;;; org-directory is set from myde-org-directory (defined in lib.el).
 ;;; org-return-follows-link is enabled so RET opens links without C-c C-o.
 ;;; visual-line-mode and trailing-whitespace cleanup activate on every org buffer.
 
@@ -29,9 +29,9 @@
 (use-package org  ;; https://orgmode.org
   :hook
   (org-mode . visual-line-mode)
-  (org-mode . myde/delete-trailing-whitespace-setup)
+  (org-mode . myde-delete-trailing-whitespace-setup)
   :custom
-  (org-directory myde/org-directory)
+  (org-directory myde-org-directory)
   (org-return-follows-link t)
   :ensure nil)
 

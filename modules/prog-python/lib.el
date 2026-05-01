@@ -14,13 +14,13 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for Python development support.
-;;; Loaded by myde/prog-python/cfg.el before package configuration.
+;;; Loaded by myde-prog-python/cfg.el before package configuration.
 
 
 ;;; Code:
 
 
-(defun myde/python-ts-mode-setup ()
+(defun myde-python-ts-mode-setup ()
   "Set buffer-local settings for python-ts-mode buffers.
 Runs after mise-mode has applied the project environment, so
 `executable-find' resolves against the project venv."

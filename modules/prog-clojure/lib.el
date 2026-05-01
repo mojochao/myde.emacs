@@ -1,4 +1,4 @@
-;;; myde/prog-clojure/lib.el --- Clojure development environment definitions -*- lexical-binding: t; -*-
+;;; myde-prog-clojure/lib.el --- Clojure development environment definitions -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
 
@@ -19,7 +19,7 @@
 
 ;;; Code:
 
-(defun myde/prog-clojure-setup ()
+(defun myde-prog-clojure-setup ()
   "Setup Clojure development environment.
 
 Raises eglot timeout for clojure-lsp (first initialization can exceed 30s),
@@ -40,7 +40,7 @@ adds project root markers for mono-repos, and registers tree-sitter grammar."
     (add-to-list 'treesit-language-source-alist
       '(clojure "https://github.com/tree-sitter/tree-sitter-clojure"))))
 
-(defun myde/prog-clojure-cider-setup ()
+(defun myde-prog-clojure-cider-setup ()
   "Configure CIDER for Clojure development.
 
 Disables CIDER's auto-format (apheleia handles formatting via cljfmt).
@@ -50,4 +50,4 @@ Users who prefer zprint can override `cider-format-code-options' via
 
 (provide 'myde-prog-clojure)
 
-;;; myde/prog-clojure/lib.el ends here
+;;; myde-prog-clojure/lib.el ends here

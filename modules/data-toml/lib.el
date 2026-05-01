@@ -18,13 +18,13 @@
 ;;; Code:
 
 
-(defun myde/toml-ts-or-plain-mode ()
+(defun myde-toml-ts-or-plain-mode ()
   "Use `toml-ts-mode' if tree-sitter is available, otherwise fall back to `toml-mode'."
   (if (treesit-ready-p 'toml)
       (toml-ts-mode)
     (toml-mode)))
 
-(defun myde/toml-ts-mode-setup ()
+(defun myde-toml-ts-mode-setup ()
   "Set buffer-local settings for toml-ts-mode buffers."
   (setq-local fill-column 100
               tab-width 2

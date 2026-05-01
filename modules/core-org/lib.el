@@ -18,30 +18,30 @@
 ;;; Code:
 
 ;; Org mode directories and files
-(defvar myde/org-directory "~/org/"
+(defvar myde-org-directory "~/org/"
   "Main org mode directory.")
 
-(defvar myde/reading-notes "~/org/reading/"
+(defvar myde-reading-notes "~/org/reading/"
   "Directory for reading notes.")
 
-(defvar myde/highlight-file "~/org/highlights.org"
+(defvar myde-highlight-file "~/org/highlights.org"
   "File for storing highlights.")
 
-(defcustom myde/projects-directory (expand-file-name "~/org/projects/")
+(defcustom myde-projects-directory (expand-file-name "~/org/projects/")
   "Root directory under which per-project `tasks.org' files are discovered."
   :type 'directory
   :group 'myde)
 
-(defun myde/find-org-agenda-files (&optional root-dir)
+(defun myde-find-org-agenda-files (&optional root-dir)
   "Return list of `tasks.org' files under ROOT-DIR.
-ROOT-DIR defaults to `myde/projects-directory'.  Returns nil if the
+ROOT-DIR defaults to `myde-projects-directory'.  Returns nil if the
 directory does not exist."
-  (let ((dir (or root-dir myde/projects-directory)))
+  (let ((dir (or root-dir myde-projects-directory)))
     (when (file-directory-p dir)
       (directory-files-recursively dir "\\`tasks\\.org\\'"))))
 
 ;; Org-related utility functions
-(defun myde/delete-trailing-whitespace-setup ()
+(defun myde-delete-trailing-whitespace-setup ()
   "Delete trailing whitespace on save in `org-mode`."
   (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
 

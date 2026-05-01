@@ -90,7 +90,7 @@
 ;; Installation and initialization are both deferred to emacs-startup-hook so
 ;; that neither the package download nor the shell subprocess can block init.
 (when (memq window-system '(mac ns))
-  (add-hook 'emacs-startup-hook #'myde/exec-path-from-shell-startup-hook 90))
+  (add-hook 'emacs-startup-hook #'myde-exec-path-from-shell-startup-hook 90))
 
 ;; Recent files management
 (use-package recentf
@@ -162,7 +162,7 @@
     (setq treesit-extra-load-path (list dir)))
   :config
   (advice-add 'treesit-install-language-grammar
-              :around #'myde/treesit-install-language-grammar-advice)
+              :around #'myde-treesit-install-language-grammar-advice)
   :ensure nil)
 
 ;; macOS-specific setup

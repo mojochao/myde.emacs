@@ -74,19 +74,19 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package nushell-mode
-  :hook (nushell-mode . myde/nushell-mode-setup)
+  :hook (nushell-mode . myde-nushell-mode-setup)
   :mode (("\\.nu\\'" . nushell-mode))
   :bind (:map nushell-mode-map
-              ("C-c i i" . myde/nushell-open-repl)
-              ("C-c i r" . myde/nushell-send-region)
-              ("C-c i b" . myde/nushell-send-buffer)
-              ("C-c i x" . myde/nushell-run-buffer))
+              ("C-c i i" . myde-nushell-open-repl)
+              ("C-c i r" . myde-nushell-send-region)
+              ("C-c i b" . myde-nushell-send-buffer)
+              ("C-c i x" . myde-nushell-run-buffer))
   :config
   (add-to-list 'interpreter-mode-alist '("nu" . nushell-mode))
   :ensure t)
 
 ;; Add trailing whitespace cleanup
-(add-hook 'nushell-mode-hook #'myde/delete-trailing-whitespace-setup)
+(add-hook 'nushell-mode-hook #'myde-delete-trailing-whitespace-setup)
 
 ;; -----------------------------------------------------------------------------
 ;; Formatting via apheleia + nufmt (OPT-IN ONLY)

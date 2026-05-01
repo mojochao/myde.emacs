@@ -19,7 +19,7 @@
 ;;; TAB is explicitly unbound from yas-minor-mode-map to avoid conflicts with
 ;;; comint/REPL completion (e.g. inf-elixir).  Use yas-insert-snippet instead.
 ;;; yasnippet-classic-snippets provides a curated set of community snippets.
-;;; Per-module snippets are registered via myde/register-snippets in each module.
+;;; Per-module snippets are registered via myde-register-snippets in each module.
 
 
 ;;; Code:

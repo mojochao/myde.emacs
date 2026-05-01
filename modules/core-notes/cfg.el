@@ -16,7 +16,7 @@
 ;;; Package configuration for Denote note-taking support.
 ;;; Entry point for the core-notes module; loads lib.el automatically.
 ;;;
-;;; Notes are stored in the directory defined by myde/denote-directory (lib.el).
+;;; Notes are stored in the directory defined by myde-denote-directory (lib.el).
 ;;; Keywords are inferred and sorted automatically.
 ;;; Keybindings under C-c n: new (n), link (l), backlinks (b), find/create (f), search (s).
 
@@ -38,7 +38,7 @@
    ("C-c n f" . denote-open-or-create)
    ("C-c n s" . denote-search))
   :custom
-  (denote-directory myde/denote-directory)
+  (denote-directory myde-denote-directory)
   (denote-infer-keywords t)
   (denote-sort-keywords t)
   (denote-known-keywords

@@ -14,13 +14,13 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for Elixir development support.
-;;; Loaded by myde/prog-elixir/cfg.el before package configuration.
+;;; Loaded by myde-prog-elixir/cfg.el before package configuration.
 
 
 ;;; Code:
 
 
-(defun myde/elixir-ts-ensure-grammars ()
+(defun myde-elixir-ts-ensure-grammars ()
   "Ensure Elixir and HEEx tree-sitter grammars are installed."
   (dolist (lang '(elixir heex))
     (unless (treesit-ready-p lang t)

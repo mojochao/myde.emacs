@@ -33,7 +33,7 @@
 (use-package auth-source-1password  ;; https://github.com/dlobraico/auth-source-1password
   :init
   (setq auth-source-1password-construct-secret-reference
-        #'myde/auth-source-1password-construct-secret-reference)
+        #'myde-auth-source-1password-construct-secret-reference)
   :config
   (auth-source-1password-enable)
   :custom

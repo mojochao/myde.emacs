@@ -53,7 +53,7 @@
   :config
   (add-to-list 'eglot-server-programs
                '((zig-ts-mode zig-mode) . ("zls")))
-  (myde/eglot-add-workspace-config
+  (myde-eglot-add-workspace-config
    :zls '(:enable_build_on_save t
           :inlay_hints_show_builtin t
           :inlay_hints_exclude_single_argument t
@@ -66,13 +66,13 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package zig-mode  ;; https://github.com/ziglang/zig-mode
-  :hook ((zig-mode . myde/zig-mode-setup)
-         (zig-mode . myde/delete-trailing-whitespace-setup)
-         (zig-mode . myde/zig-format-on-save-setup))
+  :hook ((zig-mode . myde-zig-mode-setup)
+         (zig-mode . myde-delete-trailing-whitespace-setup)
+         (zig-mode . myde-zig-format-on-save-setup))
   :bind (:map zig-mode-map
               ("C-c t p" . zig-test-all))
-  :mode (("\\.zig\\'" . myde/zig-ts-or-plain-mode)
-         ("\\.zon\\'" . myde/zig-ts-or-plain-mode))
+  :mode (("\\.zig\\'" . myde-zig-ts-or-plain-mode)
+         ("\\.zon\\'" . myde-zig-ts-or-plain-mode))
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -81,9 +81,9 @@
 
 (use-package zig-ts-mode  ;; https://github.com/emacsmirror/zig-ts-mode
   :vc (:url "https://github.com/emacsmirror/zig-ts-mode" :rev :newest)
-  :hook ((zig-ts-mode . myde/zig-mode-setup)
-         (zig-ts-mode . myde/delete-trailing-whitespace-setup)
-         (zig-ts-mode . myde/zig-format-on-save-setup))
+  :hook ((zig-ts-mode . myde-zig-mode-setup)
+         (zig-ts-mode . myde-delete-trailing-whitespace-setup)
+         (zig-ts-mode . myde-zig-format-on-save-setup))
   :bind (:map zig-ts-mode-map
               ("C-c t p" . zig-test-all))
   :ensure t)
@@ -102,7 +102,7 @@
                  port :autoport
                  :type "lldb"
                  :request "launch"
-                 :program ,#'myde/zig-dape-binary))
+                 :program ,#'myde-zig-dape-binary))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------

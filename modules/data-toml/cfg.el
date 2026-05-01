@@ -56,12 +56,12 @@
 (use-package toml-mode  ;; https://github.com/dryman/toml-mode.el
   :config
   :hook
-  ((toml-ts-mode . myde/toml-ts-mode-setup)
+  ((toml-ts-mode . myde-toml-ts-mode-setup)
    (toml-ts-mode . display-line-numbers-mode)
-   (toml-ts-mode . myde/delete-trailing-whitespace-setup))
+   (toml-ts-mode . myde-delete-trailing-whitespace-setup))
   :mode
-  (("\\.toml\\'" . myde/toml-ts-or-plain-mode)
-   ("Cargo\\.lock\\'" . myde/toml-ts-or-plain-mode))
+  (("\\.toml\\'" . myde-toml-ts-or-plain-mode)
+   ("Cargo\\.lock\\'" . myde-toml-ts-or-plain-mode))
   :ensure t)
 
 (provide 'myde-data-toml-cfg)

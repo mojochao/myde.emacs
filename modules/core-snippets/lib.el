@@ -14,12 +14,12 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for snippets support.
-;;; Loaded by myde/core-snippets/cfg.el before package configuration.
+;;; Loaded by myde-core-snippets/cfg.el before package configuration.
 
 
 ;;; Code:
 
-(defun myde/register-snippets (dir mode)
+(defun myde-register-snippets (dir mode)
   "Register DIR as the flat snippet directory for MODE.
 DIR should contain yasnippet snippet files directly with no mode-name subdir.
 Safe to call before yasnippet has loaded."

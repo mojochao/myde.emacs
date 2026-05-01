@@ -19,31 +19,31 @@
 
 ;;; Code:
 
-(defun myde/zig-ts-or-plain-mode ()
+(defun myde-zig-ts-or-plain-mode ()
   "Use `zig-ts-mode' if tree-sitter is available, otherwise fall back to `zig-mode'."
   (if (treesit-ready-p 'zig)
       (zig-ts-mode)
     (zig-mode)))
 
-(defun myde/zig-mode-setup ()
+(defun myde-zig-mode-setup ()
   "Set buffer-local settings for zig-ts-mode buffers."
   (setq-local tab-width 4
               indent-tabs-mode nil
               fill-column 100
               compile-command "zig build"))
 
-(defun myde/zig-eglot-format-buffer ()
+(defun myde-zig-eglot-format-buffer ()
   "Format buffer via eglot when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
 
-(defun myde/zig-format-on-save-setup ()
+(defun myde-zig-format-on-save-setup ()
   "Install buffer-local before-save formatting for zig-mode."
-  (add-hook 'before-save-hook #'myde/zig-eglot-format-buffer nil t))
+  (add-hook 'before-save-hook #'myde-zig-eglot-format-buffer nil t))
 
 (declare-function dape-cwd "dape")
 
-(defun myde/zig-dape-binary ()
+(defun myde-zig-dape-binary ()
   "Resolve the debug binary path for the current Zig project.
 Used as the `:program' callback for dape Zig debug configurations."
   (expand-file-name

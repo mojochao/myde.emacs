@@ -17,7 +17,7 @@
 ;;;
 ;;; terraform-format-on-save-mode runs `terraform fmt` automatically on save.
 ;;; Activates for .tf, .tfvars, .hcl, and .tofu files.
-;;; myde/treesit-remap-terraform enables tree-sitter parsing when grammars are available.
+;;; myde-treesit-remap-terraform enables tree-sitter parsing when grammars are available.
 
 
 ;;; Code:
@@ -30,7 +30,7 @@
   :mode ("\\.tf\\'" "\\.tfvars\\'" "\\.hcl\\'" "\\.tofu\\'")
   :hook ((terraform-mode . terraform-format-on-save-mode))
   :config
-  (myde/treesit-remap-terraform)
+  (myde-treesit-remap-terraform)
   :ensure t)
 
 (provide 'myde-data-terraform-cfg)

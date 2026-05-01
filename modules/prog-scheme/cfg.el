@@ -1,4 +1,4 @@
-;;; myde/prog-scheme/cfg.el --- Scheme development environment configuration -*- lexical-binding: t; -*-
+;;; myde-prog-scheme/cfg.el --- Scheme development environment configuration -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
 
@@ -24,7 +24,7 @@
 ;;   scheme-mode (built-in)   — base mode for all Scheme code
 ;;   geiser + guile/chicken/chez — REPL and interactive evaluation
 ;;   eglot + auto-detected LSP — scheme-langserver, guile-lsp-server, or chicken-lsp-server
-;;                                (myde/prog-scheme-lsp-server finds the first available)
+;;                                (myde-prog-scheme-lsp-server finds the first available)
 ;;   apheleia + schemat (opt-in) — formatter registered but only active when `schemat` is on PATH
 ;;                                  install: cargo install schemat
 ;;   No DAP               — debugging via Geiser's REPL-integrated *Geiser Dbg* buffer
@@ -50,7 +50,7 @@
   :after myde-prog-scheme
   :config
   ;; Add Scheme-specific project markers
-  (myde/prog-scheme-setup))
+  (myde-prog-scheme-setup))
 
 ;; Built-in Scheme major mode
 (use-package scheme
@@ -66,9 +66,9 @@
   :ensure nil  ;; Built-in to Emacs 29+
   :config
   ;; Register dynamic LSP server detection
-  ;; myde/prog-scheme-lsp-server returns the first available server
+  ;; myde-prog-scheme-lsp-server returns the first available server
   (add-to-list 'eglot-server-programs
-    `(scheme-mode . ,(lambda () (myde/prog-scheme-lsp-server)))))
+    `(scheme-mode . ,(lambda () (myde-prog-scheme-lsp-server)))))
 
 ;; Geiser: Interactive Scheme evaluation and REPL
 ;; Provides evaluation, debugging, documentation, macro expansion, etc.
@@ -108,8 +108,8 @@
     '(scheme-mode . schemat))
 
   ;; Buffer-local before-save formatter: schemat runs only if available and eglot
-  ;; is managing the buffer (see myde/prog-scheme-format-buffer-maybe).
-  (add-hook 'scheme-mode-hook #'myde/prog-scheme-format-on-save-setup))
+  ;; is managing the buffer (see myde-prog-scheme-format-buffer-maybe).
+  (add-hook 'scheme-mode-hook #'myde-prog-scheme-format-on-save-setup))
 
 ;; Standard keybindings for geiser (C-c i prefix)
 ;; These are defaults from geiser but can be customized here if needed
@@ -130,7 +130,7 @@
 ;; 1. LSP is implementation-specific
 ;;    - scheme-langserver (Chez-based) is the best general option but requires Chez
 ;;    - guile-lsp-server and chicken-lsp-server are native alternatives
-;;    - myde/prog-scheme-lsp-server auto-detects; user may need one installed
+;;    - myde-prog-scheme-lsp-server auto-detects; user may need one installed
 ;;
 ;; 2. No scheme-ts-mode tree-sitter integration yet
 ;;    - Grammar is registered for future use
@@ -169,4 +169,4 @@
 
 (provide 'myde-prog-scheme-cfg)
 
-;;; myde/prog-scheme/cfg.el ends here
+;;; myde-prog-scheme/cfg.el ends here

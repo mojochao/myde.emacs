@@ -41,7 +41,7 @@
     :endpoint "/api/v1/chat/completions"
     :stream t
     :key (auth-source-pick-first-password :host "OPENROUTER_API_KEY")
-    :models myde/openrouter-models)
+    :models myde-openrouter-models)
   (setq gptel-model 'moonshotai/kimi-k2.6
         gptel-backend (gptel-get-backend "OpenRouter"))
   :ensure t)

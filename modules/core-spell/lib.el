@@ -18,11 +18,11 @@
 
 ;;; Code:
 
-(defun myde/jinx-text-mode-setup ()
+(defun myde-jinx-text-mode-setup ()
   "Enable jinx for full text checking in text-mode buffers."
   (jinx-mode))
 
-(defun myde/jinx-prog-mode-setup ()
+(defun myde-jinx-prog-mode-setup ()
   "Enable jinx restricted to comment and doc faces in prog-mode buffers."
   ;; jinx-include-faces is an alist of (mode-or-t face...).  Using t as the
   ;; key matches any mode, which is correct for a buffer-local override.

@@ -86,15 +86,15 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package neotree  ;; https://github.com/jaypei/emacs-neotree
-  :bind ([f8] . myde/neotree-project-root-toggle)
+  :bind ([f8] . myde-neotree-project-root-toggle)
   :commands (neotree-toggle)
   :config
   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
   (setq neo-window-fixed-size nil)
-  (add-to-list 'window-size-change-functions #'myde/neotree-window-size-change-function)
-  (add-hook 'after-save-hook        #'myde/neotree-refresh)
-  (add-hook 'after-delete-file-hook #'myde/neotree-refresh)
-  (add-hook 'after-create-file-hook #'myde/neotree-refresh)
+  (add-to-list 'window-size-change-functions #'myde-neotree-window-size-change-function)
+  (add-hook 'after-save-hook        #'myde-neotree-refresh)
+  (add-hook 'after-delete-file-hook #'myde-neotree-refresh)
+  (add-hook 'after-create-file-hook #'myde-neotree-refresh)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -105,7 +105,7 @@
   :config
   (setq treesit-extra-load-path
         (list (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
-  ;; Language grammar sources are registered by each language module in myde/.
+  ;; Language grammar sources are registered by each language module in myde-.
   :ensure nil)
 
 (use-package treesit-auto  ;; https://github.com/renzmann/treesit-auto
@@ -121,7 +121,7 @@
 
 (use-package eglot
   ;; Hooks, server programs, and workspace config are registered by each
-  ;; language module in myde/.  Only shared keybindings and performance
+  ;; language module in myde-.  Only shared keybindings and performance
   ;; settings live here.
   :bind (:map eglot-mode-map
               ("C-c e a" . eglot-code-actions)
@@ -196,12 +196,12 @@
   (dap-breakpoints-file
    (expand-file-name "emacs/.dap-breakpoints" (xdg-state-home)))
   :config
-  (dap-auto-configure-mode)  ;; Language-specific DAP adapters are loaded by each language module in myde/prog-*/ module dirs.
+  (dap-auto-configure-mode)  ;; Language-specific DAP adapters are loaded by each language module in myde-prog-*/ module dirs.
   :ensure t)
 
 (use-package dape  ;; https://github.com/svaante/dape
   ;; Lightweight DAP client; debug configs are registered by each language
-  ;; module in myde/.  Only shared keybindings and layout settings live here.
+  ;; module in myde-.  Only shared keybindings and layout settings live here.
   :after transient
   :ensure t
   :config

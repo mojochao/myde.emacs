@@ -13,7 +13,7 @@
 
 ;;; Commentary:
 ;;; Library for Claude AI integration (claude-code-ide).
-;;; Loaded by myde/ai-claude/cfg.el before package configuration.
+;;; Loaded by myde-ai-claude/cfg.el before package configuration.
 
 
 ;;; Code:

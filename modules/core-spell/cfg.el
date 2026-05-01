@@ -37,8 +37,8 @@
 
 (use-package jinx  ;; https://github.com/minad/jinx
   :hook
-  (text-mode . myde/jinx-text-mode-setup)
-  (prog-mode . myde/jinx-prog-mode-setup)
+  (text-mode . myde-jinx-text-mode-setup)
+  (prog-mode . myde-jinx-prog-mode-setup)
   :config
   ;; Replace jinx's default org-mode exclusion list.  The default includes
   ;; org-block, which would exclude the entire content of src blocks (including

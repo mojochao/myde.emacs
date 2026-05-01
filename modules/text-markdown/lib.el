@@ -14,13 +14,13 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for Markdown editing support.
-;;; Loaded by myde/text-markdown/cfg.el before package configuration.
+;;; Loaded by myde-text-markdown/cfg.el before package configuration.
 
 
 ;;; Code:
 
 
-(defun myde/markdown-mode-setup ()
+(defun myde-markdown-mode-setup ()
   "Set buffer-local settings for markdown-mode buffers."
   (setq-local fill-column 80
               tab-width 2

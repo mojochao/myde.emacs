@@ -56,7 +56,7 @@
   :config
   (add-to-list 'eglot-server-programs
                '((ruby-ts-mode ruby-mode) . ("ruby-lsp")))
-  (myde/eglot-add-workspace-config
+  (myde-eglot-add-workspace-config
    :rubyLsp '(:formatter "rubocop"
               :inlayHints (:implicitRescue t
                            :implicitHashValue t)))
@@ -67,19 +67,19 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package ruby-mode
-  :hook ((ruby-mode . myde/ruby-mode-setup)
-         (ruby-mode . myde/delete-trailing-whitespace-setup)
-         (ruby-mode . myde/ruby-format-on-save-setup))
+  :hook ((ruby-mode . myde-ruby-mode-setup)
+         (ruby-mode . myde-delete-trailing-whitespace-setup)
+         (ruby-mode . myde-ruby-format-on-save-setup))
   :bind (:map ruby-mode-map
               ("C-c i i" . inf-ruby)
               ("C-c i r" . ruby-send-region)
               ("C-c i b" . ruby-send-buffer)
               ("C-c i s" . ruby-switch-to-inf))
-  :mode (("\\.rb\\'"      . myde/ruby-ts-or-plain-mode)
-         ("\\.rake\\'"    . myde/ruby-ts-or-plain-mode)
-         ("\\.gemspec\\'" . myde/ruby-ts-or-plain-mode)
-         ("Gemfile\\'"    . myde/ruby-ts-or-plain-mode)
-         ("Rakefile\\'"   . myde/ruby-ts-or-plain-mode))
+  :mode (("\\.rb\\'"      . myde-ruby-ts-or-plain-mode)
+         ("\\.rake\\'"    . myde-ruby-ts-or-plain-mode)
+         ("\\.gemspec\\'" . myde-ruby-ts-or-plain-mode)
+         ("Gemfile\\'"    . myde-ruby-ts-or-plain-mode)
+         ("Rakefile\\'"   . myde-ruby-ts-or-plain-mode))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -87,9 +87,9 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package ruby-ts-mode
-  :hook ((ruby-ts-mode . myde/ruby-mode-setup)
-         (ruby-ts-mode . myde/delete-trailing-whitespace-setup)
-         (ruby-ts-mode . myde/ruby-format-on-save-setup))
+  :hook ((ruby-ts-mode . myde-ruby-mode-setup)
+         (ruby-ts-mode . myde-delete-trailing-whitespace-setup)
+         (ruby-ts-mode . myde-ruby-format-on-save-setup))
   :bind (:map ruby-ts-mode-map
               ("C-c i i" . inf-ruby)
               ("C-c i r" . ruby-send-region)

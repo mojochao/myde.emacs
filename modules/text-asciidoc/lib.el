@@ -14,7 +14,7 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for AsciiDoc editing, previewing, and publishing.
-;;; Loaded by myde/text-asciidoc/cfg.el before package configuration.
+;;; Loaded by myde-text-asciidoc/cfg.el before package configuration.
 ;;;
 ;;; External tools used (all optional, but install for full experience):
 ;;;   asciidoctor      -- rendering and linting  (brew install asciidoctor)
@@ -28,13 +28,13 @@
 
 ;;; Code:
 
-(defun myde/adoc-mode-setup ()
+(defun myde-adoc-mode-setup ()
   "Set buffer-local settings for adoc-mode buffers."
   (setq-local fill-column 80
               tab-width 2
               indent-tabs-mode nil))
 
-(defun myde/adoc-preview ()
+(defun myde-adoc-preview ()
   "Save buffer, render it to a temp HTML file, and open it in the browser."
   (interactive)
   (unless (buffer-file-name)
@@ -46,7 +46,7 @@
         (browse-url (concat "file://" html))
       (message "asciidoctor failed; install with: brew install asciidoctor"))))
 
-(defun myde/adoc-export-html ()
+(defun myde-adoc-export-html ()
   "Export current AsciiDoc buffer to HTML alongside the source file."
   (interactive)
   (unless (buffer-file-name)
@@ -58,7 +58,7 @@
         (message "Exported: %s" out)
       (message "asciidoctor failed; install with: brew install asciidoctor"))))
 
-(defun myde/adoc-export-pdf ()
+(defun myde-adoc-export-pdf ()
   "Export current AsciiDoc buffer to PDF alongside the source file.
 Requires asciidoctor-pdf (gem install asciidoctor-pdf)."
   (interactive)

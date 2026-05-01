@@ -1,4 +1,4 @@
-;;; myde/prog-clisp/cfg.el --- Common Lisp development environment configuration -*- lexical-binding: t; -*-
+;;; myde-prog-clisp/cfg.el --- Common Lisp development environment configuration -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
 
@@ -52,7 +52,7 @@
   :after myde-prog-clisp
   :config
   ;; Add Common Lisp-specific project markers
-  (myde/prog-clisp-setup))
+  (myde-prog-clisp-setup))
 
 ;; Built-in Common Lisp major mode
 (use-package lisp-mode
@@ -60,7 +60,7 @@
   :mode (("\\.lisp\\'" . lisp-mode)
          ("\\.cl\\'" . lisp-mode)
          ("\\.asd\\'" . lisp-mode))
-  :hook (lisp-mode . myde/prog-clisp-lisp-mode-setup))
+  :hook (lisp-mode . myde-prog-clisp-lisp-mode-setup))
 
 ;; SLY: Primary REPL for interactive Common Lisp development
 ;; Modern UX, stickers (live feedback), excellent debugger integration
@@ -69,7 +69,7 @@
   :defer t
   :config
   ;; Initialize SLY configuration
-  (myde/prog-clisp-sly-init)
+  (myde-prog-clisp-sly-init)
 
   ;; Enable multiple simultaneous REPLs
   (setq sly-mrepl-history-file-name nil)
@@ -95,7 +95,7 @@
   ;; Only initialize if SLY is not available
   ;; Both can coexist but SLY is primary
   (unless (featurep 'sly)
-    (myde/prog-clisp-slime-init)
+    (myde-prog-clisp-slime-init)
 
     ;; SLIME keybindings (same C-c i prefix for consistency)
     (define-key slime-mode-map (kbd "C-c i i") 'slime)
@@ -150,7 +150,7 @@
   ;; cl-lsp is optional; only setup if Roswell is available
   ;; SLIME/SLY provide superior interactive feedback anyway
   (when (executable-find "ros")
-    (let ((lsp-cmd (myde/prog-clisp-lsp-server)))
+    (let ((lsp-cmd (myde-prog-clisp-lsp-server)))
       (when lsp-cmd
         (add-to-list 'eglot-server-programs
           `(lisp-mode . ,lsp-cmd))
@@ -206,4 +206,4 @@
 
 (provide 'myde-prog-clisp-cfg)
 
-;;; myde/prog-clisp/cfg.el ends here
+;;; myde-prog-clisp/cfg.el ends here

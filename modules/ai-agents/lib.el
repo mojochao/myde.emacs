@@ -13,7 +13,7 @@
 
 ;;; Commentary:
 ;;; Library for AI agent tools integration (acp, agent-shell).
-;;; Loaded by myde/ai-agents/cfg.el before package configuration.
+;;; Loaded by myde-ai-agents/cfg.el before package configuration.
 
 
 ;;; Code:

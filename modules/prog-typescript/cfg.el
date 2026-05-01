@@ -78,8 +78,8 @@
 (use-package eglot
   :hook ((typescript-ts-mode . eglot-ensure)
          (tsx-ts-mode        . eglot-ensure)
-         (typescript-ts-mode . myde/typescript-mode-hook)
-         (tsx-ts-mode        . myde/typescript-mode-hook))
+         (typescript-ts-mode . myde-typescript-mode-hook)
+         (tsx-ts-mode        . myde-typescript-mode-hook))
   :config
   (add-to-list 'eglot-server-programs
                `((typescript-ts-mode tsx-ts-mode)
@@ -110,12 +110,12 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package typescript-ts-mode
-  :hook ((typescript-ts-mode . myde/typescript-ts-mode-setup)
-         (tsx-ts-mode        . myde/tsx-ts-mode-setup)
-         (typescript-ts-mode . myde/delete-trailing-whitespace-setup)
-         (tsx-ts-mode        . myde/delete-trailing-whitespace-setup)
-         (typescript-ts-mode . myde/typescript-format-on-save-setup)
-         (tsx-ts-mode        . myde/typescript-format-on-save-setup))
+  :hook ((typescript-ts-mode . myde-typescript-ts-mode-setup)
+         (tsx-ts-mode        . myde-tsx-ts-mode-setup)
+         (typescript-ts-mode . myde-delete-trailing-whitespace-setup)
+         (tsx-ts-mode        . myde-delete-trailing-whitespace-setup)
+         (typescript-ts-mode . myde-typescript-format-on-save-setup)
+         (tsx-ts-mode        . myde-typescript-format-on-save-setup))
   :mode (("\\.ts\\'"  . typescript-ts-mode)
          ("\\.tsx\\'" . tsx-ts-mode))
   :ensure nil)

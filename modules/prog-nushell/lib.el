@@ -14,7 +14,7 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for Nushell script development support.
-;;; Loaded by myde/prog-nushell/cfg.el before package configuration.
+;;; Loaded by myde-prog-nushell/cfg.el before package configuration.
 ;;;
 ;;; External dependencies:
 ;;;   - Nushell >= 0.87.0 (LSP built-in via `nu --lsp`)
@@ -27,13 +27,13 @@
 
 ;;; Code:
 
-(defun myde/nushell-mode-setup ()
+(defun myde-nushell-mode-setup ()
   "Set buffer-local settings for nushell-mode buffers."
   (setq-local tab-width 2
               indent-tabs-mode nil
               fill-column 100))
 
-(defun myde/nushell-open-repl ()
+(defun myde-nushell-open-repl ()
   "Open or switch to the *nu* REPL buffer."
   (interactive)
   (let ((buf (get-buffer "*nu*")))
@@ -49,22 +49,22 @@
         (make-comint-in-buffer program buffer-name program)))
     (pop-to-buffer buffer)))
 
-(defun myde/nushell-send-region (start end)
+(defun myde-nushell-send-region (start end)
   "Send region between START and END to the *nu* REPL buffer.
 Opens the REPL buffer if it does not already exist."
   (interactive "r")
   (let ((text (buffer-substring-no-properties start end)))
-    (myde/nushell-open-repl)
+    (myde-nushell-open-repl)
     (process-send-string
      (get-buffer-process (get-buffer "*nu*"))
      (concat text "\n"))))
 
-(defun myde/nushell-send-buffer ()
+(defun myde-nushell-send-buffer ()
   "Send the entire buffer contents to the *nu* REPL buffer."
   (interactive)
-  (myde/nushell-send-region (point-min) (point-max)))
+  (myde-nushell-send-region (point-min) (point-max)))
 
-(defun myde/nushell-run-buffer ()
+(defun myde-nushell-run-buffer ()
   "Save the current buffer and execute it with nu in a *compilation* buffer."
   (interactive)
   (save-buffer)

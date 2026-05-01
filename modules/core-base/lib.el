@@ -24,18 +24,18 @@
 (setq recentf-max-saved-items 50)
 
 ;; Create missing directories automatically
-(defun myde/auto-create-missing-dirs ()
+(defun myde-auto-create-missing-dirs ()
   (let ((target-dir (file-name-directory buffer-file-name)))
     (unless (file-exists-p target-dir)
       (make-directory target-dir t))))
-(add-to-list 'find-file-not-found-functions #'myde/auto-create-missing-dirs)
+(add-to-list 'find-file-not-found-functions #'myde-auto-create-missing-dirs)
 
 ;; Delete trailing whitespace on save (shared utility)
-(defun myde/delete-trailing-whitespace-setup ()
+(defun myde-delete-trailing-whitespace-setup ()
   "Delete trailing whitespace on save."
   (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
 
-(defun myde/exec-path-from-shell-startup-hook ()
+(defun myde-exec-path-from-shell-startup-hook ()
   "Install exec-path-from-shell if needed and import shell environment.
 Runs after init so neither the package download nor the shell subprocess
 can block startup."
@@ -48,7 +48,7 @@ can block startup."
     (error (message "myde: exec-path-from-shell setup failed: %s"
                     (error-message-string err)))))
 
-(defun myde/treesit-install-language-grammar-advice (orig-fn lang &optional out-dir)
+(defun myde-treesit-install-language-grammar-advice (orig-fn lang &optional out-dir)
   "Redirect tree-sitter grammar installation to the XDG data directory.
 
 Advises `treesit-install-language-grammar' so that callers which omit OUT-DIR
@@ -57,11 +57,11 @@ instead of the default `user-emacs-directory/tree-sitter/'."
   (funcall orig-fn lang
            (or out-dir (expand-file-name "emacs/tree-sitter" (xdg-data-home)))))
 
-(defun myde/treesit-install-language-grammar (lang)
+(defun myde-treesit-install-language-grammar (lang)
   "Interactively install a tree-sitter grammar for LANG into the XDG data directory.
 
 The XDG redirection is handled globally by
-`myde/treesit-install-language-grammar-advice'; this command is a convenient
+`myde-treesit-install-language-grammar-advice'; this command is a convenient
 interactive entry point."
   (interactive
    (list (intern (completing-read "Language: "

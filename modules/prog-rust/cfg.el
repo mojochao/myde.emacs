@@ -50,7 +50,7 @@
          (rust-ts-mode . eglot-ensure)
          (rust-mode    . eglot-ensure))
   :config
-  (myde/eglot-add-workspace-config
+  (myde-eglot-add-workspace-config
    :rust-analyzer '(:checkOnSave (:command "clippy")
                     :inlayHints (:typeHints (:enable t)
                                  :parameterHints (:enable t)
@@ -72,8 +72,8 @@
   (setq rustic-lsp-client 'eglot
         rust-mode-treesitter-derive t
         rustic-format-trigger 'on-save)
-  :hook ((rustic-mode . myde/rust-mode-setup)
-         (rustic-mode . myde/delete-trailing-whitespace-setup))
+  :hook ((rustic-mode . myde-rust-mode-setup)
+         (rustic-mode . myde-delete-trailing-whitespace-setup))
   :bind (:map rustic-mode-map
               ("C-c t t" . rustic-cargo-current-test)
               ("C-c t p" . rustic-cargo-test))
@@ -93,7 +93,7 @@
                  port :autoport
                  :type "lldb"
                  :request "launch"
-                 :program ,#'myde/rust-dape-debug-program))
+                 :program ,#'myde-rust-dape-debug-program))
   (add-to-list 'dape-configs
                `(rust-test
                  modes (rustic-mode rust-ts-mode rust-mode)
@@ -103,7 +103,7 @@
                  :type "lldb"
                  :request "launch"
                  :args ["--test"]
-                 :program ,#'myde/rust-dape-debug-program))
+                 :program ,#'myde-rust-dape-debug-program))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------

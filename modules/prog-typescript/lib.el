@@ -14,7 +14,7 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for TypeScript/TSX development support.
-;;; Loaded by myde/prog-typescript/cfg.el before package configuration.
+;;; Loaded by myde-prog-typescript/cfg.el before package configuration.
 ;;;
 ;;; External dependencies (install once, globally):
 ;;;   npm install -g typescript-language-server typescript
@@ -30,28 +30,28 @@
 
 ;;; Code:
 
-(defun myde/typescript-ts-mode-setup ()
+(defun myde-typescript-ts-mode-setup ()
   "Set buffer-local settings for typescript-ts-mode buffers."
   (setq-local indent-tabs-mode nil
               tab-width 2
               fill-column 100))
 
-(defun myde/tsx-ts-mode-setup ()
+(defun myde-tsx-ts-mode-setup ()
   "Set buffer-local settings for tsx-ts-mode buffers."
   (setq-local indent-tabs-mode nil
               tab-width 2
               fill-column 100))
 
-(defun myde/typescript-eglot-format-buffer ()
+(defun myde-typescript-eglot-format-buffer ()
   "Format buffer via eglot when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
 
-(defun myde/typescript-format-on-save-setup ()
+(defun myde-typescript-format-on-save-setup ()
   "Install buffer-local before-save formatting for TypeScript/TSX modes."
-  (add-hook 'before-save-hook #'myde/typescript-eglot-format-buffer nil t))
+  (add-hook 'before-save-hook #'myde-typescript-eglot-format-buffer nil t))
 
-(defun myde/typescript-mode-hook ()
+(defun myde-typescript-mode-hook ()
   "Shared hook for typescript-ts-mode and tsx-ts-mode buffers.
 Enables inlay hints when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)

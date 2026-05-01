@@ -29,7 +29,7 @@
 (use-package json-ts-mode  ;; built-in (Emacs 29+)
   :mode (("\\.json\\'" . json-ts-mode)
          ("\\.jsonl\\'" . jsonl-mode))
-  :hook (json-ts-mode . myde/json-ts-mode-hook)
+  :hook (json-ts-mode . myde-json-ts-mode-hook)
   :ensure nil)
 
 ;; Register vscode-json-language-server for JSON buffers

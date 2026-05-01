@@ -17,7 +17,7 @@
 
 ;;; Code:
 
-(defvar myde/openrouter-models
+(defvar myde-openrouter-models
   '(anthropic/claude-haiku-4.5
     anthropic/claude-opus-4.5
     anthropic/claude-opus-4.6

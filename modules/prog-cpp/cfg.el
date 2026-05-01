@@ -24,7 +24,7 @@
 ;;   c++-ts-mode              — .cpp/.cc/.cxx/.hpp/.hh/.hxx/.h files
 ;;   c-ts-mode                — .c files
 ;;   cmake-ts-mode            — CMakeLists.txt and .cmake files
-;;   C-c t p                  — run tests (myde/cpp-run-tests)
+;;   C-c t p                  — run tests (myde-cpp-run-tests)
 ;;   C-c o                    — toggle between header and implementation (ff-find-other-file)
 ;;   dape + codelldb          — DAP native debugging (cpp-debug config)
 
@@ -71,17 +71,17 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package c-ts-mode
-  :hook ((c++-ts-mode . myde/cpp-ts-mode-setup)
-         (c++-ts-mode . myde/delete-trailing-whitespace-setup)
-         (c++-ts-mode . myde/cpp-format-on-save-setup)
-         (c-ts-mode   . myde/c-ts-mode-setup)
-         (c-ts-mode   . myde/delete-trailing-whitespace-setup)
-         (c-ts-mode   . myde/cpp-format-on-save-setup))
+  :hook ((c++-ts-mode . myde-cpp-ts-mode-setup)
+         (c++-ts-mode . myde-delete-trailing-whitespace-setup)
+         (c++-ts-mode . myde-cpp-format-on-save-setup)
+         (c-ts-mode   . myde-c-ts-mode-setup)
+         (c-ts-mode   . myde-delete-trailing-whitespace-setup)
+         (c-ts-mode   . myde-cpp-format-on-save-setup))
   :bind ((:map c++-ts-mode-map
-               ("C-c t p" . myde/cpp-run-tests)
+               ("C-c t p" . myde-cpp-run-tests)
                ("C-c o"   . ff-find-other-file))
          (:map c-ts-mode-map
-               ("C-c t p" . myde/cpp-run-tests)
+               ("C-c t p" . myde-cpp-run-tests)
                ("C-c o"   . ff-find-other-file)))
   :mode (("\\.cpp\\'" . c++-ts-mode)
          ("\\.cc\\'"  . c++-ts-mode)
@@ -116,7 +116,7 @@
                  port :autoport
                  :type "lldb"
                  :request "launch"
-                 :program myde/cpp-dape-binary))
+                 :program myde-cpp-dape-binary))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------

@@ -17,13 +17,13 @@
 
 ;;; Code:
 
-(defun myde/xml-mode-setup ()
+(defun myde-xml-mode-setup ()
   "Set buffer-local settings for XML buffers."
   (setq-local fill-column 100
               tab-width 2
               indent-tabs-mode nil))
 
-(defun myde/xml-format-buffer ()
+(defun myde-xml-format-buffer ()
   "Reformat the current XML buffer in-place via xmllint."
   (interactive)
   (when (executable-find "xmllint")
@@ -31,24 +31,24 @@
       (call-process-region (point-min) (point-max) "xmllint" t t nil "--format" "-")
       (goto-char point))))
 
-(define-minor-mode myde/xml-format-on-save-mode
+(define-minor-mode myde-xml-format-on-save-mode
   "Auto-format XML buffer on save using xmllint."
   :lighter " fmt"
-  (if myde/xml-format-on-save-mode
-      (add-hook 'before-save-hook #'myde/xml-format-buffer nil t)
-    (remove-hook 'before-save-hook #'myde/xml-format-buffer t)))
+  (if myde-xml-format-on-save-mode
+      (add-hook 'before-save-hook #'myde-xml-format-buffer nil t)
+    (remove-hook 'before-save-hook #'myde-xml-format-buffer t)))
 
-(defun myde/xml-ts-mode-hook ()
+(defun myde-xml-ts-mode-hook ()
   "Set up xml-ts-mode buffers."
-  (myde/xml-mode-setup)
+  (myde-xml-mode-setup)
   (eglot-ensure))
 
-(defun myde/nxml-mode-hook ()
+(defun myde-nxml-mode-hook ()
   "Set up nxml-mode buffers."
-  (myde/xml-mode-setup)
+  (myde-xml-mode-setup)
   (eglot-ensure))
 
-(defun myde/xml-ts-or-nxml-mode ()
+(defun myde-xml-ts-or-nxml-mode ()
   "Use `xml-ts-mode' if tree-sitter is available, otherwise fall back to `nxml-mode'."
   (if (treesit-ready-p 'xml)
       (xml-ts-mode)

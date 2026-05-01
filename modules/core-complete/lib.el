@@ -14,7 +14,7 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for the minibuffer and in-buffer completion stack.
-;;; Loaded by myde/core-complete/cfg.el before package configuration.
+;;; Loaded by myde-core-complete/cfg.el before package configuration.
 
 
 ;;; Code:

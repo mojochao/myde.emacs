@@ -1,4 +1,4 @@
-;;; myde/prog-scheme/lib.el --- Scheme development environment definitions -*- lexical-binding: t; -*-
+;;; myde-prog-scheme/lib.el --- Scheme development environment definitions -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
 
@@ -19,7 +19,7 @@
 
 ;;; Code:
 
-(defun myde/prog-scheme-setup ()
+(defun myde-prog-scheme-setup ()
   "Setup Scheme development environment.
 
 Adds project root markers for various Scheme toolchains and registers
@@ -42,7 +42,7 @@ the tree-sitter grammar for future compatibility."
     (add-to-list 'treesit-language-source-alist
       '(scheme "https://github.com/6cdh/tree-sitter-scheme"))))
 
-(defun myde/prog-scheme-lsp-server ()
+(defun myde-prog-scheme-lsp-server ()
   "Detect and return appropriate LSP server command for Scheme.
 
 Returns the first available LSP server from:
@@ -60,7 +60,7 @@ Returns nil if none are available (eglot gracefully skips LSP)."
      '("chicken-lsp-server"))
     (t nil)))
 
-(defun myde/prog-scheme-format-buffer-maybe ()
+(defun myde-prog-scheme-format-buffer-maybe ()
   "Guard function for schemat before-save formatting.
 
 Only formats if:
@@ -75,15 +75,15 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 
 (declare-function apheleia-format-buffer "apheleia")
 
-(defun myde/prog-scheme-before-save-hook ()
+(defun myde-prog-scheme-before-save-hook ()
   "Guarded schemat formatter for scheme buffers; skips if schemat absent."
-  (when (myde/prog-scheme-format-buffer-maybe)
+  (when (myde-prog-scheme-format-buffer-maybe)
     (apheleia-format-buffer 'schemat)))
 
-(defun myde/prog-scheme-format-on-save-setup ()
+(defun myde-prog-scheme-format-on-save-setup ()
   "Install buffer-local before-save formatting for scheme-mode."
-  (add-hook 'before-save-hook #'myde/prog-scheme-before-save-hook nil t))
+  (add-hook 'before-save-hook #'myde-prog-scheme-before-save-hook nil t))
 
 (provide 'myde-prog-scheme)
 
-;;; myde/prog-scheme/lib.el ends here
+;;; myde-prog-scheme/lib.el ends here

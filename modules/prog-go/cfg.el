@@ -51,7 +51,7 @@
   :hook ((go-ts-mode . eglot-ensure)
          (go-mode    . eglot-ensure))
   :config
-  (myde/eglot-add-workspace-config
+  (myde-eglot-add-workspace-config
    :gopls '(:staticcheck t
             :gofumpt t
             :usePlaceholders t
@@ -74,10 +74,10 @@
   :custom
   (go-ts-mode-indent-offset 4)
   :hook
-  ((go-ts-mode . myde/go-ts-mode-setup)
-   (go-ts-mode . myde/go-format-on-save-setup))
+  ((go-ts-mode . myde-go-ts-mode-setup)
+   (go-ts-mode . myde-go-format-on-save-setup))
   :mode
-  (("\\.go\\'" . myde/go-ts-or-plain-mode))
+  (("\\.go\\'" . myde-go-ts-or-plain-mode))
   :ensure t)
 
 (use-package gotest-ts  ;; https://github.com/chmouel/gotest-ts.el
@@ -126,7 +126,7 @@
   :after org
   :ensure t)
 
-(myde/register-snippets
+(myde-register-snippets
  (expand-file-name "snippets" (file-name-directory load-file-name))
  'go-ts-mode)
 

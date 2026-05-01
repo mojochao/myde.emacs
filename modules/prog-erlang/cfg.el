@@ -24,7 +24,7 @@
 ;;   eglot + elp              — LSP (completions, types, cross-references)
 ;;   erlang-mode              — .erl, .hrl, .escript files with flycheck
 ;;   C-c i i / C-c i s        — erlang-shell REPL; C-c i r for region send
-;;   C-c t p                  — project test runner (myde/erlang-run-tests)
+;;   C-c t p                  — project test runner (myde-erlang-run-tests)
 
 
 ;;; Code:
@@ -58,14 +58,14 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package erlang  ;; https://github.com/erlang/otp (tools/emacs)
-  :hook ((erlang-mode . myde/erlang-mode-setup)
-         (erlang-mode . myde/delete-trailing-whitespace-setup)
+  :hook ((erlang-mode . myde-erlang-mode-setup)
+         (erlang-mode . myde-delete-trailing-whitespace-setup)
          (erlang-mode . flycheck-mode))
   :bind (:map erlang-mode-map
               ("C-c i i" . erlang-shell)
               ("C-c i s" . erlang-shell-buffer)
               ("C-c i r" . inferior-erlang-send-region)
-              ("C-c t p" . myde/erlang-run-tests))
+              ("C-c t p" . myde-erlang-run-tests))
   :mode (("\\.erl\\'"     . erlang-mode)
          ("\\.hrl\\'"     . erlang-mode)
          ("\\.escript\\'" . erlang-mode))

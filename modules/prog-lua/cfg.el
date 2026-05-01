@@ -55,7 +55,7 @@
   :config
   (add-to-list 'eglot-server-programs
                '((lua-ts-mode lua-mode) . ("lua-language-server")))
-  (myde/eglot-add-workspace-config
+  (myde-eglot-add-workspace-config
    :Lua '(:hint (:enable t
                  :arrayIndex "Enable"
                  :await t
@@ -70,15 +70,15 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package lua-mode  ;; https://github.com/immerrr/lua-mode
-  :hook ((lua-mode . myde/lua-mode-setup)
-         (lua-mode . myde/delete-trailing-whitespace-setup)
-         (lua-mode . myde/lua-format-on-save-setup))
+  :hook ((lua-mode . myde-lua-mode-setup)
+         (lua-mode . myde-delete-trailing-whitespace-setup)
+         (lua-mode . myde-lua-format-on-save-setup))
   :bind (:map lua-mode-map
               ("C-c i i" . inf-lua)
               ("C-c i r" . lua-send-region)
               ("C-c i b" . lua-send-buffer)
               ("C-c i s" . lua-show-process-buffer))
-  :mode ("\\.lua\\'" . myde/lua-ts-or-plain-mode)
+  :mode ("\\.lua\\'" . myde-lua-ts-or-plain-mode)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -86,9 +86,9 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package lua-ts-mode  ;; built-in Emacs 29+
-  :hook ((lua-ts-mode . myde/lua-mode-setup)
-         (lua-ts-mode . myde/delete-trailing-whitespace-setup)
-         (lua-ts-mode . myde/lua-format-on-save-setup))
+  :hook ((lua-ts-mode . myde-lua-mode-setup)
+         (lua-ts-mode . myde-delete-trailing-whitespace-setup)
+         (lua-ts-mode . myde-lua-format-on-save-setup))
   :bind (:map lua-ts-mode-map
               ("C-c i i" . inf-lua)
               ("C-c i r" . inf-lua-send-region)

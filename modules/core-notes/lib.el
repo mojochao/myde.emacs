@@ -14,13 +14,13 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions for denote note-taking support.
-;;; Loaded by myde/core-notes/cfg.el before package configuration.
+;;; Loaded by myde-core-notes/cfg.el before package configuration.
 
 
 ;;; Code:
 
 
-(defvar myde/denote-directory "~/org/notes/"
+(defvar myde-denote-directory "~/org/notes/"
   "Root directory for denote notes.")
 
 (provide 'myde-core-notes)

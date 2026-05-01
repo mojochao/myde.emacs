@@ -19,27 +19,27 @@
 
 ;;; Code:
 
-(defun myde/lua-ts-or-plain-mode ()
+(defun myde-lua-ts-or-plain-mode ()
   "Use `lua-ts-mode' if tree-sitter is available, otherwise fall back to `lua-mode'."
   (if (treesit-ready-p 'lua)
       (lua-ts-mode)
     (lua-mode)))
 
-(defun myde/lua-mode-setup ()
+(defun myde-lua-mode-setup ()
   "Set buffer-local settings for lua-mode and lua-ts-mode buffers."
   (setq-local tab-width 2
               indent-tabs-mode nil
               fill-column 120
               compile-command "lua"))
 
-(defun myde/lua-eglot-format-buffer ()
+(defun myde-lua-eglot-format-buffer ()
   "Format buffer via eglot when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)
     (eglot-format-buffer)))
 
-(defun myde/lua-format-on-save-setup ()
+(defun myde-lua-format-on-save-setup ()
   "Install buffer-local before-save formatting for lua buffers."
-  (add-hook 'before-save-hook #'myde/lua-eglot-format-buffer nil t))
+  (add-hook 'before-save-hook #'myde-lua-eglot-format-buffer nil t))
 
 (provide 'myde-prog-lua)
 ;;; lib.el ends here

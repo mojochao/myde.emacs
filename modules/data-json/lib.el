@@ -20,7 +20,7 @@
 (define-derived-mode jsonl-mode json-ts-mode "JSONL"
   "Major mode for JSON Lines files.")
 
-(defun myde/json-ts-mode-hook ()
+(defun myde-json-ts-mode-hook ()
   "Enable eglot for JSON buffers, but not JSONL."
   (unless (derived-mode-p 'jsonl-mode)
     (eglot-ensure)))

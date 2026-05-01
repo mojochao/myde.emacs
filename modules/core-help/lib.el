@@ -14,7 +14,7 @@
 ;;; Commentary:
 ;;;
 ;;; Library functions used for help/docs support configuration.
-;;; Loaded by myde/core-terminals/cfg.el before package configuration.
+;;; Loaded by myde-core-terminals/cfg.el before package configuration.
 
 
 ;;; Code:

@@ -13,13 +13,13 @@
 
 ;;; Commentary:
 ;;; Library functions for 1Password secret management integration.
-;;; Loaded by myde/auth-1password/cfg.el before package configuration.
+;;; Loaded by myde-auth-1password/cfg.el before package configuration.
 
 
 ;;; Code:
 
 
-(defun myde/auth-source-1password-construct-secret-reference
+(defun myde-auth-source-1password-construct-secret-reference
     (_backend _type host &optional user _port)
   "Construct 1Password entry path as vault/host/password (or vault/host/user/password if user provided)."
   (if user

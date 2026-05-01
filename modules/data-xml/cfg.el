@@ -43,13 +43,13 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package nxml-mode  ;; built-in
-  :mode (("\\.xml\\'"   . myde/xml-ts-or-nxml-mode)
-         ("\\.xsd\\'"   . myde/xml-ts-or-nxml-mode)
-         ("\\.xsl\\'"   . myde/xml-ts-or-nxml-mode)
-         ("\\.xslt\\'"  . myde/xml-ts-or-nxml-mode)
-         ("\\.svg\\'"   . myde/xml-ts-or-nxml-mode)
-         ("\\.xhtml\\'" . myde/xml-ts-or-nxml-mode))
-  :hook (nxml-mode . myde/nxml-mode-hook)
+  :mode (("\\.xml\\'"   . myde-xml-ts-or-nxml-mode)
+         ("\\.xsd\\'"   . myde-xml-ts-or-nxml-mode)
+         ("\\.xsl\\'"   . myde-xml-ts-or-nxml-mode)
+         ("\\.xslt\\'"  . myde-xml-ts-or-nxml-mode)
+         ("\\.svg\\'"   . myde-xml-ts-or-nxml-mode)
+         ("\\.xhtml\\'" . myde-xml-ts-or-nxml-mode))
+  :hook (nxml-mode . myde-nxml-mode-hook)
   :custom
   (nxml-slash-auto-complete-flag t)
   :ensure nil)
@@ -59,7 +59,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package xml-ts-mode  ;; built-in (Emacs 29+)
-  :hook (xml-ts-mode . myde/xml-ts-mode-hook)
+  :hook (xml-ts-mode . myde-xml-ts-mode-hook)
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -78,7 +78,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package xml-format  ;; https://github.com/wbolster/emacs-xml-format
-  :hook ((nxml-mode xml-ts-mode) . myde/xml-format-on-save-mode)
+  :hook ((nxml-mode xml-ts-mode) . myde-xml-format-on-save-mode)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------

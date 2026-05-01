@@ -35,9 +35,9 @@
   (setq markdown-command "multimarkdown")
   :mode (("\\.md\\'"        . gfm-mode)
          ("README\\.md\\'"  . gfm-mode))
-  :hook ((markdown-mode . myde/markdown-mode-setup)
+  :hook ((markdown-mode . myde-markdown-mode-setup)
          (markdown-mode . display-line-numbers-mode)
-         (markdown-mode . myde/delete-trailing-whitespace-setup))
+         (markdown-mode . myde-delete-trailing-whitespace-setup))
   :bind (:map markdown-mode-map
               ("C-c C-e" . markdown-do))
   :ensure t)
