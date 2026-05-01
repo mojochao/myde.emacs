@@ -15,7 +15,7 @@
 ;; Visual appearance: frame chrome, theme system, icons, and fonts.
 ;;
 ;; Configures:
-;;   - Frame startup: inhibit splash, set size (120×50), hide scrollbar/toolbar
+;;   - Frame startup: inhibit splash, hide scrollbar/toolbar (size set in early-init.el)
 ;;   - menubar hidden in TUI and in GUI on non-macOS systems
 ;;   - Active theme: batppuccin-frappe; additional themes deferred on demand
 ;;   - auto-dark on Linux for automatic light/dark switching with batppuccin
@@ -44,8 +44,7 @@
 (when (display-graphic-p)
   (pixel-scroll-precision-mode 1)
   (scroll-bar-mode -1)
-  (tool-bar-mode -1)
-  (set-frame-size (selected-frame) 120 50))
+  (tool-bar-mode -1))
 
 ;; Disable the menubar in TUI (on any OS) or GUI (only on macOS).
 ;; One thing I like about Emacs GUI app on macOS is that it uses a global app

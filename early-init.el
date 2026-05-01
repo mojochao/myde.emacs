@@ -77,7 +77,9 @@
       '((menu-bar-lines . 0)      ; disable menu bar
         (tool-bar-lines . 0)      ; disable tool bar
         (vertical-scroll-bars)    ; disable scroll bars
-        (horizontal-scroll-bars)))
+        (horizontal-scroll-bars)
+        (width  . 120)            ; set initial frame width (columns)
+        (height . 50)))           ; set initial frame height (rows)
 
 ;;;; Early frame optimization
 
