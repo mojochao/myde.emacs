@@ -150,7 +150,7 @@ form).  For each descriptor that is neither `core-*' nor `*-base', the
 macro emits:
 
   (defcustom myde-module-<name>-enabled nil
-    \"When non-nil, load the <name> module.\\n<DESCRIPTION>\"
+    \"<DESCRIPTION>\"
     :type \\='boolean
     :group \\='myde-modules)
 
@@ -163,8 +163,7 @@ toggle.  Defaults are `nil' so users opt modules in explicitly."
         (let* ((name (myde-module-name m))
                (desc (myde-module-description m))
                (var  (intern (concat "myde-module-" name "-enabled")))
-               (doc  (format "When non-nil, load the %s module.\n%s"
-                             name desc)))
+               (doc desc))
           (push `(defcustom ,var nil ,doc
                    :type 'boolean
                    :group 'myde-modules)
