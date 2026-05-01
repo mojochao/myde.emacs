@@ -48,18 +48,25 @@ can block startup."
     (error (message "myde: exec-path-from-shell setup failed: %s"
                     (error-message-string err)))))
 
-(defun myde/treesit-install-language-grammar (lang)
-  "Install tree-sitter grammar for LANG into the XDG data directory.
+(defun myde/treesit-install-language-grammar-advice (orig-fn lang &optional out-dir)
+  "Redirect tree-sitter grammar installation to the XDG data directory.
 
-`treesit-install-language-grammar' has no customization variable to override
-its default install directory (`user-emacs-directory/tree-sitter/').  Rather
-than advising the built-in, this wrapper passes the XDG path explicitly.
-Use this command instead of the built-in to keep grammars out of the repo."
+Advises `treesit-install-language-grammar' so that callers which omit OUT-DIR
+(e.g. `treesit-auto') write grammars to `$XDG_DATA_HOME/emacs/tree-sitter/'
+instead of the default `user-emacs-directory/tree-sitter/'."
+  (funcall orig-fn lang
+           (or out-dir (expand-file-name "emacs/tree-sitter" (xdg-data-home)))))
+
+(defun myde/treesit-install-language-grammar (lang)
+  "Interactively install a tree-sitter grammar for LANG into the XDG data directory.
+
+The XDG redirection is handled globally by
+`myde/treesit-install-language-grammar-advice'; this command is a convenient
+interactive entry point."
   (interactive
    (list (intern (completing-read "Language: "
                                   (mapcar #'car treesit-language-source-alist)))))
-  (treesit-install-language-grammar
-   lang (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
+  (treesit-install-language-grammar lang))
 
 (provide 'myde-core-base)
 ;;; lib.el ends here
