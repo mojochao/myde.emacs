@@ -234,5 +234,12 @@
 (use-package git-modes  ;; https://github.com/magit/git-modes
   :ensure t)
 
+(use-package diff-hl  ;; https://github.com/dgutov/diff-hl
+  :hook (after-init . global-diff-hl-mode)
+  :config
+  (add-hook 'magit-pre-refresh-hook  #'diff-hl-magit-pre-refresh)
+  (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)
+  :ensure t)
+
 (provide 'myde-core-projects-cfg)
 ;;; cfg.el ends here
