@@ -73,7 +73,7 @@
 ;; Multiple cursors support
 (use-package multiple-cursors  ;; https://github.com/magnars/multiple-cursors.el
   :bind (("C-S-c C-S-c" . mc/edit-lines)               ;; edit multiple lines
-         ("C-S-c C->"   . c/mark-next-like-this)      ;; add next match
+         ("C-S-c C->"   . mc/mark-next-like-this)      ;; add next match
          ("C-S-c C-<"   . mc/mark-previous-like-this)  ;; add previous match
          ("C-S-c C-+"   . mc/mark-all-like-this))      ;; mark all matches
   :config
