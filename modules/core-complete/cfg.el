@@ -80,5 +80,8 @@
   :diminish corfu-mode
   :ensure t)
 
+(use-package nerd-icons-corfu  ;; https://github.com/LuigiPiucco/nerd-icons-corfu
+  :ensure t)
+
 (provide 'myde-core-complete-cfg)
 ;;; cfg.el ends here

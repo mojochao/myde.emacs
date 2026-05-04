@@ -13,7 +13,7 @@
 
 ;;; Commentary:
 ;; Interaction quality-of-life: keyboard ergonomics, editing conveniences,
-;; and global behavioural defaults.
+;; and global behavioral defaults.
 ;;
 ;; Configures:
 ;;   - macOS modifier swap: command → meta, option → super (GUI only)
