@@ -69,6 +69,7 @@
   :bind
   (("M-$"   . jinx-correct)
    ("C-M-$" . jinx-correct-all))
+  :diminish
   :ensure t)
 
 (provide 'myde-core-spell-cfg)
