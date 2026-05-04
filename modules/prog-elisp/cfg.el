@@ -85,5 +85,8 @@
   :defer t
   :ensure t)
 
+(use-package indent-bars
+  :hook (emacs-lisp-mode . indent-bars-mode))
+
 (provide 'myde-prog-elisp-cfg)
 ;;; cfg.el ends here

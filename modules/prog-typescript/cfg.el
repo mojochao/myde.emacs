@@ -220,5 +220,8 @@
   :after org
   :ensure t)
 
+(use-package indent-bars
+  :hook ((typescript-ts-mode tsx-ts-mode) . indent-bars-mode))
+
 (provide 'myde-prog-typescript-cfg)
 ;;; cfg.el ends here

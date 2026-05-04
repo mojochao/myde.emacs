@@ -134,5 +134,8 @@
    (append org-babel-load-languages '((python . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook (python-ts-mode . indent-bars-mode))
+
 (provide 'myde-prog-python-cfg)
 ;;; cfg.el ends here

@@ -29,5 +29,8 @@
          ("\\.tsv\\'" . csv-mode))
   :ensure t)
 
+(use-package indent-bars
+  :hook (csv-mode . indent-bars-mode))
+
 (provide 'myde-data-csv-cfg)
 ;;; cfg.el ends here

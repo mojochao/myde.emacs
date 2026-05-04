@@ -204,6 +204,9 @@
    (append org-babel-load-languages '((lisp . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook (lisp-mode . indent-bars-mode))
+
 (provide 'myde-prog-clisp-cfg)
 
 ;;; myde-prog-clisp/cfg.el ends here

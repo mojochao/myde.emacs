@@ -112,5 +112,8 @@
   :after org
   :ensure t)
 
+(use-package indent-bars
+  :hook ((zig-ts-mode zig-mode) . indent-bars-mode))
+
 (provide 'myde-prog-zig-cfg)
 ;;; cfg.el ends here

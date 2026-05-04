@@ -33,5 +33,8 @@
   (myde-treesit-remap-terraform)
   :ensure t)
 
+(use-package indent-bars
+  :hook (terraform-mode . indent-bars-mode))
+
 (provide 'myde-data-terraform-cfg)
 ;;; cfg.el ends here

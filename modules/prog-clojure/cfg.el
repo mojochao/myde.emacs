@@ -153,6 +153,9 @@
    (append org-babel-load-languages '((clojure . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook ((clojure-ts-mode clojure-mode) . indent-bars-mode))
+
 (provide 'myde-prog-clojure-cfg)
 
 ;;; myde-prog-clojure/cfg.el ends here

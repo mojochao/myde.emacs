@@ -133,5 +133,8 @@
   :if (treesit-language-available-p 'nu)
   :ensure t)
 
+(use-package indent-bars
+  :hook (nushell-mode . indent-bars-mode))
+
 (provide 'myde-prog-nushell-cfg)
 ;;; cfg.el ends here

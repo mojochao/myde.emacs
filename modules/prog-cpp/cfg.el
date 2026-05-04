@@ -128,5 +128,8 @@
    (append org-babel-load-languages '((C . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook ((c++-ts-mode c-ts-mode cmake-ts-mode) . indent-bars-mode))
+
 (provide 'myde-prog-cpp-cfg)
 ;;; cfg.el ends here

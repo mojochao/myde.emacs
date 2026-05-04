@@ -98,5 +98,8 @@
          ("\\.xquery\\'" . nxml-mode))
   :ensure t)
 
+(use-package indent-bars
+  :hook ((xml-ts-mode nxml-mode) . indent-bars-mode))
+
 (provide 'myde-data-xml-cfg)
 ;;; cfg.el ends here

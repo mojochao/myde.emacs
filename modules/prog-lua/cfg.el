@@ -115,5 +115,8 @@
    (append org-babel-load-languages '((lua . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook ((lua-ts-mode lua-mode) . indent-bars-mode))
+
 (provide 'myde-prog-lua-cfg)
 ;;; cfg.el ends here

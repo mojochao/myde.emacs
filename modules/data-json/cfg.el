@@ -45,5 +45,8 @@
   :mode "\\.jq\\'"
   :ensure t)
 
+(use-package indent-bars
+  :hook (json-ts-mode . indent-bars-mode))
+
 (provide 'myde-data-json-cfg)
 ;;; cfg.el ends here

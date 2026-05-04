@@ -205,5 +205,8 @@
    (append org-babel-load-languages '((js . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook (js-ts-mode . indent-bars-mode))
+
 (provide 'myde-prog-javascript-cfg)
 ;;; cfg.el ends here

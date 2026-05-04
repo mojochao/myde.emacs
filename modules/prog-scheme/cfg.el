@@ -167,6 +167,9 @@
    (append org-babel-load-languages '((scheme . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook (scheme-mode . indent-bars-mode))
+
 (provide 'myde-prog-scheme-cfg)
 
 ;;; myde-prog-scheme/cfg.el ends here

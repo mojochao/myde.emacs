@@ -113,5 +113,8 @@
   :after org
   :ensure t)
 
+(use-package indent-bars
+  :hook ((rustic-mode rust-ts-mode rust-mode) . indent-bars-mode))
+
 (provide 'myde-prog-rust-cfg)
 ;;; cfg.el ends here

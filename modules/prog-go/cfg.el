@@ -130,5 +130,8 @@
  (expand-file-name "snippets" (file-name-directory load-file-name))
  'go-ts-mode)
 
+(use-package indent-bars
+  :hook ((go-ts-mode go-mode) . indent-bars-mode))
+
 (provide 'myde-prog-go-cfg)
 ;;; cfg.el ends here

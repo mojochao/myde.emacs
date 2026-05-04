@@ -37,5 +37,8 @@
    (append org-babel-load-languages '((shell . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook (fish-mode . indent-bars-mode))
+
 (provide 'myde-prog-fish-cfg)
 ;;; cfg.el ends here

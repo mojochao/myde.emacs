@@ -64,5 +64,8 @@
    ("Cargo\\.lock\\'" . myde-toml-ts-or-plain-mode))
   :ensure t)
 
+(use-package indent-bars
+  :hook ((toml-ts-mode toml-mode) . indent-bars-mode))
+
 (provide 'myde-data-toml-cfg)
 ;;; cfg.el ends here

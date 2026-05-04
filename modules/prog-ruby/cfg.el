@@ -156,5 +156,8 @@
    (append org-babel-load-languages '((ruby . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook ((ruby-ts-mode ruby-mode) . indent-bars-mode))
+
 (provide 'myde-prog-ruby-cfg)
 ;;; cfg.el ends here

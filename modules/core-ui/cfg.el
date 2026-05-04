@@ -73,6 +73,12 @@
   :hook (after-init . spacious-padding-mode)
   :ensure t)
 
+;; Indent guides
+(use-package indent-bars  ;; https://github.com/jdtsmith/indent-bars
+  :custom
+  (indent-bars-treesit-support t)
+  :ensure t)
+
 ;; Icons support
 (use-package all-the-icons  ;; https://github.com/domtronn/all-the-icons.el
   :if (display-graphic-p)

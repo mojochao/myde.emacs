@@ -167,5 +167,8 @@
    (append org-babel-load-languages '((shell . t))))
   :ensure nil)
 
+(use-package indent-bars
+  :hook (bash-ts-mode . indent-bars-mode))
+
 (provide 'myde-prog-bash-cfg)
 ;;; cfg.el ends here

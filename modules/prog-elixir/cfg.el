@@ -159,5 +159,8 @@
  (expand-file-name "snippets" (file-name-directory load-file-name))
  'elixir-ts-mode)
 
+(use-package indent-bars
+  :hook ((elixir-ts-mode heex-ts-mode) . indent-bars-mode))
+
 (provide 'myde-prog-elixir-cfg)
 ;;; cfg.el ends here

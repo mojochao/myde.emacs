@@ -32,5 +32,8 @@
    ("\\.yml\\'" . yaml-mode))
   :ensure t)
 
+(use-package indent-bars
+  :hook (yaml-mode . indent-bars-mode))
+
 (provide 'myde-data-yaml-cfg)
 ;;; cfg.el ends here

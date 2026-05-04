@@ -79,5 +79,8 @@
   :after org
   :ensure t)
 
+(use-package indent-bars
+  :hook (erlang-mode . indent-bars-mode))
+
 (provide 'myde-prog-erlang-cfg)
 ;;; cfg.el ends here
