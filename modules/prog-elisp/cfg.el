@@ -77,10 +77,6 @@
   :defer t
   :ensure t)
 
-(use-package seq  ;; https://elpa.gnu.org/packages/seq.html
-  :defer t
-  :ensure t)
-
 (use-package plz  ;; https://github.com/alphapapa/plz.el
   :defer t
   :ensure t)

@@ -60,7 +60,22 @@
         ("melpa"  . 70)
         ("melpa-stable" . 50)))
 
-(setq package-install-upgrade-built-in t)
+;; Pin built-in packages that should never be managed by the external package
+;; system.  Pinning to the non-existent "builtin" archive causes package.el to
+;; omit them from package-archive-contents entirely, so package-upgrade-all
+;; never sees them as upgradeable even when package-install-upgrade-built-in
+;; is t.  Both variables and these built-ins exist in Emacs 29+ (30 and 31).
+(dolist (pkg '(csharp-mode wallpaper))
+  (add-to-list 'package-pinned-packages (cons pkg "builtin")))
+
+;; Disable automatic upgrade of built-in packages.  Built-ins that have been
+;; upgraded into elpa (org, tramp, transient) are handled by the standard
+;; first condition in package--upgradeable-packages (installed elpa version vs
+;; archive version).  Keeping this t permanently re-adds upgraded built-ins to
+;; the upgradeable list via a separate built-in version check, which causes
+;; spurious "Cannot upgrade 'X'" errors once the elpa version matches the
+;; archive.
+(setq package-install-upgrade-built-in nil)
 (package-initialize)
 ;; Refresh package archives only on first run (empty package-user-dir).
 ;; Avoids blocking startup once packages are installed.
@@ -132,13 +147,27 @@
   :diminish savehist-mode
   :ensure nil)
 
-;; Transient menus and popups
+;; Transient menus and popups — XDG-compliant persistence paths.
 (use-package transient
   :init
   (let ((dir (expand-file-name "emacs/transient" (xdg-data-home))))
     (setq transient-levels-file  (expand-file-name "levels.el"  dir)
           transient-values-file  (expand-file-name "values.el"  dir)
           transient-history-file (expand-file-name "history.el" dir)))
+  :ensure nil)
+
+;; Pin transient to the archive whose compat requirement matches the running
+;; Emacs.  MELPA transient requires (compat (31 0)), which the built-in compat
+;; satisfies only on Emacs 31+ (built-in version is (major minor 9999)).
+;; melpa-stable transient requires only (compat (30 1)), satisfiable on both.
+(use-package transient
+  :if (= emacs-major-version 30)
+  :pin "melpa-stable"
+  :ensure nil)
+
+(use-package transient
+  :if (>= emacs-major-version 31)
+  :pin "melpa"
   :ensure nil)
 
 ;; Auto-save buffers on focus loss
