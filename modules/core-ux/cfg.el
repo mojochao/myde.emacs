@@ -24,6 +24,7 @@
 ;;   - multiple-cursors for multi-point editing (C->, C-<, C-S-c C-S-c)
 ;;   - whole-line-or-region to operate on the current line when no region is active
 ;;   - pathaction for path-based action dispatch via .pathaction files
+;;   - smooth pixel-precise scrolling via ultra-scroll (supports emacs-mac, NS, pgtk)
 
 
 ;;; Code:
@@ -94,6 +95,25 @@
   (add-to-list 'display-buffer-alist '("\\*pathaction:"
                                        (display-buffer-at-bottom)
                                        (window-height . 0.33)))
+  :ensure t)
+
+;; Smooth pixel-precise scrolling.
+;;
+;; ultra-scroll supports all Emacs builds including emacs-mac (where the
+;; built-in pixel-scroll-precision-mode does not work).  It activates
+;; pixel-scroll-precision-mode internally and remaps its scroll function with
+;; a faster, fully re-implemented algorithm.
+;;
+;; scroll-conservatively: prevent Emacs from recentering point mid-scroll,
+;; which is the primary cause of visible jank.
+;; scroll-margin: must be 0 to prevent jitter near buffer edges when using
+;; pixel-level vscroll.
+(setq scroll-conservatively 101
+      scroll-margin 0)
+
+(use-package ultra-scroll  ;; https://github.com/jdtsmith/ultra-scroll
+  :config
+  (ultra-scroll-mode 1)
   :ensure t)
 
 (provide 'myde-core-ux-cfg)
