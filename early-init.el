@@ -51,7 +51,7 @@
 
 ;; Must happen in early-init.el before any compilation occurs.
 ;; Redirect eln-cache to XDG_CACHE_HOME instead of user-emacs-directory.
-(when (featurep 'native-compile)
+(when (native-comp-available-p)
   (startup-redirect-eln-cache
    (expand-file-name "emacs/eln-cache"
                      (or (getenv "XDG_CACHE_HOME")
