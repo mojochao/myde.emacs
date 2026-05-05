@@ -1,6 +1,6 @@
 # Agent state/session data (local to this directory, not config)
 agent/
-.claude/
+.claude/settings.local.json
 
 # temp files
 tmp/
