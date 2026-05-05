@@ -64,6 +64,7 @@
    (myde/m "ai-gptel"         "Gptel chat client integration.")
    (myde/m "ai-agents"        "General agent clients integrations.")
    (myde/m "ai-claude"        "Claude agent-specific integration.")
+   (myde/m "ai-mcp"           "MCP server exposing live Emacs state to AI agents.")
    ;; Auth source backends ----------------------------------------------
    (myde/m "auth-1password"   "1Password auth-source integration.")
    ;; Data formats ------------------------------------------------------

@@ -13,7 +13,7 @@ No build, lint, or test tooling — this is a pure Emacs Lisp configuration, eva
 
 ## Architecture
 
-MyDE is a modular Emacs configuration targeting **Emacs 30+ compiled with native-compile support**. The repo is symlinked to `~/.config/emacs` (`user-emacs-directory`).
+MyDE is a modular Emacs configuration targeting **Emacs 30.2+ compiled with native-compile support**. The repo is symlinked to `~/.config/emacs` (`user-emacs-directory`).
 
 ### Startup sequence
 
