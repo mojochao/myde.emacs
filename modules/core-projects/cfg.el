@@ -21,6 +21,7 @@
 ;;;
 ;;; Configures:
 ;;;   projectile + project.el — project discovery and navigation (C-c p / s-p)
+;;;   rg                      — ripgrep integration for projectile-ripgrep
 ;;;   neotree                 — file-tree sidebar toggled with F8
 ;;;   editorconfig            — project-wide formatting rules from .editorconfig
 ;;;   treesit + treesit-auto  — tree-sitter grammar auto-install for all languages
@@ -51,6 +52,11 @@
               ("s-p"   . projectile-command-map)
               ("C-c p" . projectile-command-map))
   :diminish projectile-mode
+  :ensure t)
+
+;; ripgrep integration for projectile-ripgrep
+(use-package rg  ;; https://github.com/dajva/rg.el
+  :after projectile
   :ensure t)
 
 ;; Built-in project management
