@@ -50,7 +50,6 @@
          ("\\.asciidoc\\'" . adoc-mode)
          ("\\.asc\\'"      . adoc-mode))
   :hook ((adoc-mode . myde-adoc-mode-setup)
-         (adoc-mode . display-line-numbers-mode)
          (adoc-mode . visual-line-mode)
          (adoc-mode . flycheck-mode)
          (adoc-mode . myde-delete-trailing-whitespace-setup))

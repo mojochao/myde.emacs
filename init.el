@@ -95,6 +95,7 @@
    (myde/m "prog-fish"        "Fish shell scripting.")
    (myde/m "prog-nushell"     "Nu shell scripting.")
    ;; Text formats ------------------------------------------------------
+   (myde/m "text-base"        "Shared text-mode infrastructure.")
    (myde/m "text-asciidoc"    "AsciiDoc document authoring environment.")
    (myde/m "text-markdown"    "Markdown document authoring environment.")
    ;; Ebook formats -----------------------------------------------------

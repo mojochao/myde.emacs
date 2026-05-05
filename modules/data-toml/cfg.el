@@ -57,7 +57,6 @@
   :config
   :hook
   ((toml-ts-mode . myde-toml-ts-mode-setup)
-   (toml-ts-mode . display-line-numbers-mode)
    (toml-ts-mode . myde-delete-trailing-whitespace-setup))
   :mode
   (("\\.toml\\'" . myde-toml-ts-or-plain-mode)
