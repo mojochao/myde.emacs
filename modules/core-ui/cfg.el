@@ -77,6 +77,14 @@
 (use-package indent-bars  ;; https://github.com/jdtsmith/indent-bars
   :custom
   (indent-bars-treesit-support t)
+  (indent-bars-color '(highlight :face-bg t :blend 0.2))
+  (indent-bars-pattern ".")
+  (indent-bars-width-frac 0.1)
+  (indent-bars-pad-frac 0.1)
+  (indent-bars-zigzag nil)
+  (indent-bars-color-by-depth nil)
+  (indent-bars-highlight-current-depth nil)
+  (indent-bars-display-on-blank-lines nil)
   :ensure t)
 
 ;; Icons support
