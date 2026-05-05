@@ -115,6 +115,59 @@ These ordering constraints must be preserved in `core-base/cfg.el`:
 3. `custom.el` is loaded after `package-initialize` because `package-vc-selected-packages`
    has a `:set` handler that calls `package-vc-install`, which requires an initialized
    package system.
+4. `package-pinned-packages` entries must be set **before** `package-initialize`. The
+   pinning is applied during `package-read-all-archive-contents`, which runs inside
+   `package-initialize`. Pins set after that call only take effect on the next
+   `package-refresh-contents` (which `package-upgrade-all` does call, so interactive
+   use is still correct, but startup-time effects require pre-init placement).
+5. **`package-install-upgrade-built-in` is `nil`.** Setting it to `t` causes
+   `package--upgradeable-packages` to permanently add every built-in package to the
+   upgradeable list whenever an archive has a higher version. Once a built-in has been
+   upgraded into `elpa/`, `package-upgrade-all` will repeatedly fail with
+   `(user-error "Cannot upgrade 'X'")` because the built-in's old version is still
+   detected as "upgradeable" even though the elpa copy already matches the archive.
+   Packages already upgraded into `elpa/` (org, tramp, transient) continue to be
+   upgraded normally via the standard `package-alist` version check (first condition in
+   `package--upgradeable-packages`).
+
+#### Built-in packages excluded from archive management
+
+Some built-in packages that also exist on MELPA must never be managed by the package
+system at all. They are pinned to the non-existent `"builtin"` archive in
+`core-base/cfg.el`, which causes `package-read-all-archive-contents` to omit them from
+`package-archive-contents` entirely:
+
+| Package | Reason |
+|---------|--------|
+| `csharp-mode` | Built-in since Emacs 29; no C# module in this config |
+| `wallpaper` | Built-in since Emacs 29; not used |
+
+If a package keeps reinstalling itself after being removed from `custom.el` and `elpa/`,
+check whether `package-install-upgrade-built-in` is `t` and whether the package is
+built-in — that combination causes a reinstall loop. The fix is either to pin the package
+to `"builtin"` (if unwanted) or to set the flag to `nil` (preferred).
+
+#### Version-conditional archive pinning
+
+Some built-in packages have MELPA versions with `compat` requirements that differ between
+Emacs 30 and 31. Use two `use-package` forms with `:if` and `:pin` to select the right
+archive per version:
+
+```elisp
+(use-package some-package
+  :if (= emacs-major-version 30)
+  :pin "melpa-stable"   ;; requires (compat (30 1))
+  :ensure nil)
+
+(use-package some-package
+  :if (>= emacs-major-version 31)
+  :pin "melpa"          ;; requires (compat (31 0))
+  :ensure nil)
+```
+
+`transient` uses this pattern. The built-in `compat` stub in Emacs reports version
+`(emacs-major-version emacs-minor-version 9999)`, so on Emacs 30 it satisfies
+`(compat (30 1))` but not `(compat (31 0))`.
 
 ### use-package constraints (Emacs 30)
 
@@ -131,6 +184,14 @@ These ordering constraints must be preserved in `core-base/cfg.el`:
   `:hook (event . fn)`. The function must be exported (autoloaded or `require`d). A
   non-existent hook target produces `custom-initialize-reset: Invalid function: <fn>`
   at startup, which can be mistaken for an unrelated error.
+- **All built-in packages must use `:ensure nil`.** Using `:ensure t` on a built-in is
+  a latent bug: if an archive later publishes a newer version, the package system will
+  install it, add it to `package-selected-packages`, and trigger reinstall loops. Built-in
+  packages that should never be installed from archives are additionally pinned to
+  `"builtin"` in `package-pinned-packages` (see above). Built-ins that have no
+  configuration at all should have no `use-package` declaration at all — a
+  `(use-package foo :defer t :ensure nil)` block with no other keywords is a no-op and
+  should be deleted.
 
 ### Adding a module
 
