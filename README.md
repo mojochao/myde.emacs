@@ -31,7 +31,7 @@ Modules follow a `<category>-<name>` naming convention:
 - **`auth-*`** — Authentication and secrets (e.g. `auth-1password`)
 - **`data-*`** — Data format modules (e.g. `data-csv`, `data-json`, `data-toml`, `data-xml`, `data-yaml`)
 - **`prog-*`** — Programming language modules (e.g. `prog-base`, `prog-go`, `prog-rust`, `prog-zig`, `prog-python`, `prog-ruby`, `prog-elixir`, `prog-elisp`, `prog-csharp`, `prog-lua`)
-- **`text-*`** — Text format modules (e.g. `text-markdown`)
+- **`text-*`** — Text format modules (e.g. `text-base`, `text-asciidoc`, `text-markdown`)
 - **`ebook-*`** — Ebook reader modules (e.g. `ebook-pdf`, `ebook-epub`)
 
 ### Module structure
