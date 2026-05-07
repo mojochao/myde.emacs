@@ -7,7 +7,7 @@ My Development Environment, or MyDE for short, is my personal Emacs configuratio
 Run the following commands to install MyDE configuration into your local emacs configuration directory, `~/.config/emacs` by default.
 
 ```shell
-git clone https://github.com/mojochao/myde.el
+git clone https://github.com/mojochao/myde.emacs
 cd myde.el
 make link
 ```

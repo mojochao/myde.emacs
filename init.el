@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020-2026  Allen Gooch
 
 ;; Author:   Allen Gooch <allen.gooch@gmail.com>
-;; URL:      https://github.com/mojochao/myde.el
+;; URL:      https://github.com/mojochao/myde.emacs
 ;; Keywords: convenience, configuration
 ;; Package-Requires: ((emacs "30.1"))
 

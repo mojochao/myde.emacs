@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020-2026  Allen Gooch
 
 ;; Author:   Allen Gooch <allen.gooch@gmail.com>
-;; URL:      https://github.com/mojochao/myde.el
+;; URL:      https://github.com/mojochao/myde.emacs
 ;; Keywords: convenience, configuration
 
 ;; This file is not part of GNU Emacs.
@@ -22,6 +22,7 @@
 ;;   - buffer-guardian for auto-save on focus loss (replaces backup files)
 ;;   - exec-path-from-shell on macOS GUI (deferred to emacs-startup-hook)
 ;;   - dired with GNU ls (gls) and --group-directories-first on macOS
+;;   - goto-address: URL/email fontification + browse-url-at-point on C-c u
 ;;
 ;; Note: Native compilation cache redirection happens in early-init.el
 
@@ -196,6 +197,27 @@
   :config
   (advice-add 'treesit-install-language-grammar
               :around #'myde-treesit-install-language-grammar-advice)
+  :ensure nil)
+
+;; Make URLs and email addresses actionable: fontified, clickable
+;; (mouse-2), and openable from the keyboard via C-c RET on the link.
+;; `goto-address-prog-mode' restricts activation to comments/strings in
+;; code buffers; `goto-address-mode' covers the entirety of text buffers.
+;; Browser dispatch uses the built-in `browse-url-default-browser', which
+;; defers to `open` on macOS and `xdg-open` on Linux — both honor the
+;; user's OS-level default browser, so no override is needed here.
+(use-package goto-addr
+  :bind (("C-c u" . browse-url-at-point))
+  :config
+  ;; macOS trackpads have no native middle-click.  Plain mouse-1 stays
+  ;; as point movement; Super+click follows the link (on macOS, Super
+  ;; is whichever physical key the user has mapped to it — Cmd by
+  ;; default).  Disabling `mouse-1-click-follows-link' is what
+  ;; prevents Emacs from translating a quick plain mouse-1 on a
+  ;; `follow-link' overlay into a virtual mouse-2 click.
+  (setq mouse-1-click-follows-link nil)
+  (define-key goto-address-highlight-keymap [s-mouse-1] #'goto-address-at-point)
+  (global-goto-address-mode 1)
   :ensure nil)
 
 ;; macOS-specific setup
