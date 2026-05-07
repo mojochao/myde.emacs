@@ -65,7 +65,6 @@
 ;; SLY: Primary REPL for interactive Common Lisp development
 ;; Modern UX, stickers (live feedback), excellent debugger integration
 (use-package sly
-  :ensure t
   :defer t
   :config
   ;; Initialize SLY configuration
@@ -84,12 +83,12 @@
   (define-key sly-mode-map (kbd "C-c i b") 'sly-eval-buffer)
   (define-key sly-mode-map (kbd "C-c i e") 'sly-eval-last-expression)
   (define-key sly-mode-map (kbd "C-c i d") 'sly-documentation)
-  (define-key sly-mode-map (kbd "C-c i z") 'sly-switch-to-repl))
+  (define-key sly-mode-map (kbd "C-c i z") 'sly-switch-to-repl)
+  :ensure t)
 
 ;; SLIME: Fallback REPL for Common Lisp (larger ecosystem if SLY unavailable)
 ;; Battle-tested stability (20+ years), excellent debugging (SLDB)
 (use-package slime
-  :ensure t
   :defer t
   :config
   ;; Only initialize if SLY is not available
@@ -103,7 +102,8 @@
     (define-key slime-mode-map (kbd "C-c i b") 'slime-eval-buffer)
     (define-key slime-mode-map (kbd "C-c i e") 'slime-eval-last-expression)
     (define-key slime-mode-map (kbd "C-c i d") 'slime-documentation)
-    (define-key slime-mode-map (kbd "C-c i z") 'slime-switch-to-repl)))
+    (define-key slime-mode-map (kbd "C-c i z") 'slime-switch-to-repl))
+  :ensure t)
 
 ;; FiveAM: Test framework documentation
 ;; FiveAM is a Common Lisp package (not an Emacs package), so it's not managed via MELPA

@@ -209,7 +209,6 @@
   ;; Lightweight DAP client; debug configs are registered by each language
   ;; module in myde-.  Only shared keybindings and layout settings live here.
   :after transient
-  :ensure t
   :config
   (setq dape-buffer-window-arrangement 'right)
   :bind (("C-c d d" . dape)
@@ -219,7 +218,8 @@
          ("C-c d s" . dape-step-in)
          ("C-c d o" . dape-step-out)
          ("C-c d c" . dape-continue)
-         ("C-c d q" . dape-quit)))
+         ("C-c d q" . dape-quit))
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Git version control setup

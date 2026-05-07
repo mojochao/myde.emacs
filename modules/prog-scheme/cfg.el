@@ -73,11 +73,11 @@
 ;; Geiser: Interactive Scheme evaluation and REPL
 ;; Provides evaluation, debugging, documentation, macro expansion, etc.
 (use-package geiser
-  :ensure t
   :config
   ;; Make all installed Scheme backends available in M-x geiser prompt
   ;; User can choose implementation at runtime
-  (setq geiser-active-implementations '(guile chicken chez)))
+  (setq geiser-active-implementations '(guile chicken chez))
+  :ensure t)
 
 ;; Geiser backend: GNU Guile
 ;; Best Emacs integration, debugger support, used by Guix
@@ -97,7 +97,6 @@
 ;; Formatting support: schemat (opt-in)
 (use-package apheleia
   :after scheme
-  :ensure t
   :config
   ;; Register schemat as Scheme formatter
   ;; schemat is cross-implementation (R5RS/R6RS/R7RS)
@@ -109,7 +108,8 @@
 
   ;; Buffer-local before-save formatter: schemat runs only if available and eglot
   ;; is managing the buffer (see myde-prog-scheme-format-buffer-maybe).
-  (add-hook 'scheme-mode-hook #'myde-prog-scheme-format-on-save-setup))
+  (add-hook 'scheme-mode-hook #'myde-prog-scheme-format-on-save-setup)
+  :ensure t)
 
 ;; Standard keybindings for geiser (C-c i prefix)
 ;; These are defaults from geiser but can be customized here if needed

@@ -87,6 +87,24 @@ All state/data/cache redirection is handled in `core-base/cfg.el`. Never redirec
 
 The `defcustom` toggle is generated automatically unless the module is `core-*` or `*-base`.
 
+## use-package keyword ordering
+
+`:ensure` must always be the **last keyword** in a `use-package` form. All other
+keywords (`:after`, `:init`, `:custom`, `:config`, `:hook`, `:mode`, `:bind`, etc.)
+come before it:
+
+```elisp
+(use-package some-package
+  :after other-package
+  :custom
+  (some-package-option t)
+  :config
+  (some-package-setup)
+  :bind (:map some-package-map
+              ("C-c s" . some-command))
+  :ensure t)
+```
+
 ## Quality checklist (before declaring done)
 
 - [ ] `lib.el` contains only named definitions and built-in setup — no `use-package`.

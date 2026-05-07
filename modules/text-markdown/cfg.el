@@ -67,7 +67,8 @@
               ("C-c C-e"   . nil)
               ("C-c C-e h" . myde-markdown-export-html)
               ("C-c C-e p" . myde-markdown-export-pdf)
-              ("C-c v"     . visual-fill-column-mode))
+              ("C-c v"     . visual-fill-column-mode)
+              ("C-c t"   . markdown-table-align))
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -82,7 +83,6 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package markdown-preview-mode  ;; https://github.com/ancane/markdown-preview-mode
-  :ensure t
   :after markdown-mode
   :custom
   ;; markdown-preview-script-onupdate is a defcustom -- :custom works.
@@ -114,19 +114,20 @@
             @media (max-width: 767px) { .markdown-body { padding: 15px; } }
           </style>"))
   :bind (:map markdown-mode-map
-              ("C-c C-p" . markdown-preview-mode)))
+              ("C-c C-p" . markdown-preview-mode))
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Live preview via grip-mode (secondary; GitHub-rendered, no mermaid)
 ;; -----------------------------------------------------------------------------
 
 (use-package grip-mode  ;; https://github.com/seagle0128/grip-mode
-  :ensure t
   :after markdown-mode
   :custom
   (grip-real-time-refresh t)
   :bind (:map markdown-mode-map
-              ("C-c C-g" . grip-mode)))
+              ("C-c C-g" . grip-mode))
+  :ensure t)
 
 (provide 'myde-text-markdown-cfg)
 ;;; cfg.el ends here

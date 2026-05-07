@@ -49,11 +49,11 @@ Two operators consume the list:
 
 Loading rules:
 
-| Module kind         | Has a toggle? | Loaded when                                                |
-|---------------------|---------------|------------------------------------------------------------|
-| `core-*`            | No            | Always                                                     |
-| `*-base` (non-core) | No            | Any sibling module in the same category has its toggle on  |
-| Other               | Yes (default **`nil`**) | Its toggle is non-nil                            |
+| Module kind         | Has a toggle?           | Loaded when                                               |
+|---------------------|-------------------------|-----------------------------------------------------------|
+| `core-*`            | No                      | Always                                                    |
+| `*-base` (non-core) | No                      | Any sibling module in the same category has its toggle on |
+| Other               | Yes (default **`nil`**) | Its toggle is non-nil                                     |
 
 > **Heads up:** toggles default to `nil`.
 > A fresh install with no `custom.el` loads only the `core-*` modules.

@@ -53,20 +53,20 @@
 ;; Load clojure-mode silently (required as CIDER's undeclared dependency)
 ;; Future: clojure-ts-mode will subsume clojure-mode (Emacs 32+)
 (use-package clojure-mode
-  :ensure t
   :init
   ;; Don't show clojure-mode in mode-line; clojure-ts-mode is primary
-  (setq auto-mode-alist (rassq-delete-all 'clojure-mode auto-mode-alist)))
+  (setq auto-mode-alist (rassq-delete-all 'clojure-mode auto-mode-alist))
+  :ensure t)
 
 (use-package clojure-ts-mode
-  :ensure t
   :defer t
   :mode (("\\.clj\\'" . clojure-ts-mode)
          ("\\.cljs\\'" . clojure-ts-mode)
          ("\\.cljc\\'" . clojure-ts-mode))
   :init
   ;; Prefer clojure-ts-mode when available
-  (add-to-list 'major-mode-remap-alist '(clojure-mode . clojure-ts-mode)))
+  (add-to-list 'major-mode-remap-alist '(clojure-mode . clojure-ts-mode))
+  :ensure t)
 
 (use-package eglot
   :ensure nil  ;; Built-in to Emacs 29+
@@ -83,7 +83,6 @@
     '(clojurescript-mode . ("clojure-lsp"))))
 
 (use-package cider
-  :ensure t
   :after clojure-ts-mode
   :defer t
   :hook (clojure-ts-mode . cider-mode)
@@ -103,11 +102,11 @@
   (define-key cider-mode-map (kbd "C-c t t") 'cider-test-run-test)
   (define-key cider-mode-map (kbd "C-c t f") 'cider-test-run-ns-tests)
   (define-key cider-mode-map (kbd "C-c t p") 'cider-test-run-project-tests)
-  (define-key cider-mode-map (kbd "C-c t r") 'cider-test-run-loaded-tests))
+  (define-key cider-mode-map (kbd "C-c t r") 'cider-test-run-loaded-tests)
+  :ensure t)
 
 (use-package apheleia
   :after clojure-ts-mode
-  :ensure t
   :config
   ;; Register cljfmt (built into clojure-lsp) as default formatter
   (add-to-list 'apheleia-formatters
@@ -136,7 +135,7 @@
   ;; ((clojure-ts-mode
   ;;   (apheleia-formatter . zprint)
   ;;   (cider-format-code-options . {:style :community})))
-  )
+  :ensure t)
 
 ;; paredit and rainbow-delimiters are configured in prog-base
 ;; (shared across all Lisp-family languages)
