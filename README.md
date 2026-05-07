@@ -83,14 +83,14 @@ The module-system machinery (the `myde-module` `cl-defstruct`, the `myde/m` cons
 
 ### Feature naming
 
-| Module path | lib.el feature | cfg.el feature |
-|-------------|---|---|
-| `modules/core-base/lib.el` | `myde-core-base` | `myde-core-base-cfg` |
-| `modules/prog-go/lib.el` | `myde-prog-go` | `myde-prog-go-cfg` |
+| Module path                     | lib.el feature        | cfg.el feature            |
+|---------------------------------|-----------------------|---------------------------|
+| `modules/core-base/lib.el`      | `myde-core-base`      | `myde-core-base-cfg`      |
+| `modules/prog-go/lib.el`        | `myde-prog-go`        | `myde-prog-go-cfg`        |
 | `modules/core-dashboard/lib.el` | `myde-core-dashboard` | `myde-core-dashboard-cfg` |
-| `modules/core-ui/lib.el` | `myde-core-ui` | `myde-core-ui-cfg` |
-| `modules/text-markdown/lib.el` | `myde-text-markdown` | `myde-text-markdown-cfg` |
-| `modules/ebook-pdf/lib.el` | `myde-ebook-pdf` | `myde-ebook-pdf-cfg` |
+| `modules/core-ui/lib.el`        | `myde-core-ui`        | `myde-core-ui-cfg`        |
+| `modules/text-markdown/lib.el`  | `myde-text-markdown`  | `myde-text-markdown-cfg`  |
+| `modules/ebook-pdf/lib.el`      | `myde-ebook-pdf`      | `myde-ebook-pdf-cfg`      |
 
 Pattern: `myde-<category>-<name>` for lib, `myde-<category>-<name>-cfg` for cfg.
 
@@ -119,12 +119,12 @@ Each module that has snippets registers them near the bottom of its `cfg.el`:
 
 Language modules follow consistent keybinding prefixes:
 
-| Prefix | Domain | Example |
-|--------|--------|---------|
-| `C-c e *` | LSP (eglot) — all languages | `C-c e a` code actions |
-| `C-c t *` | Tests — language-specific | `C-c t t` test at point |
-| `C-c i *` | REPL / interactive — language-specific | `C-c i i` start REPL |
-| `C-c d *` | Debug (dape) — global | `C-c d d` start debugger |
+| Prefix    | Domain                                 | Example                  |
+|-----------|----------------------------------------|--------------------------|
+| `C-c e *` | LSP (eglot) — all languages            | `C-c e a` code actions   |
+| `C-c t *` | Tests — language-specific              | `C-c t t` test at point  |
+| `C-c i *` | REPL / interactive — language-specific | `C-c i i` start REPL     |
+| `C-c d *` | Debug (dape) — global                  | `C-c d d` start debugger |
 
 For detailed test and REPL keybinding granularity across languages, see `docs/prog-modules-design.md`.
 
@@ -134,27 +134,27 @@ Several modules require external tools on PATH (or at a known path). Install the
 
 ### LSP servers
 
-| Module | Tool | Install |
-|--------|------|---------|
-| `data-json` | `vscode-json-language-server` | `npm install -g vscode-langservers-extracted` |
-| `data-toml` | `taplo` | `brew install taplo` |
-| `data-xml` | `lemminx` | See below |
-| `prog-go` | `gopls` | `go install golang.org/x/tools/gopls@latest` |
-| `prog-lua` | `lua-language-server` | `brew install lua-language-server` |
-| `prog-python` | `pylsp` / `pyright` | `pip install python-lsp-server` |
-| `prog-ruby` | `ruby-lsp` | `gem install ruby-lsp` |
-| `prog-rust` | `rust-analyzer` | `rustup component add rust-analyzer` |
-| `prog-zig` | `zls` | `mise use -g zls` |
+| Module        | Tool                          | Install                                       |
+|---------------|-------------------------------|-----------------------------------------------|
+| `data-json`   | `vscode-json-language-server` | `npm install -g vscode-langservers-extracted` |
+| `data-toml`   | `taplo`                       | `brew install taplo`                          |
+| `data-xml`    | `lemminx`                     | See below                                     |
+| `prog-go`     | `gopls`                       | `go install golang.org/x/tools/gopls@latest`  |
+| `prog-lua`    | `lua-language-server`         | `brew install lua-language-server`            |
+| `prog-python` | `pylsp` / `pyright`           | `pip install python-lsp-server`               |
+| `prog-ruby`   | `ruby-lsp`                    | `gem install ruby-lsp`                        |
+| `prog-rust`   | `rust-analyzer`               | `rustup component add rust-analyzer`          |
+| `prog-zig`    | `zls`                         | `mise use -g zls`                             |
 
 ### Debuggers
 
-| Module | Tool | Install |
-|--------|------|---------|
-| `prog-cpp` | `codelldb` | `mise use -g codelldb` |
-| `prog-go` | `dlv` | `go install github.com/go-delve/delve/cmd/dlv@latest` |
-| `prog-ruby` | `rdbg` | `gem install debug` |
-| `prog-rust` | `codelldb` | `mise use -g codelldb` |
-| `prog-zig` | `codelldb` | `mise use -g codelldb` |
+| Module      | Tool       | Install                                               |
+|-------------|------------|-------------------------------------------------------|
+| `prog-cpp`  | `codelldb` | `mise use -g codelldb`                                |
+| `prog-go`   | `dlv`      | `go install github.com/go-delve/delve/cmd/dlv@latest` |
+| `prog-ruby` | `rdbg`     | `gem install debug`                                   |
+| `prog-rust` | `codelldb` | `mise use -g codelldb`                                |
+| `prog-zig`  | `codelldb` | `mise use -g codelldb`                                |
 
 ### LemMinX (XML language server)
 
@@ -182,6 +182,6 @@ After first Emacs startup, install the XML tree-sitter grammar using the
 MyDE wrapper (which installs to `$XDG_DATA_HOME/emacs/tree-sitter/` instead
 of the repo root):
 
-```
+```text
 M-x myde/treesit-install-language-grammar RET xml RET
 ```
