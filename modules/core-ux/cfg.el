@@ -57,6 +57,12 @@
 (setq kill-buffer-query-functions
       (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
 
+;; Squelch prompt on exit when active processes (e.g. mcp-server) are running
+(setq confirm-kill-processes nil)
+
+;; Use 'y'/n' instead of 'yes'/'no' for confirmations (Emacs 30+)
+(setq use-short-answers t)
+
 ;; Global keyboard remap
 (global-set-key [remap keyboard-quit] #'myde-keyboard-quit)
 
