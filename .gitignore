@@ -9,3 +9,6 @@ custom.el
 
 # installed packages
 elpa/
+
+# macos finder junk
+.DS_Store
