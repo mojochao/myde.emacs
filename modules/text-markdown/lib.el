@@ -52,7 +52,8 @@ fails for filesystem paths the preview HTTP server cannot reach."
   "Set buffer-local settings for markdown-mode buffers."
   (setq-local fill-column 80
               tab-width 2
-              indent-tabs-mode nil))
+              indent-tabs-mode nil
+              sentence-end-double-space nil))
 
 (defun myde-markdown-export-html ()
   "Export current Markdown buffer to HTML alongside the source file."

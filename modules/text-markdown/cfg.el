@@ -19,7 +19,9 @@
 ;;; Activates gfm-mode for .md and README.md files.  Provides:
 ;;;
 ;;;   Writing    -- markdown-mode syntax highlighting, outline navigation,
-;;;                 visual-line-mode soft-wrap, auto-fill at column 80.
+;;;                 visual-line-mode + visual-fill-column-mode wrap at
+;;;                 column 80.  C-c v toggles visual-fill-column-mode to
+;;;                 switch between fixed-column wrap and full-width wrap.
 ;;;   Previewing -- C-c C-p toggles markdown-preview-mode (primary): pandoc-
 ;;;                 rendered live preview in the browser, with mermaid.js
 ;;;                 injected so ```mermaid fences render as diagrams.
@@ -56,13 +58,23 @@
          ("README\\.md\\'"  . gfm-mode))
   :hook ((markdown-mode . myde-markdown-mode-setup)
          (markdown-mode . visual-line-mode)
+         (markdown-mode . visual-wrap-prefix-mode)
+         (markdown-mode . visual-fill-column-mode)
          (markdown-mode . myde-delete-trailing-whitespace-setup))
   :bind (:map markdown-mode-map
               ;; Free C-c C-e (markdown-do) to use as an export prefix.
               ;; markdown-do remains available at its default C-c C-d binding.
               ("C-c C-e"   . nil)
               ("C-c C-e h" . myde-markdown-export-html)
-              ("C-c C-e p" . myde-markdown-export-pdf))
+              ("C-c C-e p" . myde-markdown-export-pdf)
+              ("C-c v"     . visual-fill-column-mode))
+  :ensure t)
+
+;; -----------------------------------------------------------------------------
+;; Visual fill column -- wrap long lines at fill-column (not window width)
+;; -----------------------------------------------------------------------------
+
+(use-package visual-fill-column
   :ensure t)
 
 ;; -----------------------------------------------------------------------------

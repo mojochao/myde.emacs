@@ -1,13 +1,10 @@
 # My Development Environment - Emacs
 
-My Development Environment, or MyDE for short, is my personal Emacs configuration
-for modern Emacs versions (minimum v30, compiled with native-compile support),
-providing a consistent, convenient DX across Linux and macOS platforms.
+My Development Environment, or MyDE for short, is my personal Emacs configuration for modern Emacs versions (minimum v30, compiled with native-compile support), providing a consistent, convenient DX across Linux and macOS platforms.
 
 ## Installation
 
-Run the following commands to install MyDE configuration into your local emacs
-config directory, `~/.config/emacs` by default
+Run the following commands to install MyDE configuration into your local emacs configuration directory, `~/.config/emacs` by default.
 
 ```shell
 git clone https://github.com/mojochao/myde.el
@@ -15,8 +12,7 @@ cd myde.el
 make link
 ```
 
-At this point, you should be able to launch Emacs, at which time packages
-will be downloaded and configured as defined by this elisp configuration.
+At this point, you should be able to launch Emacs, at which time packages will be downloaded and configured as defined by this elisp configuration.
 
 ## Organization
 
@@ -37,12 +33,14 @@ Modules follow a `<category>-<name>` naming convention:
 ### Module structure
 
 Each module contains:
+
 - `lib.el` — Library code (functions, variables, customizations)
 - `cfg.el` — Configuration code (the public entry point)
 
 ### Module loading and toggles
 
-`init.el` is declarative. The full set of modules is described by a single ordered list, `myde-modules`, whose entries are built with `(myde/m "<category>-<name>" "<description>")`. The list order is the load order.
+`init.el` is declarative. The full set of modules is described by a single ordered list, `myde-modules`, whose entries are built with `(myde/m "<category>-<name>" "<description>")`.
+The list order is the load order.
 
 Two operators consume the list:
 
@@ -57,7 +55,9 @@ Loading rules:
 | `*-base` (non-core) | No            | Any sibling module in the same category has its toggle on  |
 | Other               | Yes (default **`nil`**) | Its toggle is non-nil                            |
 
-> **Heads up:** toggles default to `nil`. A fresh install with no `custom.el` loads only the `core-*` modules. Opt modules in via `M-x customize-group RET myde-modules RET` (or by setting variables in `custom.el`).
+> **Heads up:** toggles default to `nil`.
+> A fresh install with no `custom.el` loads only the `core-*` modules.
+Opt modules in via `M-x customize-group RET myde-modules RET` (or by setting variables in `custom.el`).
 
 The module-system machinery (the `myde-module` `cl-defstruct`, the `myde/m` constructor, `myde-customize`, `myde-initialize`, and `myde-load-module`) lives in `modules.el` at the repo root and is loaded by `init.el` via `(load-file ...)` before the descriptor list is declared.
 
@@ -70,9 +70,7 @@ The module-system machinery (the `myde-module` `cl-defstruct`, the `myde/m` cons
 ### File conventions
 
 **`lib.el`**
-- Contains named definitions and built-in Emacs initialization: `defun`, `defvar`,
-  `defcustom`, `setq`, and direct built-in mode/variable setup. No `use-package`,
-  no external package hooks, no keybindings.
+- Contains named definitions and built-in Emacs initialization: `defun`, `defvar`,`defcustom`, `setq`, and direct built-in mode/variable setup. No `use-package`, no external package hooks, no keybindings
 - Does not require other modules (all utilities are distributed across modules)
 - Provides a feature symbol: `(provide 'myde-<category>-<name>)`
 - Hook functions must be defined here as named functions (e.g., `myde/foo-mode-hook`) — never use lambdas as hook functions
@@ -98,9 +96,10 @@ Pattern: `myde-<category>-<name>` for lib, `myde-<category>-<name>-cfg` for cfg.
 
 ### Snippets
 
-Snippets are managed by `core-snippets` (yasnippet + yasnippet-classic-snippets). Language modules store custom snippets flat under their module directory — no mode-name subdirectory:
+Snippets are managed by `core-snippets` (yasnippet + yasnippet-classic-snippets).
+Language modules store custom snippets flat under their module directory with no mode-name subdirectory:
 
-```
+```text
 modules/prog-go/snippets/func
 modules/prog-go/snippets/iferr
 modules/prog-elixir/snippets/defmodule
