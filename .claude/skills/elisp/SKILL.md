@@ -82,6 +82,38 @@ Never write code that relies on dynamic binding unless explicitly required (e.g.
 - Multiple `use-package` blocks for the same package accumulate and are idiomatic.
 - Hooks in `:hook` must reference named functions (see Function design above).
 
+### use-package formatting
+
+Keyword keywords (`:hook`, `:mode`, `:init`, `:config`, `:bind`, `:custom`, etc.) must align at column 2 (two spaces from the opening paren). Nested elements inside keywords align to the keyword's content start:
+
+```elisp
+(use-package foo
+  :init
+  (setq foo t)
+  :mode (("\\.foo\\'" . foo-mode))
+  :hook ((foo-mode . my-pkg-foo-mode-hook)
+         (foo-mode . visual-line-mode))
+  :bind (("C-c f" . foo-command)))
+```
+
+Bad (misaligned keywords):
+```elisp
+(use-package foo
+:init
+(setq foo t)
+:hook ((foo-mode . fn))
+```
+
+**Always verify alignment after editing use-package blocks.**
+
+## Buffer-wide formatting
+
+After making any edit to an Elisp file, run `M-x elisp-format-buffer` or format the buffer using `indent-region` (`C-M-\`) to ensure consistent indentation throughout the entire file. Do not assume that unedited sections remain correctly formatted — the agent's edits may have introduced or exposed misalignment.
+
+Before declaring an edit complete, verify:
+1. The edited region is properly aligned per the rules above
+2. No other sections in the buffer have become misaligned as a side effect
+
 ## Comments and docstrings
 
 - Docstrings begin with an imperative, terse, complete sentence: `"Return the project root."` not `"Returns..."`.
