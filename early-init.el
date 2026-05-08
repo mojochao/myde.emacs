@@ -1,6 +1,19 @@
 ;;; early-init.el --- Emacs early initialization -*- no-byte-compile: t; lexical-binding: t; -*-
 
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.emacs
+;; Keywords: convenience, configuration
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
 ;;; Commentary:
+
 ;; Loaded before init.el and before Emacs startup.el creates directories.
 ;; This file is the highest-leverage place to optimize startup: runs before
 ;; the GUI initializes and before package loading begins.
@@ -36,7 +49,7 @@
   "Restore `file-name-handler-alist' after init."
   (setq file-name-handler-alist
         (delete-dups (append file-name-handler-alist
-                            myde--file-name-handler-alist))))
+                             myde--file-name-handler-alist))))
 
 (add-hook 'emacs-startup-hook #'myde--restore-file-name-handler-alist 104)
 
