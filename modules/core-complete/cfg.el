@@ -54,7 +54,6 @@
 (use-package consult  ;; https://github.com/minad/consult
   :bind (("C-s"     . consult-line)
          ("C-x b"   . consult-buffer)
-         ("C-x C-b" . consult-buffer)
          ("M-y"     . consult-yank-pop))
   :ensure t)
 
