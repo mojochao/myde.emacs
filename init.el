@@ -42,8 +42,10 @@
 
 ;;;; Initialize MyDE modules
 
+;; Start by loading the modules support library.
 (load-file (expand-file-name "modules.el" user-emacs-directory))
 
+;; Next, define the modules to be available for loading.
 (defconst myde-modules
   (list
    ;; Core functionality ------------------------------------------------
@@ -51,14 +53,14 @@
    (myde/m "core-ui"          "Editor UI: theme, fonts, modeline, and frame appearance, etc.")
    (myde/m "core-ux"          "Editor UX: minibuffer, navigation, window management, etc.")
    (myde/m "core-org"         "Org-mode authoring, agenda, and capture templates.")
-   (myde/m "core-help"        "Discoverability: which-key, helpful, embark.")
-   (myde/m "core-terminals"   "Terminal emulators (vterm, eat).")
+   (myde/m "core-help"        "Help and documentation support.")
+   (myde/m "core-terminals"   "Terminal emulators.")
    (myde/m "core-dashboard"   "Startup dashboard.")
    (myde/m "core-complete"    "Completion support.")
    (myde/m "core-notes"       "Notes support.")
    (myde/m "core-snippets"    "Snippets support.")
    (myde/m "core-projects"    "Project management support.")
-   (myde/m "core-spell"       "Spell checking (jinx / ispell) support.")
+   (myde/m "core-spell"       "Spell check support.")
    ;; AI tools ----------------------------------------------------------
    (myde/m "ai-base"          "Shared AI configuration.")
    (myde/m "ai-gptel"         "Gptel chat client integration.")
@@ -70,12 +72,15 @@
    ;; Data formats ------------------------------------------------------
    (myde/m "data-csv"         "CSV editing.")
    (myde/m "data-json"        "JSON editing.")
-   (myde/m "data-terraform"   "Terraform / HCL editing.")
+   (myde/m "data-terraform"   "Terraform editing.")
    (myde/m "data-toml"        "TOML editing.")
    (myde/m "data-xml"         "XML editing.")
    (myde/m "data-yaml"        "YAML editing.")
    ;; Programming languages --------------------------------------------
-   (myde/m "prog-base"        "Shared prog-mode infrastructure (eglot, dape, treesit).")
+   (myde/m "prog-base"        "Base shared programming language support.")
+   (myde/m "prog-bash"        "Bash shell scripting.")
+   (myde/m "prog-fish"        "Fish shell scripting.")
+   (myde/m "prog-nushell"     "Nu shell scripting.")
    (myde/m "prog-elisp"       "Emacs Lisp IDE.")
    (myde/m "prog-clisp"       "Common Lisp IDE (SLY/SLIME).")
    (myde/m "prog-scheme"      "Scheme IDE (Geiser).")
@@ -91,10 +96,6 @@
    (myde/m "prog-lua"         "Lua IDE.")
    (myde/m "prog-javascript"  "JavaScript IDE.")
    (myde/m "prog-typescript"  "TypeScript IDE.")
-   ;; Shell languages ---------------------------------------------------
-   (myde/m "prog-bash"        "Bash shell scripting.")
-   (myde/m "prog-fish"        "Fish shell scripting.")
-   (myde/m "prog-nushell"     "Nu shell scripting.")
    ;; Text formats ------------------------------------------------------
    (myde/m "text-base"        "Shared text-mode infrastructure.")
    (myde/m "text-asciidoc"    "AsciiDoc document authoring environment.")
@@ -103,7 +104,10 @@
    (myde/m "ebook-epub"       "EPUB ebook reading environment.")
    (myde/m "ebook-pdf"        "PDF ebook reading environment.")))
 
+;; Next, generate the customize config for enabling the modules defined above.
 (myde-customize myde-modules)
+
+;; Finally, initialize the config using the modules defined above.
 (myde-initialize myde-modules)
 
 ;;;; Start server as needed.
