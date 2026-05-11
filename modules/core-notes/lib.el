@@ -20,8 +20,23 @@
 ;;; Code:
 
 
-(defvar myde-denote-directory "~/org/notes/"
+(require 'myde-core-org)
+
+(defvar myde-denote-directory myde-org-notes-directory
   "Root directory for denote notes.")
+
+(defun myde-denote-capture-from-protocol ()
+  "Wrap `denote-org-capture' seeding the title from the org-protocol payload.
+Reads `:description' (falling back to `:title') from
+`org-store-link-plist' so the capture flow does not re-prompt the user
+for a title when invoked from a browser bookmarklet."
+  (let ((title (or (plist-get org-store-link-plist :description)
+                   (plist-get org-store-link-plist :title))))
+    (when (and (boundp 'denote-use-title)
+               (stringp title)
+               (not (string-empty-p title)))
+      (setq denote-use-title title))
+    (denote-org-capture)))
 
 (provide 'myde-core-notes)
 ;;; lib.el ends here

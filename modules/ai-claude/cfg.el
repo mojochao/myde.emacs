@@ -16,7 +16,8 @@
 ;;; Entry point for the ai-claude module; loads lib.el automatically.
 ;;;
 ;;; claude-code-ide provides an Emacs interface to the Claude Code CLI.
-;;; The transient dispatch menu is bound to C-c c.
+;;; The transient dispatch menu is bound to C-c C (capital C), leaving
+;;; C-c c free for `org-capture' (the canonical Org keybinding).
 ;;; claude-code-ide-emacs-tools-setup registers Emacs-side MCP tool handlers.
 ;;; Installed from git via :vc — not available on MELPA.
 
@@ -32,7 +33,7 @@
 
 (use-package claude-code-ide  ;; https://github.com/manzaltu/claude-code-ide.el
   :bind
-  ("C-c c" . claude-code-ide-menu) ; Set your favorite keybinding
+  ("C-c C" . claude-code-ide-menu)
   :config
   (claude-code-ide-emacs-tools-setup)
   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)

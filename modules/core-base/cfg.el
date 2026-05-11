@@ -148,6 +148,15 @@
   :diminish savehist-mode
   :ensure nil)
 
+;; Bookmarks (`M-x bookmark-set' et al.) — `bookmark-default-file' defaults
+;; to <user-emacs-directory>/bookmarks, which lands in the repo root since
+;; ~/.config/emacs is symlinked there.  Redirect to XDG state.
+(use-package bookmark
+  :init
+  (setq bookmark-default-file
+        (expand-file-name "emacs/bookmarks" (xdg-state-home)))
+  :ensure nil)
+
 ;; Transient menus and popups — XDG-compliant persistence paths.
 (use-package transient
   :init

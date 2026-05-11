@@ -51,5 +51,35 @@
      "raft"))
   :ensure t)
 
+;; -----------------------------------------------------------------------------
+;; Denote-backed org-capture templates
+;; -----------------------------------------------------------------------------
+;; Appends `n' (plain denote note) and `N' (note from web via org-protocol)
+;; to the org-capture templates list defined by core-org.  Lives here so
+;; core-org does not take a hard dependency on denote.
+
+(use-package org-capture
+  :after (org denote)
+  :config
+  (add-to-list 'org-capture-templates
+               '("n" "Note (denote)" plain
+                 (function denote-org-capture)
+                 nil
+                 :no-save t
+                 :immediate-finish nil
+                 :kill-buffer t
+                 :jump-to-captured t)
+               t)
+  (add-to-list 'org-capture-templates
+               '("N" "Note from web (org-protocol)" plain
+                 (function myde-denote-capture-from-protocol)
+                 "Source: %:link\n\n%i\n%?"
+                 :no-save nil
+                 :immediate-finish nil
+                 :kill-buffer t
+                 :jump-to-captured t)
+               t)
+  :ensure nil)
+
 (provide 'myde-core-notes-cfg)
 ;;; cfg.el ends here
