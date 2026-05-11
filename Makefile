@@ -20,6 +20,9 @@ ROOT_DIR ?= $(shell git rev-parse --show-toplevel)
 # Emacs init directory symlink destination.
 EMACS_DIR ?= $(HOME)/.config/emacs
 
+# XDG applications directory for desktop file installation.
+XDG_APPS_DIR ?= $(HOME)/.local/share/applications
+
 # ==============================================================================
 # Build targets
 # ==============================================================================
@@ -57,3 +60,17 @@ link: ## Symlink MyDE in emacs init directory
 unlink: ## Unlink MyDE in emacs init directory
 	@echo 'unlinking config in $(EMACS_DIR)'
 	unlink $(EMACS_DIR)
+
+##@ XDG integration targets
+
+.PHONY: install-xdg
+install-xdg: ## Install XDG desktop files (registers org-protocol:// URI handler)
+	@echo 'installing XDG desktop files to $(XDG_APPS_DIR)'
+	install -Dm644 $(ROOT_DIR)/etc/org-protocol.desktop $(XDG_APPS_DIR)/org-protocol.desktop
+	update-desktop-database $(XDG_APPS_DIR)
+
+.PHONY: uninstall-xdg
+uninstall-xdg: ## Remove XDG desktop files
+	@echo 'removing XDG desktop files from $(XDG_APPS_DIR)'
+	rm -f $(XDG_APPS_DIR)/org-protocol.desktop
+	update-desktop-database $(XDG_APPS_DIR)
