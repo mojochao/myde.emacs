@@ -16,10 +16,10 @@
 ;;; Package configuration for the startup dashboard.
 ;;; Entry point for the core-dashboard module; loads lib.el automatically.
 ;;;
-;;; Depends on: core-base (recentf data), core-projects (projectile backend)
+;;; Depends on: core-base (recentf data), core-projects (project.el backend)
 ;;;
 ;;; dashboard displays five items each from: recent files (recentf), known
-;;; projects (projectile), bookmarks, and org agenda.  Uses nerd-icons for
+;;; projects (project.el), bookmarks, and org agenda.  Uses nerd-icons for
 ;;; file and heading icons.  Custom banner images are defined in lib.el.
 
 
@@ -42,7 +42,7 @@
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
   :custom
-  (dashboard-projects-backend 'projectile)
+  (dashboard-projects-backend 'project-el)
   (dashboard-items '((recents   . 5)
                      (projects  . 5)
                      (bookmarks . 5)

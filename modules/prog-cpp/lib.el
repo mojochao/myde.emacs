@@ -50,8 +50,9 @@
 (defun myde-cpp-dape-binary ()
   "Prompt for the C++ debug binary, defaulting to the project build/ directory."
   (read-file-name "Binary: "
-                  (expand-file-name "build/" (or (projectile-project-root)
-                                                  default-directory))))
+                  (expand-file-name "build/" (or (when-let ((proj (project-current)))
+                                                   (project-root proj))
+                                                 default-directory))))
 
 (provide 'myde-prog-cpp)
 ;;; lib.el ends here

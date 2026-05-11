@@ -20,8 +20,7 @@
 ;;; the frameworks configured here — only shared settings and keybindings live here.
 ;;;
 ;;; Configures:
-;;;   projectile + project.el — project discovery and navigation (C-c p / s-p)
-;;;   rg                      — ripgrep integration for projectile-ripgrep
+;;;   project.el — project discovery and navigation (C-c p / s-p / C-x p)
 ;;;   neotree                 — file-tree sidebar toggled with F8
 ;;;   editorconfig            — project-wide formatting rules from .editorconfig
 ;;;   treesit + treesit-auto  — tree-sitter grammar auto-install for all languages
@@ -42,25 +41,13 @@
 ;; Project management
 ;; -----------------------------------------------------------------------------
 
-(use-package projectile  ;; https://github.com/bbatsov/projectile
-  :hook (after-init . projectile-mode)
-  :config
-  (setq projectile-project-search-path '("~/Projects/"))
-  (setq projectile-known-projects-file
-        (expand-file-name "emacs/projectile-bookmarks.eld" (xdg-data-home)))
-  :bind (:map projectile-mode-map
-              ("s-p"   . projectile-command-map)
-              ("C-c p" . projectile-command-map))
-  :diminish projectile-mode
-  :ensure t)
-
-;; ripgrep integration for projectile-ripgrep
-(use-package rg  ;; https://github.com/dajva/rg.el
-  :after projectile
-  :ensure t)
-
 ;; Built-in project management
 (use-package project
+  :config
+  (keymap-global-set "C-c p" project-prefix-map)
+  (keymap-global-set "s-p" project-prefix-map)
+  (when (file-directory-p (expand-file-name "~/Projects/"))
+    (project-remember-projects-under "~/Projects/" t))
   :custom
   (project-list-file
    (expand-file-name "emacs/projects.eld" (xdg-state-home)))
@@ -84,8 +71,7 @@
   (declare-function nerd-icons-icon-for-file "nerd-icons" (file &rest _))
   (declare-function nerd-icons-icon-for-dir "nerd-icons" (dir &rest _))
   (declare-function nerd-icons-octicon "nerd-icons" (name &rest _))
-  (declare-function linum-mode "linum" (&optional _))
-  (declare-function projectile-project-buffers "projectile" ()))
+  (declare-function linum-mode "linum" (&optional _)))
 
 ;; -----------------------------------------------------------------------------
 ;; Project tree explorer

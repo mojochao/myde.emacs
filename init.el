@@ -87,7 +87,7 @@
    (myde/m "prog-clojure"     "Clojure IDE (CIDER).")
    (myde/m "prog-erlang"      "Erlang IDE.")
    (myde/m "prog-elixir"      "Elixir IDE.")
-   (myde/m "prog-cpp"         "C / C++ IDE.")
+   (myde/m "prog-cpp"         "C/C++ IDE.")
    (myde/m "prog-go"          "Go IDE.")
    (myde/m "prog-rust"        "Rust IDE.")
    (myde/m "prog-zig"         "Zig IDE.")
