@@ -76,6 +76,8 @@
    (myde/m "data-toml"        "TOML editing.")
    (myde/m "data-xml"         "XML editing.")
    (myde/m "data-yaml"        "YAML editing.")
+   ;; Containers --------------------------------------------------------
+   (myde/m "containers-kubernetes" "Kubernetes cluster management (kubed).")
    ;; Programming languages --------------------------------------------
    (myde/m "prog-base"        "Base shared programming language support.")
    (myde/m "prog-bash"        "Bash shell scripting.")
