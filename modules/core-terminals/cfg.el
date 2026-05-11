@@ -45,5 +45,10 @@
   (vterm)
   :ensure t)
 
+(use-package project
+  :config
+  (keymap-set project-prefix-map "t" #'myde/project-vterm)
+  :ensure nil)
+
 (provide 'myde-core-terminals-cfg)
 ;;; cfg.el ends here

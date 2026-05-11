@@ -19,6 +19,13 @@
 
 ;;; Code:
 
+(defun myde/project-vterm ()
+  "Open vterm at the current project root."
+  (interactive)
+  (let* ((proj (project-current t))
+         (root (project-root proj))
+         (default-directory root))
+    (vterm (format "*vterm<%s>*" (file-name-nondirectory (directory-file-name root))))))
 
 (provide 'myde-core-terminals)
 ;;; lib.el ends here
