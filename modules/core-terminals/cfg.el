@@ -45,6 +45,12 @@
   (vterm)
   :ensure t)
 
+(use-package eshell
+  :init
+  (setq eshell-directory-name
+        (expand-file-name "emacs/eshell/" (xdg-state-home)))
+  :ensure nil)
+
 (use-package project
   :config
   (keymap-set project-prefix-map "t" #'myde/project-vterm)
