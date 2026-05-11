@@ -24,8 +24,8 @@
 ;;; org-agenda-mode so global-flycheck-mode never turns it on there.
 ;;; Use `M-x org-lint' on demand for the same checks.
 ;;;
-;;; Capture: org-capture (C-c c), org-protocol, and org-agenda (C-c a) are
-;;; configured with templates t/b for tasks and bookmarks.  Templates n/N
+;;; Capture: org-capture (C-c o c), org-protocol, and org-agenda (C-c o a)
+;;; are configured with templates t/b for tasks and bookmarks.  Templates n/N
 ;;; (denote-backed) are appended from core-notes.  Tasks accept optional
 ;;; SCHEDULED:/DEADLINE: planning lines and a :PROJECT: property via the
 ;;; myde-org-capture-{scheduled,deadline,project}-line helpers in lib.el.
@@ -85,7 +85,7 @@
 
 (use-package org-capture
   :after org
-  :bind (("C-c c" . org-capture))
+  :bind (("C-c o c" . org-capture))
   :custom
   (org-capture-templates
    `(("t" "Task" entry
@@ -125,7 +125,7 @@
 
 (use-package org-agenda
   :after org
-  :bind (("C-c a" . org-agenda))
+  :bind (("C-c o a" . org-agenda))
   :custom
   (org-agenda-files
    (delete-dups

@@ -18,7 +18,7 @@
 ;;;
 ;;; Notes are stored in the directory defined by myde-denote-directory (lib.el).
 ;;; Keywords are inferred and sorted automatically.
-;;; Keybindings under C-c n: new (n), link (l), backlinks (b), find/create (f), search (s).
+;;; Keybindings under C-c o n: new (n), link (l), backlinks (b), find/create (f), search (s).
 
 
 ;;; Code:
@@ -32,11 +32,11 @@
 
 (use-package denote  ;; https://protesilaos.com/emacs/denote
   :bind
-  (("C-c n n" . denote)
-   ("C-c n l" . denote-link)
-   ("C-c n b" . denote-backlinks)
-   ("C-c n f" . denote-open-or-create)
-   ("C-c n s" . denote-search))
+  (("C-c o n n" . denote)
+   ("C-c o n l" . denote-link)
+   ("C-c o n b" . denote-backlinks)
+   ("C-c o n f" . denote-open-or-create)
+   ("C-c o n s" . denote-search))
   :custom
   (denote-directory myde-denote-directory)
   (denote-infer-keywords t)
