@@ -29,6 +29,13 @@
 (window-divider-mode)
 (winner-mode)
 
+;; Clear informational startup noise from the echo area after all hooks run.
+;; emacs-startup-hook fires after after-init-hook, so this erases whatever
+;; informational message (e.g. yasnippet JIT-loading notice) was last written.
+(defun myde/clear-echo-area ()
+  "Clear the echo area / minibuffer after startup."
+  (message nil))
+
 ;; Visual bell instead of audible bell
 (defun myde-flash-mode-line ()
   (invert-face 'mode-line)

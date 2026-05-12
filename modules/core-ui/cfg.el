@@ -30,6 +30,9 @@
 (unless (featurep 'myde-core-ui)
   (load-file (expand-file-name "lib.el" (file-name-directory load-file-name))))
 
+;; Clear echo area after all startup hooks have run (removes last info message).
+(add-hook 'emacs-startup-hook #'myde/clear-echo-area)
+
 ;; Disable startup splash screen and initial scratch message
 (setq inhibit-startup-message t
       inhibit-startup-echo-area-message t
