@@ -127,10 +127,7 @@
   :after org
   :bind (("C-c o a" . org-agenda))
   :custom
-  (org-agenda-files
-   (delete-dups
-    (cons myde-org-tasks-file
-          (myde-find-org-agenda-files))))
+  (org-agenda-files (list myde-org-tasks-file))
   (org-refile-targets '((org-agenda-files :maxlevel . 3)))
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)

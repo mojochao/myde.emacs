@@ -47,6 +47,7 @@
                      (projects  . 5)
                      (bookmarks . 5)
                      (agenda    . 5)))
+  (dashboard-agenda-release-buffers t)
   :ensure t)
 
 (provide 'myde-core-dashboard-cfg)
