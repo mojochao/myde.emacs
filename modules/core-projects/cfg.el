@@ -61,13 +61,9 @@
 
 ;; Declare optional functions referenced by neotree to suppress native compiler warnings
 (eval-when-compile
-  (defvar all-the-icons-icon-for-file nil)
-  (defvar all-the-icons-icon-for-dir-with-chevron nil)
   (defvar nerd-icons-icon-for-file nil)
   (defvar nerd-icons-icon-for-dir nil)
   (defvar nerd-icons-octicon nil)
-  (declare-function all-the-icons-icon-for-file "all-the-icons" (file &rest _))
-  (declare-function all-the-icons-icon-for-dir-with-chevron "all-the-icons" (dir &rest _))
   (declare-function nerd-icons-icon-for-file "nerd-icons" (file &rest _))
   (declare-function nerd-icons-icon-for-dir "nerd-icons" (dir &rest _))
   (declare-function nerd-icons-octicon "nerd-icons" (name &rest _))
@@ -78,11 +74,13 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package neotree  ;; https://github.com/jaypei/emacs-neotree
+  :after nerd-icons
   :bind ([f8] . myde-neotree-project-root-toggle)
   :commands (neotree-toggle)
   :config
-  (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+  (setq neo-theme (if (display-graphic-p) 'nerd-icons 'arrow))
   (setq neo-window-fixed-size nil)
+  (setq neo-show-hidden-files t)
   (add-to-list 'window-size-change-functions #'myde-neotree-window-size-change-function)
   (add-hook 'after-save-hook        #'myde-neotree-refresh)
   (add-hook 'after-delete-file-hook #'myde-neotree-refresh)

@@ -19,7 +19,7 @@
 ;;   - menubar hidden in TUI and in GUI on non-macOS systems
 ;;   - Active theme: batppuccin-frappe; additional themes deferred on demand
 ;;   - auto-dark on Linux for automatic light/dark switching with batppuccin
-;;   - nerd-icons (universal) and all-the-icons (GUI only) for icon support
+;;   - nerd-icons for icon support
 ;;   - show-font for font preview (C-c s f preview, C-c s t tabulated)
 ;;   - spacious-padding for comfortable UI spacing
 ;;   - diminish to suppress minor-mode lighters in the modeline
@@ -91,10 +91,6 @@
   :ensure t)
 
 ;; Icons support
-(use-package all-the-icons  ;; https://github.com/domtronn/all-the-icons.el
-  :if (display-graphic-p)
-  :ensure t)
-
 (use-package nerd-icons  ;; https://github.com/rainstormstudio/nerd-icons.el
   :ensure t)
 
@@ -122,8 +118,7 @@
   (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   :config
   (doom-themes-visual-bell-config)  ;; Enable flashing mode-line on errors
-  (doom-themes-neotree-config)      ;; Enable custom neotree theme (nerd-icons must be installed!)
-  (doom-themes-treemacs-config)     ;; or for treemacs users
+  (doom-themes-treemacs-config)
   (doom-themes-org-config)          ;; Corrects (and improves) org-mode's native fontification.
   :ensure t)
 
