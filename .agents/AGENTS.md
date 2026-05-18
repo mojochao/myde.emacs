@@ -148,6 +148,36 @@ check whether `package-install-upgrade-built-in` is `t` and whether the package 
 built-in — that combination causes a reinstall loop. The fix is either to pin the package
 to `"builtin"` (if unwanted) or to set the flag to `nil` (preferred).
 
+#### VC package upgrade behavior
+
+**`package--upgradeable-packages` in Emacs 30 unconditionally marks all `kind=vc`
+packages as upgradeable**, regardless of `:rev` setting. This means packages installed
+via `:vc :ensure t` will always appear in `package-upgrade-all` output, even when
+already at the remote HEAD. Pinning `:rev` to a specific commit hash has no effect
+on this code path.
+
+The fix is a `:filter-return` advice on `package--upgradeable-packages` defined in
+`core-base/lib.el` (`myde/filter-git-only-vc-packages`) and wired in `core-base/cfg.el`
+immediately after `package-initialize`. It removes VC packages that have no
+`package-archive-contents` entry — i.e., packages that exist only on git and not on
+MELPA/ELPA. If a git-only package later appears on MELPA with a genuinely newer version,
+the advice passes it through normally.
+
+**Corollary:** if a VC-installed package is also on MELPA, do not use `:vc` — install
+it from MELPA instead so it gets normal archive-based upgrade tracking. Switching
+requires:
+1. Removing `:vc` from the `use-package` declaration
+2. Deleting the VC-installed copy: `M-x package-delete`
+3. Reinstalling from MELPA: `M-x package-install`
+4. Removing the entry from `package-vc-selected-packages` in both `custom.el` and
+   in-memory via `(customize-save-variable 'package-vc-selected-packages ...)`
+
+**`custom.el` is the authoritative source for `package-vc-selected-packages`.**
+`use-package` `:vc` declarations do not update `custom.el` when the package is already
+installed — `package-vc-install` is idempotent and skips if the package directory
+exists. Any `:rev` change in a cfg.el file must also be applied manually to the
+corresponding entry in `custom.el` to take effect.
+
 #### Version-conditional archive pinning
 
 Some built-in packages have MELPA versions with `compat` requirements that differ between

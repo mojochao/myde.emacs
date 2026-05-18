@@ -78,6 +78,8 @@
 ;; archive.
 (setq package-install-upgrade-built-in nil)
 (package-initialize)
+(advice-add 'package--upgradeable-packages :filter-return
+            #'myde/filter-git-only-vc-packages)
 ;; Refresh package archives only on first run (empty package-user-dir).
 ;; Avoids blocking startup once packages are installed.
 (unless (file-exists-p package-user-dir)

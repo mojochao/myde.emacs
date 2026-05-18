@@ -68,5 +68,15 @@ interactive entry point."
                                   (mapcar #'car treesit-language-source-alist)))))
   (treesit-install-language-grammar lang))
 
+(defun myde/filter-git-only-vc-packages (upgradeable)
+  "Remove VC-installed packages with no archive entry from UPGRADEABLE.
+`package--upgradeable-packages' unconditionally marks all kind=vc packages
+as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
+  (seq-remove (lambda (name)
+                (when-let ((pkg (cadr (assq name package-alist))))
+                  (and (package-vc-p pkg)
+                       (null (assq name package-archive-contents)))))
+              upgradeable))
+
 (provide 'myde-core-base)
 ;;; lib.el ends here
