@@ -81,7 +81,6 @@
   :ensure t)
 
 (use-package gotest-ts  ;; https://github.com/chmouel/gotest-ts.el
-  :vc (:url "https://github.com/chmouel/gotest-ts.el" :rev :newest)
   :after go-mode
   :hook (go-ts-mode . gotest-ts-setup)
   :bind (:map go-ts-mode-map
