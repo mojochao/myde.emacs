@@ -119,7 +119,7 @@
               ("C-c i b" . elixir-iex-send-buffer)
               ("C-c i m" . elixir-iex-reload-module)
               ("C-c i s" . elixir-iex-set-repl))
-  :ensure nil)
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Linting
