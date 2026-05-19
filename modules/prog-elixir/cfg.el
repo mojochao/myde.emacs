@@ -109,7 +109,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package elixir-iex  ;; https://github.com/mojochao/elixir-iex
-  :after (elixir-ts-mode eat)
+  :after elixir-ts-mode
   :hook (elixir-ts-mode . elixir-iex-minor-mode)
   :bind (:map elixir-iex-minor-mode-map
               ("C-c i i" . elixir-iex)

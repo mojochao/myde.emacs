@@ -74,12 +74,20 @@
 
 (use-package corfu  ;; https://github.com/minad/corfu
   :hook (after-init . global-corfu-mode)
+  :custom
+  (corfu-auto t)          ;; show popup automatically as you type
+  (corfu-auto-delay 0.2)  ;; seconds before popup appears
+  (corfu-auto-prefix 2)   ;; minimum prefix length to trigger auto-completion
+  (tab-always-indent 'complete)  ;; TAB indents; if already indented, completes
   :config
   (corfu-popupinfo-mode)
   :diminish corfu-mode
   :ensure t)
 
 (use-package nerd-icons-corfu  ;; https://github.com/LuigiPiucco/nerd-icons-corfu
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
   :ensure t)
 
 (provide 'myde-core-complete-cfg)
