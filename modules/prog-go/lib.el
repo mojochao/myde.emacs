@@ -19,6 +19,8 @@
 
 ;;; Code:
 
+(defvar myde-go-tab-width 2
+  "Tab width for Go buffers.")
 
 (defun myde-go-ts-or-plain-mode ()
   "Use `go-ts-mode' if tree-sitter is available, otherwise fall back to `go-mode'."
@@ -26,9 +28,9 @@
       (go-ts-mode)
     (go-mode)))
 
-(defun myde-go-ts-mode-setup ()
-  "Set buffer-local settings for go-ts-mode buffers."
-  (setq-local tab-width 4
+(defun myde-go-mode-setup ()
+  "Set buffer-local settings for Go buffers."
+  (setq-local tab-width myde-go-tab-width
               indent-tabs-mode t
               fill-column 100
               compile-command "go test ./..."))

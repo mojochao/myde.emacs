@@ -72,10 +72,12 @@
 
 (use-package go-mode  ;; https://github.com/dominikh/go-mode.el
   :custom
-  (go-ts-mode-indent-offset 4)
+  (go-ts-mode-indent-offset myde-go-tab-width)
   :hook
-  ((go-ts-mode . myde-go-ts-mode-setup)
-   (go-ts-mode . myde-go-format-on-save-setup))
+  ((go-ts-mode . myde-go-mode-setup)
+   (go-ts-mode . myde-go-format-on-save-setup)
+   (go-mode    . myde-go-mode-setup)
+   (go-mode    . myde-go-format-on-save-setup))
   :mode
   (("\\.go\\'" . myde-go-ts-or-plain-mode))
   :ensure t)
