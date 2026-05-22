@@ -29,7 +29,8 @@
 ;;;   dotenv-mode             — .env and .envrc file editing
 ;;;   mason + mise            — tool and runtime version management
 ;;;   dap-mode + dape         — DAP debugger with shared C-c d keybindings
-;;;   magit + forge + git-modes — Git and GitHub/GitLab workflow
+;;;   magit + forge + git-modes — Git and GitHub/GitLab workflow (C-c g prefix)
+;;;   diff-hl + blamer          — Git gutter and inline blame (C-c g prefix)
 
 
 ;;; Code:
@@ -183,8 +184,7 @@
 (use-package dap-mode  ;; https://github.com/emacs-lsp/dap-mode
   :after (transient eglot)
   :custom
-  (dap-breakpoints-file
-   (expand-file-name "emacs/.dap-breakpoints" (xdg-state-home)))
+  (dap-breakpoints-file (expand-file-name "emacs/.dap-breakpoints" (xdg-state-home)))
   :config
   (dap-auto-configure-mode)  ;; Language-specific DAP adapters are loaded by each language module in myde-prog-*/ module dirs.
   :ensure t)
@@ -206,11 +206,12 @@
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
-;; Git version control setup
+;; Git version control setup (C-c g prefix)
 ;; -----------------------------------------------------------------------------
 
 (use-package magit  ;; https://github.com/magit/magit
   :after transient
+  :bind (("C-c g s" . magit-status))
   :commands (magit-status)
   :ensure t)
 
@@ -229,6 +230,17 @@
   :config
   (add-hook 'magit-pre-refresh-hook  #'diff-hl-magit-pre-refresh)
   (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)
+  :ensure t)
+
+(use-package blamer
+  :bind (("C-c g b" . blamer-mode))
+  :config
+  (setq blamer-idle-time 0.05)
+  (setq blamer-author-formatter "%s ")
+  (setq blamer-datetime-formatter "[%s]")
+  (setq blamer-commit-formatter ": %s")
+  (setq blamer-max-commit-message-length 100)
+  (setq blamer-min-offset 70)
   :ensure t)
 
 (provide 'myde-core-projects-cfg)
