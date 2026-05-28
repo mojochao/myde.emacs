@@ -65,6 +65,7 @@
 
 ;; Global keyboard remap
 (global-set-key [remap keyboard-quit] #'myde-keyboard-quit)
+(global-set-key (kbd "M-Z") #'zap-up-to-char)
 
 ;; Expand/contract region with semantic awareness
 (use-package expreg  ;; https://github.com/casouri/expreg
