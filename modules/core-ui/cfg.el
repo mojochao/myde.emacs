@@ -61,8 +61,8 @@
 ;; Enable display of column numbers in buffer modeline
 (setq column-number-mode t)
 
-;; Show full file path (or default-directory for non-file buffers) in frame title
-(setq frame-title-format '("%b — " (:eval (or buffer-file-name default-directory))))
+;; Show project-relative path in frame title when in a project, full path otherwise
+(setq frame-title-format '(:eval (myde/frame-title)))
 
 ;; Hide or shorten minor-mode lighters that convey no real-time information
 (use-package diminish

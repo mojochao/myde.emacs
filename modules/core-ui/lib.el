@@ -43,5 +43,15 @@
 (setq visible-bell nil
       ring-bell-function 'myde-flash-mode-line)
 
+(defun myde/frame-title ()
+  "Return a frame title string.
+In a project: '<project> - <relative/path/to/file>'.
+Outside a project: full path, or buffer name for non-file buffers."
+  (if-let ((proj (project-current))
+           (file buffer-file-name))
+      (concat (project-name proj) " - "
+              (file-relative-name file (project-root proj)))
+    (or buffer-file-name (buffer-name))))
+
 (provide 'myde-core-ui)
 ;;; lib.el ends here
