@@ -44,20 +44,14 @@
 
 ;; Built-in project management
 (use-package project
-  :custom
-  (frame-title-format '((:eval (myde--project-frame-title))))
-  (project-list-file
-   (expand-file-name "emacs/projects.eld" (xdg-state-home)))
   :config
-  (add-hook 'project-find-functions #'myde/project-try-override-dir)
-  (advice-add 'project-switch-project :around #'myde/project-switch-to-frame-advice)
-  (advice-add 'buffer-list :around #'myde/project-buffer-list-advice)
-  (when (boundp 'ns-use-proxy-icon)
-    (setq ns-use-proxy-icon nil))
   (keymap-global-set "C-c p" project-prefix-map)
   (keymap-global-set "s-p" project-prefix-map)
   (when (file-directory-p (expand-file-name "~/Projects/"))
     (project-remember-projects-under "~/Projects/" t))
+  :custom
+  (project-list-file
+   (expand-file-name "emacs/projects.eld" (xdg-state-home)))
   :ensure nil)
 
 ;; EditorConfig support for project-wide formatting rules
