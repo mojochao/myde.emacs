@@ -85,12 +85,17 @@
 ;; (tool-bar-mode, menu-bar-mode, scroll-bar-mode all trigger redraws).
 ;; We use default-frame-alist to set these once and avoid redundant calls.
 (setq default-frame-alist
-      '((menu-bar-lines . 0)      ; disable menu bar
+      `((menu-bar-lines . 0)      ; disable menu bar
         (tool-bar-lines . 0)      ; disable tool bar
         (vertical-scroll-bars)    ; disable scroll bars
         (horizontal-scroll-bars)
         (width  . 120)            ; set initial frame width (columns)
-        (height . 50)))           ; set initial frame height (rows)
+        (height . 50)             ; set initial frame height (rows)
+        ,@(when (eq system-type 'darwin)
+            '((ns-use-proxy-icon . nil)))))
+
+(when (eq system-type 'darwin)
+  (setq ns-use-proxy-icon nil))
 
 ;;;; Early frame optimization
 
