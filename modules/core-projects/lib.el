@@ -44,7 +44,9 @@ any existing entry for SERVER-KEY without clobbering other languages."
   "Refresh neotree if visible."
   (when (and (fboundp 'neo-global--window-exists-p)
              (neo-global--window-exists-p))
-    (neo-buffer--refresh)))
+    (save-selected-window
+      (save-excursion
+        (neo-buffer--refresh t)))))
 
 (defun myde-neotree-window-size-change-function (frame)
   "Sync `neo-window-width' when FRAME is resized."
