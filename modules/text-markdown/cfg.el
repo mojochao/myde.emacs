@@ -59,7 +59,6 @@
   :hook ((markdown-mode . myde-markdown-mode-setup)
          (markdown-mode . visual-line-mode)
          (markdown-mode . visual-wrap-prefix-mode)
-         (markdown-mode . visual-fill-column-mode)
          (markdown-mode . myde-delete-trailing-whitespace-setup))
   :bind (:map markdown-mode-map
               ;; Free C-c C-e (markdown-do) to use as an export prefix.

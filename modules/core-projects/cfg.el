@@ -211,7 +211,6 @@
 
 (use-package magit  ;; https://github.com/magit/magit
   :after transient
-  :bind (("C-c g s" . magit-status))
   :commands (magit-status)
   :ensure t)
 
