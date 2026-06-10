@@ -12,3 +12,6 @@ elpa/
 
 # macos finder junk
 .DS_Store
+
+# babysitter artifacts
+.a5c/
