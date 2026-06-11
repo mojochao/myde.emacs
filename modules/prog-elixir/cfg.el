@@ -22,7 +22,7 @@
 ;;; Configures:
 ;;;   elixir-ts-mode + heex-ts-mode — tree-sitter modes for .ex/.exs/.heex files
 ;;;   eglot + elixir-ls             — LSP (completions, types, code actions)
-;;;   dap-mode dap-elixir           — DAP debugging adapter
+;;;   dape + elixir-ls              — DAP debugging adapter (mix tasks & .exs scripts)
 ;;;   exunit                        — ExUnit test runner (C-c t prefix)
 ;;;   elixir-iex                    — IEx REPL via eat (C-c i prefix)
 ;;;   mix                           — Mix task dispatch minor mode
@@ -61,14 +61,136 @@
                '(heex-ts-mode . (lambda (dir) (myde-mise-exec-which dir "elixir-ls"))))
   :ensure nil)
 
+
+
 ;; -----------------------------------------------------------------------------
-;; DAP debugger (Elixir adapter loaded from dap-mode)
+;; Debugging via dape + elixir-ls
+;;
+;; ElixirLS includes a DAP debug adapter that supports Mix tasks, breakpoints,
+;; variable inspection, and stack traces. The debug adapter automatically
+;; interprets all modules in the Mix project and dependencies.
+;;
+;; For debugging tests, use the 'elixir-mix-test' configuration which includes
+;; required test files.
 ;; -----------------------------------------------------------------------------
 
-(use-package dap-mode
+(use-package dape
   :after transient
   :config
-  (require 'dap-elixir)
+  ;; Default mix task configuration
+  (add-to-list 'dape-configs
+               '(elixir-debug
+                 modes (elixir-ts-mode heex-ts-mode)
+                 ensure (lambda (config)
+                          (if (executable-find "elixir-ls")
+                              t
+                            (message "elixir-ls not found on PATH")
+                            nil))
+                 command "elixir-ls"
+                 :type "mix_task"
+                 :request "launch"
+                 :task "run"
+                 :projectDir dape-buffer-default
+                 :startApps t
+                 :debugAutoInterpretAllModules t
+                 :exitAfterTaskReturns t
+                 :breakOnDbg t))
+
+  ;; Mix test configuration
+  (add-to-list 'dape-configs
+               '(elixir-mix-test
+                 modes (elixir-ts-mode)
+                 ensure (lambda (config)
+                          (if (executable-find "elixir-ls")
+                              t
+                            (message "elixir-ls not found on PATH")
+                            nil))
+                 command "elixir-ls"
+                 :type "mix_task"
+                 :request "launch"
+                 :task "test"
+                 :taskArgs ("--trace")
+                 :projectDir dape-buffer-default
+                 :startApps t
+                 :debugAutoInterpretAllModules t
+                 :requireFiles ("test/**/test_helper.exs" "test/**/*_test.exs")
+                 :exitAfterTaskReturns t
+                 :breakOnDbg t))
+
+  ;; Phoenix server configuration
+  (add-to-list 'dape-configs
+               '(elixir-phoenix
+                 modes (elixir-ts-mode heex-ts-mode)
+                 ensure (lambda (config)
+                          (if (executable-find "elixir-ls")
+                              t
+                            (message "elixir-ls not found on PATH")
+                            nil))
+                 command "elixir-ls"
+                 :type "mix_task"
+                 :request "launch"
+                 :task "phx.server"
+                 :projectDir dape-buffer-default
+                 :startApps t
+                 :debugAutoInterpretAllModules t
+                 :exitAfterTaskReturns nil
+                 :breakOnDbg t))
+
+  ;; Remote debugging configuration
+  (add-to-list 'dape-configs
+               '(elixir-remote
+                 modes (elixir-ts-mode heex-ts-mode)
+                 ensure (lambda (config)
+                          (if (executable-find "elixir-ls")
+                              t
+                            (message "elixir-ls not found on PATH")
+                            nil))
+                 command "elixir-ls"
+                 :type "mix_task"
+                 :request "attach"
+                 :remoteNode "your-node@host"
+                 :projectDir dape-buffer-default))
+
+  ;; .exs script debugging configuration
+  ;;
+  ;; Note: .exs scripts must be structured to work around a race condition:
+  ;; 1. Wrap main logic in a module function
+  ;; 2. Use Task.start with a sleep delay to give the debugger time to interpret
+  ;; 3. Example structure:
+  ;;
+  ;;    defmodule MyScript do
+  ;;      def run do
+  ;;        # Your code here
+  ;;        IO.puts("done")
+  ;;      end
+  ;;    end
+  ;;
+  ;;    Task.start(fn ->
+  ;;      Process.sleep(4000)  ; Give debugger time to interpret
+  ;;      MyScript.run()
+  ;;    end)
+  ;;
+  ;; Alternatively, use Kernel.dbg/2 for simpler debugging without breakpoints.
+  ;; The breakOnDbg setting enables automatic breaking on dbg() calls.
+  (add-to-list 'dape-configs
+               '(elixir-exs-script
+                 modes (elixir-ts-mode)
+                 ensure (lambda (config)
+                          (if (executable-find "elixir-ls")
+                              t
+                            (message "elixir-ls not found on PATH")
+                            nil))
+                 command "elixir-ls"
+                 :type "mix_task"
+                 :request "launch"
+                 :task "run"
+                 :taskArgs ("--no-mix-exs" dape-buffer-default)
+                 :projectDir dape-buffer-default
+                 :requireFiles (dape-buffer-default)
+                 :startApps nil
+                 :debugAutoInterpretAllModules t
+                 :exitAfterTaskReturns nil
+                 :breakOnDbg t))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
