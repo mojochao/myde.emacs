@@ -79,6 +79,10 @@
 ;; Indent guides
 (use-package indent-bars  ;; https://github.com/jdtsmith/indent-bars
   :custom
+  ;; The macOS NS/Cocoa build of Emacs has poor stipple support, rendering the
+  ;; stipple-based bars as solid black blocks. Draw them with the `│' character
+  ;; instead on darwin (no-op in the terminal, which already uses characters).
+  (indent-bars-prefer-character (eq system-type 'darwin))
   (indent-bars-treesit-support t)
   (indent-bars-color '(highlight :face-bg t :blend 0.2))
   (indent-bars-pattern ".")
