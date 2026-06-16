@@ -72,6 +72,7 @@
    ;; Data formats ------------------------------------------------------
    (myde/m "data-csv"         "CSV editing.")
    (myde/m "data-json"        "JSON editing.")
+   (myde/m "data-pkl"         "Pkl editing.")
    (myde/m "data-terraform"   "Terraform editing.")
    (myde/m "data-toml"        "TOML editing.")
    (myde/m "data-xml"         "XML editing.")
