@@ -1,4 +1,4 @@
-;;; cfg.el --- Terraform configuration -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
+;;; cfg.el --- HCL configuration -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
 
@@ -12,29 +12,29 @@
 ;; root for the full text.
 
 ;;; Commentary:
-;;; Terraform, HCL, and OpenTofu editing via terraform-mode.
-;;; Entry point for the data-terraform module; loads lib.el automatically.
+;;; HCL editing (Terraform, OpenTofu) via terraform-mode.
+;;; Entry point for the data-hcl module; loads lib.el automatically.
 ;;;
 ;;; terraform-format-on-save-mode runs `terraform fmt` automatically on save.
 ;;; Activates for .tf, .tfvars, .hcl, and .tofu files.
-;;; myde-treesit-remap-terraform enables tree-sitter parsing when grammars are available.
+;;; myde-treesit-remap-hcl enables tree-sitter parsing when grammars are available.
 
 
 ;;; Code:
 
-(unless (featurep 'myde-data-terraform)
-  (load-file (expand-file-name "modules/data-terraform/lib.el" user-emacs-directory)))
+(unless (featurep 'myde-data-hcl)
+  (load-file (expand-file-name "modules/data-hcl/lib.el" user-emacs-directory)))
 
-;; Terraform mode for .tf, .tfvars, .hcl, and .tofu files
+;; HCL editing for .tf, .tfvars, .hcl, and .tofu files
 (use-package terraform-mode  ;; https://github.com/hcl-emacs/terraform-mode
   :mode ("\\.tf\\'" "\\.tfvars\\'" "\\.hcl\\'" "\\.tofu\\'")
   :hook ((terraform-mode . terraform-format-on-save-mode))
   :config
-  (myde-treesit-remap-terraform)
+  (myde-treesit-remap-hcl)
   :ensure t)
 
 (use-package indent-bars
   :hook (terraform-mode . indent-bars-mode))
 
-(provide 'myde-data-terraform-cfg)
+(provide 'myde-data-hcl-cfg)
 ;;; cfg.el ends here
