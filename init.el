@@ -71,6 +71,7 @@
    (myde/m "auth-1password"   "1Password auth-source integration.")
    ;; Data formats ------------------------------------------------------
    (myde/m "data-csv"         "CSV editing.")
+   (myde/m "data-dotenv"      "Dotenv (.env, .envrc) editing.")
    (myde/m "data-hcl"         "HCL editing (Terraform, OpenTofu).")
    (myde/m "data-json"        "JSON editing.")
    (myde/m "data-pkl"         "Pkl editing.")

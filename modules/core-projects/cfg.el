@@ -26,7 +26,6 @@
 ;;;   treesit + treesit-auto  — tree-sitter grammar auto-install for all languages
 ;;;   eglot                   — LSP client with shared C-c e keybindings
 ;;;   flycheck + flymake      — diagnostics (flycheck global; flymake for eglot, C-c !)
-;;;   dotenv-mode             — .env and .envrc file editing
 ;;;   mason + mise            — tool and runtime version management
 ;;;   dap-mode + dape         — DAP debugger with shared C-c d keybindings
 ;;;   magit + forge + git-modes — Git and GitHub/GitLab workflow (C-c g prefix)
@@ -152,11 +151,6 @@
 ;; -----------------------------------------------------------------------------
 ;; Project specific environment configuration files
 ;; -----------------------------------------------------------------------------
-
-(use-package dotenv-mode
-  :mode (("\\.env\\'" . dotenv-mode)
-         ("\\.envrc\\'" . dotenv-mode))
-  :ensure t)
 
 ;; (use-package direnv  ;; https://github.com/wbolster/emacs-direnv
 ;;   :config
