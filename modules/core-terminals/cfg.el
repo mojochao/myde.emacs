@@ -40,7 +40,10 @@
   (eat)
   :ensure t)
 
-(use-package vterm  ;; https://github.com/akermu/emacs-libvterm
+(use-package ghostel ;; https://github.com/dakra/ghostel
+  :ensure t)
+
+(use-package vterm ;; https://github.com/akermu/emacs-libvterm
   :commands
   (vterm)
   :ensure t)
