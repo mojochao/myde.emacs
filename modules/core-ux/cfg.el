@@ -63,6 +63,9 @@
 ;; Use 'y'/n' instead of 'yes'/'no' for confirmations (Emacs 30+)
 (setq use-short-answers t)
 
+;; Soft delete files.
+(setq delete-by-moving-to-trash t)
+
 ;; Global keyboard remap
 (global-set-key [remap keyboard-quit] #'myde-keyboard-quit)
 (global-set-key (kbd "M-Z") #'zap-up-to-char)
