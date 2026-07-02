@@ -78,5 +78,13 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
                        (null (assq name package-archive-contents)))))
               upgradeable))
 
+(defun de-dosify ()
+  "Remove all Windows/DOS carriage return (^M) characters in the current buffer."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward "\r" nil t)
+      (replace-match ""))))
+
 (provide 'myde-core-base)
 ;;; lib.el ends here
