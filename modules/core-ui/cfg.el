@@ -148,5 +148,11 @@
   (auto-dark-mode t)
   :ensure t)
 
+(use-package modusregel
+  :config
+  (setq-default mode-line-format modusregel-format)
+  :vc (:url "https://codeberg.org/jjba23/modusregel")
+  :ensure t)
+
 (provide 'myde-core-ui-cfg)
 ;;; cfg.el ends here
