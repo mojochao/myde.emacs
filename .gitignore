@@ -15,3 +15,7 @@ elpa/
 
 # babysitter artifacts
 .a5c/
+
+# Emacs artifacts
+agent/
+projects
