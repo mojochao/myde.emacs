@@ -31,15 +31,21 @@ Each was confirmed by batch-evaluating against this machine's Emacs 30.2. Do not
 | 5 | `org-tag-re` is `[[:alnum:]_@#%]+` — excludes `-` and `.` | `#+filetags:` values must be sanitized; **filenames need not be** |
 | 6 | `%^G` completes tags across all agenda files; `%^g` only within the target file | Thought template uses `%^G` |
 | 7 | `(project-name (project-current))` returns nil in the 2 non-VC project dirs, and reports an inner repo in `multi-tenancy/repos/` | Project identity uses path-prefix derivation, not `project.el` |
+| 8 | `byte-compile-file` honors the `no-byte-compile: t` cookie — returns `no-byte-compile`, writes nothing, warns nothing | The compile check must strip the cookie into a scratch copy first |
+| 9 | `%^G` omits its leading colon when the preceding char is already `:` | `:bookmark:%^G` yields `:bookmark:emacs:orgmode:`, not `:bookmark::emacs:` |
+| 10 | Editing `Info.plist` invalidates the ad-hoc signature `osacompile` applies; `codesign -v` then fails | `make install-macos` must re-sign with `codesign --force --sign -` |
+| 11 | `docs/org-protocol-setup.md` documents `template=u`, but only `b` exists | The documented bookmarklet is broken today and must be corrected |
 
 ## File structure
 
 | File | Action | Responsibility |
 |------|--------|----------------|
 | `tests/core-org.el` | **Create** | ERT checks for name derivation, sanitization, template validity |
-| `Makefile` | Modify | Add a `test` target |
+| `Makefile` | Modify | Add `test`, `install-macos`, and `uninstall-macos` targets |
 | `modules/core-org/lib.el` | Rewrite | Directory/file variables, project-name derivation, template generation |
 | `modules/core-org/cfg.el` | Modify | Agenda files/views, TODO keywords, capture templates, keybindings, archive, org-id |
+| `docs/org-protocol-setup.md` | Modify | Correct the broken `template=u` bookmarklet and stale `bookmarks.org` references; replace the manual Automator instructions with `make install-macos` |
+| `AGENTS.md` | Modify | Document the new make targets |
 
 `tests/` is a new top-level directory. It is deliberately **not** inside
 `modules/core-org/`, because `AGENTS.md` specifies that a module contains
@@ -519,7 +525,7 @@ org calls a target file supplied as a function symbol."
 **Files:**
 - Modify: `modules/core-org/cfg.el`
 
-This task has no unit test — it is declarative variable configuration. Task 7
+This task has no unit test — it is declarative variable configuration. Task 8
 verifies it against a live Emacs.
 
 - [ ] **Step 1: Update the commentary header**
@@ -626,10 +632,10 @@ Replace the entire `(use-package org-capture ...)` form with:
         "\n")
       :empty-lines 1)
 
-     ("b" "Bookmark (org-protocol)" entry
+     ("b" "Bookmark, tagged (org-protocol)" entry
       (file+headline ,myde-org-inbox-file "Inbox")
       ,(string-join
-        '("* [[%:link][%:description]]   :bookmark:"
+        '("* [[%:link][%:description]]   :bookmark:%^G"
           "  :PROPERTIES:"
           "  :CREATED: %U"
           "  :END:"
@@ -639,13 +645,18 @@ Replace the entire `(use-package org-capture ...)` form with:
   :ensure nil)
 ```
 
-Two details that are easy to get wrong:
+Three details that are easy to get wrong:
 
 1. Template `T` uses `myde-org-project-target` **unquoted and un-commaed** — it
    must reach org as a bare symbol so org calls it as a function. The other
    templates comma-splice a string path.
 2. `%^G` completes tags across all agenda files. `%^g` would complete only
    within `inbox.org` and is wrong here.
+3. In template `b`, `%^G` follows `:bookmark:` with **no space**. Org's `%^G`
+   handler omits its leading colon when the preceding character is already a
+   colon, so this produces one well-formed tag group. Verified: the template
+   expands to `* [[…][…]]   :bookmark:emacs:orgmode:`, right-aligned by org.
+   Inserting a space would produce a malformed `:bookmark: :emacs:orgmode:`.
 
 The `Schedule this task?` / `Set a deadline?` / `Project` prompts are gone.
 Scheduling is a triage decision made in the agenda with `C-c C-s`, where the
@@ -807,7 +818,202 @@ in org-agenda-files replaces recursive discovery."
 
 ---
 
-### Task 7: Verify against a live Emacs
+### Task 7: macOS org-protocol handler and setup doc
+
+**Files:**
+- Modify: `Makefile`
+- Modify: `docs/org-protocol-setup.md`
+
+Browser capture needs the OS to route `org-protocol://` to `emacsclient`. Linux
+is already covered by `etc/org-protocol.desktop` and `make install-xdg`; macOS
+ignores freedesktop `.desktop` files entirely, so this is the missing half.
+
+macOS delivers URI activations as Apple Events, not `argv` — a plain shell
+script inside a bundle never receives the URL. Hence AppleScript's
+`on open location` handler.
+
+- [ ] **Step 1: Add the macOS targets to the Makefile**
+
+Append to `Makefile`, after the `uninstall-xdg` target and before the
+`##@ Test targets` section added in Task 1:
+
+```makefile
+##@ macOS integration targets
+
+# User applications directory; LaunchServices registers bundles placed here.
+MACOS_APPS_DIR ?= $(HOME)/Applications
+
+# Generated org-protocol:// URI handler bundle.
+ORG_PROTOCOL_APP ?= $(MACOS_APPS_DIR)/OrgProtocol.app
+
+.PHONY: install-macos
+install-macos: ## Register org-protocol:// URI handler (macOS)
+	@command -v emacsclient >/dev/null || { echo 'emacsclient not found in PATH'; exit 1; }
+	@echo 'building $(ORG_PROTOCOL_APP)'
+	rm -rf $(ORG_PROTOCOL_APP)
+	mkdir -p $(MACOS_APPS_DIR)
+	osacompile -o $(ORG_PROTOCOL_APP) \
+	  -e 'on open location this_URL' \
+	  -e 'do shell script "$(shell command -v emacsclient) " & quoted form of this_URL' \
+	  -e 'end open location'
+	plutil -insert CFBundleURLTypes -json \
+	  '[{"CFBundleURLName":"org-protocol","CFBundleURLSchemes":["org-protocol"]}]' \
+	  $(ORG_PROTOCOL_APP)/Contents/Info.plist
+	codesign --force --sign - $(ORG_PROTOCOL_APP)
+	@echo 'registering scheme with LaunchServices'
+	open -a $(ORG_PROTOCOL_APP)
+
+.PHONY: uninstall-macos
+uninstall-macos: ## Remove org-protocol:// URI handler (macOS)
+	@echo 'removing $(ORG_PROTOCOL_APP)'
+	rm -rf $(ORG_PROTOCOL_APP)
+```
+
+The `codesign` line is not optional. `osacompile` ad-hoc signs the bundle, and
+`plutil -insert` then invalidates that signature — without re-signing,
+`codesign -v` reports `invalid Info.plist (plist or signature have been
+modified)`.
+
+`$(shell command -v emacsclient)` is expanded by make at parse time, which
+resolves the Homebrew path difference between Intel (`/usr/local/bin`) and Apple
+Silicon (`/opt/homebrew/bin`) without hardcoding either.
+
+- [ ] **Step 2: Build the handler**
+
+Run: `make install-macos`
+
+Expected: the bundle is built and a Finder/dock launch occurs briefly. No
+`osacompile` or `plutil` errors.
+
+- [ ] **Step 3: Verify the bundle is valid and declares the scheme**
+
+Run:
+
+```bash
+codesign -v ~/Applications/OrgProtocol.app && echo "signature valid"
+plutil -p ~/Applications/OrgProtocol.app/Contents/Info.plist | grep -A4 CFBundleURLTypes
+osadecompile ~/Applications/OrgProtocol.app/Contents/Resources/Scripts/main.scpt
+```
+
+Expected:
+
+```
+signature valid
+  "CFBundleURLTypes" => [
+    0 => {
+      "CFBundleURLName" => "org-protocol"
+      "CFBundleURLSchemes" => [
+        0 => "org-protocol"
+on open location this_URL
+	do shell script "/opt/homebrew/bin/emacsclient " & quoted form of this_URL
+end open location
+```
+
+Any `invalid Info.plist` from `codesign -v` means Step 1's `codesign` line was
+omitted or failed.
+
+- [ ] **Step 4: Verify the scheme routes end to end**
+
+With an Emacs server running, run:
+
+```bash
+open 'org-protocol://capture?template=b&url=https%3A%2F%2Fexample.com&title=Example%20Domain&body=selected%20text'
+```
+
+Expected: Emacs raises and opens a capture buffer for template `b`, prompting
+for tags. Enter `test` and press `C-c C-c`. Confirm `~/org/inbox.org` gained an
+entry of the form:
+
+```org
+* [[https://example.com][Example Domain]]        :bookmark:test:
+  :PROPERTIES:
+  :CREATED: [2026-08-05 Wed 10:45]
+  :END:
+  selected text
+```
+
+If nothing happens, the scheme is not registered — re-run
+`open -a ~/Applications/OrgProtocol.app` once and retry.
+
+- [ ] **Step 5: Correct the setup doc**
+
+In `docs/org-protocol-setup.md`:
+
+1. Replace both occurrences of `template=u` with `template=b` (line 28's
+   `xdg-open` example and line 74's bookmarklet). **This is a live bug** — no
+   `u` template exists, so the documented bookmarklet fails with
+   `No capture template referred to by "u" keys`.
+2. Replace every reference to `$myde-org-dir/bookmarks.org` with `~/org/inbox.org`.
+3. Replace the entire manual macOS section (the Automator app and hand-edited
+   `Info.plist` instructions) with:
+
+   ````markdown
+   ### macOS
+
+   Run:
+
+   ```sh
+   make install-macos
+   ```
+
+   This builds a minimal `~/Applications/OrgProtocol.app` whose only job is to
+   forward `org-protocol://` URIs to `emacsclient`, then registers it with
+   LaunchServices. It uses `osacompile`, `plutil`, and `codesign`, all of which
+   ship with macOS — no Automator app and no Xcode.
+
+   AppleScript is used rather than a shell script because macOS delivers URI
+   activations as Apple Events rather than as command-line arguments; a plain
+   shell script in a bundle never receives the URL.
+
+   Verify registration:
+
+   ```sh
+   open "org-protocol://capture?template=b&url=https%3A%2F%2Fexample.com&title=Example"
+   ```
+
+   Remove it with `make uninstall-macos`.
+   ````
+
+4. Update the "Verify end-to-end" section's final example to show the `b`
+   template's tagged output landing in `~/org/inbox.org`:
+
+   ```org
+   * [[https://example.com][Example Domain]]     :bookmark:reading:
+   :PROPERTIES:
+   :CREATED: [2026-08-05 Wed 14:30]
+   :END:
+   ```
+
+5. Add a short note after the bookmarklet section:
+
+   ```markdown
+   For pages worth more than a bookmark, use template `N` instead of `b` in the
+   bookmarklet URL. That routes the capture into a denote note under
+   `~/org/notes/`, prompting for denote keywords and seeding the title from the
+   page title.
+   ```
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add Makefile docs/org-protocol-setup.md
+git commit -m "Add macOS org-protocol handler and fix setup doc
+
+make install-xdg only covers Linux; macOS ignores freedesktop .desktop files
+and requires an app bundle declaring CFBundleURLTypes. make install-macos
+builds the smallest such bundle with osacompile, plutil, and codesign, all of
+which ship with macOS. AppleScript is required because macOS delivers URI
+activations as Apple Events rather than argv, so a shell script in a bundle
+never sees the URL. The codesign step is mandatory: plutil -insert invalidates
+the ad-hoc signature osacompile applies.
+
+Also fixes a live bug in the setup doc, which documented template=u when only b
+exists, so the documented bookmarklet failed outright."
+```
+
+---
+
+### Task 8: Verify against a live Emacs
 
 **Files:** none modified.
 
@@ -904,9 +1110,11 @@ git -C ~/org commit -m "Initialize org tree"
 `make test` target to the *Commands* section:
 
 ```shell
-make link      # Symlink repo into ~/.config/emacs (installs config)
-make unlink    # Remove the symlink
-make test      # Run ERT tests in batch mode
+make link             # Symlink repo into ~/.config/emacs (installs config)
+make unlink           # Remove the symlink
+make test             # Run ERT tests in batch mode
+make install-xdg      # Register org-protocol:// URI handler (Linux)
+make install-macos    # Register org-protocol:// URI handler (macOS)
 ```
 
 Replace the line `No build, lint, or test tooling — this is a pure Emacs Lisp
@@ -936,3 +1144,8 @@ git commit -m "Document make test target in AGENTS.md"
       `core-notes` still composes with the rewritten `core-org`)
 - [ ] `~/org/` is a git repo with an initial commit
 - [ ] No `myde-` symbol from the Task 6 deletion list remains anywhere
+- [ ] `codesign -v ~/Applications/OrgProtocol.app` reports a valid signature
+- [ ] `open 'org-protocol://capture?template=b&…'` opens a tag-prompting capture
+- [ ] The browser bookmarklet produces a tagged entry in `~/org/inbox.org`
+- [ ] `docs/org-protocol-setup.md` contains no remaining `template=u` or
+      `bookmarks.org` references

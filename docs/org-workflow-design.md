@@ -36,6 +36,8 @@ A personal system with a single consumer. It covers:
 - **Task scheduling** — agenda, `SCHEDULED`/`DEADLINE`, a next-actions view.
 - **Information management** — durable tagged notes via denote, plus a capture
   path for unfiled thoughts.
+- **Web capture** — tagged bookmarks and notes sent from the browser via
+  `org-protocol`.
 
 ## Storage layout
 
@@ -224,7 +226,7 @@ todo search cover every other query.
 | `t`      | Task                    | `inbox.org`                                   |
 | `T`      | Task in current project | `projects/<current>.org` under `Tasks`        |
 | `h`      | Thought (tagged)        | `inbox.org`                                   |
-| `b`      | Bookmark (org-protocol) | `inbox.org`                                   |
+| `b`      | Bookmark, tagged (org-protocol) | `inbox.org`                           |
 | `n`, `N` | Denote note             | `notes/` — unchanged, remains in `core-notes` |
 
 The thought template implements tagged thought capture:
@@ -252,6 +254,83 @@ Capture has to be fast or it stops being used; scheduling is a triage decision
 better made in the agenda with `C-c C-s`, where the surrounding week is visible.
 The `:PROJECT:` property prompt is removed because the destination file now
 identifies the project.
+
+## Web capture
+
+Browser capture uses built-in `org-protocol`, which is already required in
+`core-org/cfg.el`. Two paths, differing in weight:
+
+| Path | Trigger | Result |
+|------|---------|--------|
+| Bookmark | template `b` | One tagged headline in `inbox.org` |
+| Note | template `N` | A denote note in `notes/`, tagged with denote keywords |
+
+Template `b` covers "capture and tag this page". Template `N` already exists in
+`core-notes` for pages worth a durable note, and seeds the title from the
+protocol payload via `myde-denote-capture-from-protocol`.
+
+### Bookmark template
+
+```
+* [[%:link][%:description]]   :bookmark:%^G
+  :PROPERTIES:
+  :CREATED: %U
+  :END:
+  %i
+```
+
+`%^G` is appended directly after `:bookmark:` with no space. Verified: org's
+`%^G` handler omits its leading colon when the preceding character is already a
+colon, so this yields a single well-formed tag group —
+`:bookmark:emacs:orgmode:` — rather than a malformed `:bookmark::emacs:`. Org
+right-aligns the result. Tag completion covers all agenda files.
+
+`%i` carries any text selected in the browser at capture time.
+
+### URI handler registration
+
+The browser emits an `org-protocol://` URI, which the OS must route to
+`emacsclient`. This is per-platform and is the only part of the design that
+touches the system outside `~/org/`.
+
+**Linux** — already covered by the existing `etc/org-protocol.desktop` and
+`make install-xdg`.
+
+**macOS** — not covered today. `make install-xdg` installs a freedesktop
+`.desktop` file, which macOS ignores. Registration requires an application
+bundle declaring `CFBundleURLTypes`, so a new `make install-macos` target builds
+the smallest such bundle using only tools already present on macOS:
+
+1. `osacompile` compiles a two-line AppleScript `on open location` handler into
+   `~/Applications/OrgProtocol.app`. AppleScript is used because macOS delivers
+   URI activations as Apple Events, not as `argv` — a plain shell script in a
+   bundle never receives the URL.
+2. `plutil -insert` adds the `CFBundleURLTypes` entry declaring the
+   `org-protocol` scheme.
+3. `codesign --force --sign -` re-signs the bundle. This step is mandatory:
+   editing `Info.plist` invalidates the ad-hoc signature `osacompile` applies,
+   and `codesign -v` then reports `invalid Info.plist (plist or signature have
+   been modified)`.
+4. A one-time `open -a` registers the bundle with LaunchServices.
+
+`osacompile`, `plutil`, and `codesign` are all part of macOS. No Automator app,
+no Xcode, no manually edited plist, no new dependency. The bundle is built
+locally so it carries no `com.apple.quarantine` attribute and Gatekeeper does
+not block it.
+
+### Bookmarklet
+
+A `javascript:` bookmarklet constructs the capture URL directly, with no
+extension to install or keep working:
+
+```javascript
+javascript:location.href='org-protocol://capture?template=b&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)+'&body='+encodeURIComponent(window.getSelection())
+```
+
+`docs/org-protocol-setup.md` currently documents `template=u`, but no `u`
+template exists — the key is `b`. As written, the documented bookmarklet fails.
+That doc also still refers to `bookmarks.org`, which this design replaces with
+`inbox.org`. Both need correcting.
 
 ## Code
 
@@ -308,6 +387,12 @@ Each exclusion below names the condition that would justify adding it:
 - **Non-project items** — no catch-all file. Anything outside project work is a
   tagged thought in `inbox.org` or a denote note. Add a file when that proves
   insufficient.
+- **Full page content archiving** — `org-protocol` sends the URL, title, and
+  any selected text. Capturing readable page *body* text would need a reader
+  extractor or pandoc. Add when selections prove insufficient.
+- **Browser extension** — the bookmarklet needs nothing installed and cannot
+  break on extension API changes. Chrome blocks `javascript:` bookmarklets on
+  `chrome://` and Web Store pages only.
 - **Contacts, calendar sync, mobile access, org-habit** — not requested.
 
 ## Verification
