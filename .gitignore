@@ -4,6 +4,9 @@
 # temp files
 tmp/
 
+# cache files
+eln-cache/
+
 # user customizations
 custom.el
 
