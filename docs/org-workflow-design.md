@@ -2,7 +2,7 @@
 
 Design for a personal project management and personal information management
 (PIM) system in `core-org`: task scheduling, note taking, and tagged thought
-capture, linked to code projects wherever they live.
+capture, linked to code projects under `~/devel/projects/`.
 
 Status: **approved, not yet implemented**. Date: 2026-08-05.
 
@@ -16,10 +16,9 @@ and by batch-evaluating against Emacs 30.2, not assumed:
 | Emacs / org version | 30.2 / 9.7.11 (built-in) |
 | `org-agenda-files` (live) | `("~/org/tasks.org")` — the file does not exist |
 | `~/org/` contents | empty — greenfield, zero migration cost |
-| `org-tag-re` | `[[:alnum:]_@#%]+` — hyphens *and dots* are invalid in org tags |
-| `project-name` | available (Emacs 29+), resolves VC projects at any path |
-| Non-VC project dirs | `hybrid-eks-poc`, `scitech-idp2` return no project — fallback required |
-| Cross-module coupling | only `myde-org-notes-directory`, consumed by `core-notes/lib.el` |
+| `org-tag-re` | `[[:alnum:]_@#%]+` — excludes `-` and `.`; applies to tags only, not filenames |
+| `~/devel/projects/` | 9 directories; 7 git repos, 2 with no VC |
+| `org-agenda-files` directory entries | expanded natively, non-recursively |
 
 `core-org/lib.el` currently contains two half-built, mutually exclusive designs:
 a central `tasks.org` keyed by a `:PROJECT:` property, *and* recursive
@@ -29,10 +28,11 @@ the rest.
 
 ## Scope
 
-This is a personal system with a single consumer. It covers:
+A personal system with a single consumer. It covers:
 
-- **Project management** — work projects under `~/devel/projects/` and personal
-  projects under `~/devel/repos/`, treated identically.
+- **Project management** — every project lives in a direct subdirectory of
+  `~/devel/projects/`. Repos elsewhere, including `~/devel/repos/`, are not
+  projects in this system.
 - **Task scheduling** — agenda, `SCHEDULED`/`DEADLINE`, a next-actions view.
 - **Information management** — durable tagged notes via denote, plus a capture
   path for unfiled thoughts.
@@ -44,19 +44,19 @@ This is a personal system with a single consumer. It covers:
 ~/org/                          # its own private git repo
 ├── inbox.org                   # single capture sink: tasks, thoughts, bookmarks
 ├── projects/
-│   ├── myde_emacs.org          # one flat file per project
-│   ├── scitech_idp.org
+│   ├── scitech-idp.org         # one flat file per project
+│   ├── hybrid-eks-poc.org
 │   └── personal.org            # non-project life items
 ├── notes/                      # denote — existing, unchanged
 └── archive/                    # <file>.org_archive
 ```
 
 `projects/personal.org` is where non-project tasks land (renew passport,
-dentist, recurring personal obligations). It is an ordinary file in
-`projects/`, so it needs no new concept, no new variable, and no new agenda
-wiring — the directory expansion below already picks it up. This keeps
-`inbox.org` genuinely drainable, which is what makes the "inbox needs refiling"
-view meaningful.
+dentist, recurring obligations). It is an ordinary file in `projects/`, so it
+needs no new concept, no new variable, and no new agenda wiring — the directory
+expansion below already picks it up. This keeps `inbox.org` genuinely drainable,
+which is what makes the "inbox needs refiling" view meaningful. It has no
+corresponding code directory, so its template omits the `Code:` line.
 
 Denote with tags is the reference layer of the PIM. It already exists in
 `core-notes` and is not modified by this design.
@@ -73,6 +73,7 @@ Declared in `core-org/lib.el`, replacing the deleted ones listed under
 | `myde-org-projects-directory` | `projects/` under `myde-org-directory` |
 | `myde-org-archive-directory` | `archive/` under `myde-org-directory` |
 | `myde-org-notes-directory` | `notes/` — unchanged, consumed by `core-notes` |
+| `myde-org-code-directory` | `~/devel/projects/` — `defcustom`, root of all code projects |
 
 ### Why org files live outside the code repos
 
@@ -82,69 +83,85 @@ there either.
 - Gitignored files are not backed up with the repo, which removes the only
   advantage colocation offers. Deleting and re-cloning a repo would destroy the
   task history.
-- It requires a `.gitignore` entry in every repo, forever. Some project
-  directories are not git repos at all.
+- It requires a `.gitignore` entry in every repo, forever. Two of the nine
+  project directories are not git repos at all.
 - Agenda discovery stops being free: a flat `~/org/projects/` directory is
-  expanded natively by org (see below), whereas colocated files require a
-  recursive filesystem scan.
+  expanded natively by org, whereas colocated files require a recursive scan.
 
 `~/org/` as a single tree is one backup unit, one grep scope, one agenda scope.
 As the sole consumer, a private git repo at `~/org/` covers versioning and sync.
 
 ## Project identity
 
-Project identity comes from **built-in `project.el`**, not from a configured
-root directory:
+Because every project is a direct subdirectory of `myde-org-code-directory`,
+identity is a path-prefix derivation rather than a VC lookup:
 
 ```elisp
-(project-name (project-current))
+(defun myde-org-project-name ()
+  "Return the project directory name containing `default-directory', or nil."
+  (let ((root (file-name-as-directory (expand-file-name myde-org-code-directory)))
+        (here (file-name-as-directory (expand-file-name default-directory))))
+    (when (string-prefix-p root here)
+      (car (split-string (substring here (length root)) "/" t)))))
 ```
 
-Verified behavior:
+Verified against all relevant cases:
 
 | Directory | Result |
 |-----------|--------|
-| `~/devel/repos/github.com/mojochao/myde.emacs/` | `"myde.emacs"` |
-| `~/devel/projects/scitech-idp/` | `"scitech-idp"` |
-| `~/devel/projects/hybrid-eks-poc/` (no VC) | no project |
+| `~/devel/projects/scitech-idp/` (git) | `scitech-idp` |
+| `~/devel/projects/hybrid-eks-poc/` (no VC) | `hybrid-eks-poc` |
+| `~/devel/projects/scitech-idp2/` (no VC) | `scitech-idp2` |
+| `~/devel/projects/scitech-idp/docs/deep/x/` | `scitech-idp` |
+| `~/devel/projects/multi-tenancy/repos/` | `multi-tenancy` |
+| `~/devel/projects/` (root itself) | nil |
+| `~/devel/repos/github.com/mojochao/myde.emacs/` | nil |
+| `~/` | nil |
 
-This is why there is no `myde-code-projects-directory` and no upward path
-walking. Personal repos under `~/devel/repos/` and work projects under
-`~/devel/projects/` resolve through the same call, and `core-projects` already
-builds on `project.el`.
+This was chosen over `(project-name (project-current))` for two verified
+reasons:
 
-When `project-current` returns nil, `myde-org-project-file` prompts with
-`completing-read` over existing project org files, defaulting to the current
-directory's base name.
+1. `project-current` returns nil in the two project directories that are not
+   under version control, which would force a disambiguation prompt in normal
+   use.
+2. In `multi-tenancy/repos/`, `project-current` descends to an inner repository
+   and reports the wrong project. Path-prefix derivation correctly reports the
+   containing project.
 
-### Name sanitization
+It is also fewer lines, because no fallback prompt is needed for the in-project
+case. A `completing-read` fallback over existing project org files remains for
+the case where point is outside `myde-org-code-directory` entirely.
 
-The org file name and the org tag both use a sanitized project name:
+### Filenames and tags
+
+The org filename preserves the directory name exactly — `scitech-idp` becomes
+`~/org/projects/scitech-idp.org`. The `org-tag-re` restriction applies to tags,
+not filenames, so no sanitization is needed here, and both directions of the
+mapping are lossless convention:
+
+- forward: `<dirname>` → `~/org/projects/<dirname>.org`
+- reverse: `<basename>.org` → `~/devel/projects/<basename>/`
+
+Sanitization applies only to `#+category:` and `#+filetags:`:
 
 ```elisp
 (replace-regexp-in-string "[^[:alnum:]_@#%]" "_" name)
 ```
 
-So `myde.emacs` becomes `myde_emacs` and `scitech-idp` becomes `scitech_idp`.
-
-This is a correctness requirement, not cosmetic. `org-tag-re` is
-`[[:alnum:]_@#%]+`, which excludes both `-` and `.`. An unsanitized
-`#+filetags:` value fails silently and tag search returns nothing.
-
-The forward mapping is `sanitize(project-name)` → `~/org/projects/<name>.org`.
-The reverse mapping is a link stored in the file at creation time, which is what
-lets projects live at arbitrary paths.
+So `scitech-idp` yields the tag `scitech_idp`. This is a correctness
+requirement, not cosmetic: `org-tag-re` is `[[:alnum:]_@#%]+`, and an invalid
+`#+filetags:` value fails silently, making tag search return nothing.
 
 ## Project file template
 
-Generated on first visit, with the code path taken from `project-root`:
+Generated on first visit:
 
 ```org
-#+title: myde.emacs
-#+category: myde_emacs
-#+filetags: :myde_emacs:
+#+title: scitech-idp
+#+category: scitech_idp
+#+filetags: :scitech_idp:
 
-Code: [[file:~/devel/repos/github.com/mojochao/myde.emacs/][~/devel/repos/github.com/mojochao/myde.emacs/]]
+Code: [[file:~/devel/projects/scitech-idp/][~/devel/projects/scitech-idp/]]
 
 * Tasks
 
@@ -152,11 +169,12 @@ Code: [[file:~/devel/repos/github.com/mojochao/myde.emacs/][~/devel/repos/github
 ```
 
 - `#+category:` puts the project name in the agenda's left column with no code.
-- `#+filetags:` auto-tags every entry in the file, so `C-c o a m myde_emacs`
+- `#+filetags:` auto-tags every entry in the file, so `C-c o a m scitech_idp`
   returns everything for that project.
-- The `Code:` link is the reverse jump. `org-return-follows-link` is already
-  enabled in `core-org/cfg.el`, so `RET` opens dired there. This replaces a
-  dedicated jump command with zero lines of code.
+- The `Code:` link is convenience only, since the reverse mapping is already
+  conventional. `org-return-follows-link` is enabled in `core-org/cfg.el`, so
+  `RET` opens dired there. This replaces a dedicated jump command with zero
+  lines of code.
 
 ## Agenda scope
 
@@ -247,8 +265,8 @@ the design.
 | Function | Responsibility |
 |----------|----------------|
 | `myde-org-sanitize-tag` | Replace every character outside `[[:alnum:]_@#%]` with `_` |
-| `myde-org-project-name` | Return the sanitized name from `(project-current)`, or nil |
-| `myde-org-project-file` | Interactive, `C-c o p`. Open the current project's org file, creating it from the template if absent. Falls back to `completing-read` over existing project files when `project-current` returns nil |
+| `myde-org-project-name` | Path-prefix derivation shown above; nil when outside `myde-org-code-directory` |
+| `myde-org-project-file` | Interactive, `C-c o p`. Open the current project's org file, creating it from the template if absent. Falls back to `completing-read` over existing project files when outside a project |
 | `myde-org-project-capture-file` | Target resolver for capture template `T` |
 
 Per the convention in `AGENTS.md`, all named definitions live in `lib.el`;
@@ -288,17 +306,21 @@ Each exclusion below names the condition that would justify adding it:
   measurably falls short.
 - **Datetree journal** — thoughts go to `inbox.org` with tags; denote holds
   durable notes. Add when a dated daily log is wanted.
-- **Contacts, calendar sync, mobile access, org-habit** — not requested. `org-habit`
-  is the first likely addition if recurring personal obligations in
+- **Nested project directories** — `myde-org-project-name` takes the first path
+  component only, and `org-agenda-files` expansion is non-recursive. Add when
+  projects need grouping under `~/devel/projects/<group>/<project>/`.
+- **Contacts, calendar sync, mobile access, org-habit** — not requested.
+  `org-habit` is the first likely addition if recurring obligations in
   `projects/personal.org` need streak tracking.
 
 ## Verification
 
-The non-trivial logic is name sanitization and project resolution.
-Implementation must leave behind one runnable check covering:
+The non-trivial logic is name derivation and tag sanitization. Implementation
+must leave behind one runnable check covering the eight directory cases in the
+table above, plus:
 
 - `myde-org-sanitize-tag` converts `-` and `.` to `_`, and its output matches
   `org-tag-re`
-- a directory inside a VC project resolves to the sanitized project name
-- a directory with no project resolves to nil rather than signalling
 - the generated template's `#+filetags:` value is a valid org tag
+- a directory outside `myde-org-code-directory` returns nil rather than
+  signalling
