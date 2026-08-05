@@ -11,14 +11,14 @@ Status: **approved, not yet implemented**. Date: 2026-08-05.
 Facts established by introspecting the live Emacs server (`emacsclient --eval`)
 and by batch-evaluating against Emacs 30.2, not assumed:
 
-| Fact | Value |
-|------|-------|
-| Emacs / org version | 30.2 / 9.7.11 (built-in) |
-| `org-agenda-files` (live) | `("~/org/tasks.org")` — the file does not exist |
-| `~/org/` contents | empty — greenfield, zero migration cost |
-| `org-tag-re` | `[[:alnum:]_@#%]+` — excludes `-` and `.`; applies to tags only, not filenames |
-| `~/devel/projects/` | 9 directories; 7 git repos, 2 with no VC |
-| `org-agenda-files` directory entries | expanded natively, non-recursively |
+| Fact                                 | Value                                                                          |
+|--------------------------------------|--------------------------------------------------------------------------------|
+| Emacs / org version                  | 30.2 / 9.7.11 (built-in)                                                       |
+| `org-agenda-files` (live)            | `("~/org/tasks.org")` — the file does not exist                                |
+| `~/org/` contents                    | empty — greenfield, zero migration cost                                        |
+| `org-tag-re`                         | `[[:alnum:]_@#%]+` — excludes `-` and `.`; applies to tags only, not filenames |
+| `~/devel/projects/`                  | 9 directories; 7 git repos, 2 with no VC                                       |
+| `org-agenda-files` directory entries | expanded natively, non-recursively                                             |
 
 `core-org/lib.el` currently contains two half-built, mutually exclusive designs:
 a central `tasks.org` keyed by a `:PROJECT:` property, *and* recursive
@@ -36,7 +36,6 @@ A personal system with a single consumer. It covers:
 - **Task scheduling** — agenda, `SCHEDULED`/`DEADLINE`, a next-actions view.
 - **Information management** — durable tagged notes via denote, plus a capture
   path for unfiled thoughts.
-- **Non-project life items** — handled without new machinery; see below.
 
 ## Storage layout
 
@@ -45,18 +44,15 @@ A personal system with a single consumer. It covers:
 ├── inbox.org                   # single capture sink: tasks, thoughts, bookmarks
 ├── projects/
 │   ├── scitech-idp.org         # one flat file per project
-│   ├── hybrid-eks-poc.org
-│   └── personal.org            # non-project life items
+│   └── hybrid-eks-poc.org
 ├── notes/                      # denote — existing, unchanged
 └── archive/                    # <file>.org_archive
 ```
 
-`projects/personal.org` is where non-project tasks land (renew passport,
-dentist, recurring obligations). It is an ordinary file in `projects/`, so it
-needs no new concept, no new variable, and no new agenda wiring — the directory
-expansion below already picks it up. This keeps `inbox.org` genuinely drainable,
-which is what makes the "inbox needs refiling" view meaningful. It has no
-corresponding code directory, so its template omits the `Code:` line.
+Every file in `projects/` corresponds one-to-one with a directory under
+`myde-org-code-directory`. There is no catch-all file for non-project items;
+anything that is not project work is either a tagged thought in `inbox.org` or a
+denote note.
 
 Denote with tags is the reference layer of the PIM. It already exists in
 `core-notes` and is not modified by this design.
@@ -66,14 +62,14 @@ Denote with tags is the reference layer of the PIM. It already exists in
 Declared in `core-org/lib.el`, replacing the deleted ones listed under
 *Net change*:
 
-| Variable | Value |
-|----------|-------|
-| `myde-org-directory` | `~/org/` — unchanged |
-| `myde-org-inbox-file` | `inbox.org` under `myde-org-directory` |
-| `myde-org-projects-directory` | `projects/` under `myde-org-directory` |
-| `myde-org-archive-directory` | `archive/` under `myde-org-directory` |
-| `myde-org-notes-directory` | `notes/` — unchanged, consumed by `core-notes` |
-| `myde-org-code-directory` | `~/devel/projects/` — `defcustom`, root of all code projects |
+| Variable                      | Value                                                        |
+|-------------------------------|--------------------------------------------------------------|
+| `myde-org-directory`          | `~/org/` — unchanged                                         |
+| `myde-org-inbox-file`         | `inbox.org` under `myde-org-directory`                       |
+| `myde-org-projects-directory` | `projects/` under `myde-org-directory`                       |
+| `myde-org-archive-directory`  | `archive/` under `myde-org-directory`                        |
+| `myde-org-notes-directory`    | `notes/` — unchanged, consumed by `core-notes`               |
+| `myde-org-code-directory`     | `~/devel/projects/` — `defcustom`, root of all code projects |
 
 ### Why org files live outside the code repos
 
@@ -107,16 +103,16 @@ identity is a path-prefix derivation rather than a VC lookup:
 
 Verified against all relevant cases:
 
-| Directory | Result |
-|-----------|--------|
-| `~/devel/projects/scitech-idp/` (git) | `scitech-idp` |
-| `~/devel/projects/hybrid-eks-poc/` (no VC) | `hybrid-eks-poc` |
-| `~/devel/projects/scitech-idp2/` (no VC) | `scitech-idp2` |
-| `~/devel/projects/scitech-idp/docs/deep/x/` | `scitech-idp` |
-| `~/devel/projects/multi-tenancy/repos/` | `multi-tenancy` |
-| `~/devel/projects/` (root itself) | nil |
-| `~/devel/repos/github.com/mojochao/myde.emacs/` | nil |
-| `~/` | nil |
+| Directory                                       | Result           |
+|-------------------------------------------------|------------------|
+| `~/devel/projects/scitech-idp/` (git)           | `scitech-idp`    |
+| `~/devel/projects/hybrid-eks-poc/` (no VC)      | `hybrid-eks-poc` |
+| `~/devel/projects/scitech-idp2/` (no VC)        | `scitech-idp2`   |
+| `~/devel/projects/scitech-idp/docs/deep/x/`     | `scitech-idp`    |
+| `~/devel/projects/multi-tenancy/repos/`         | `multi-tenancy`  |
+| `~/devel/projects/` (root itself)               | nil              |
+| `~/devel/repos/github.com/mojochao/myde.emacs/` | nil              |
+| `~/`                                            | nil              |
 
 This was chosen over `(project-name (project-current))` for two verified
 reasons:
@@ -223,13 +219,13 @@ todo search cover every other query.
 
 ## Capture templates
 
-| Key | Template | Target |
-|-----|----------|--------|
-| `t` | Task | `inbox.org` |
-| `T` | Task in current project | `projects/<current>.org` under `Tasks` |
-| `h` | Thought (tagged) | `inbox.org` |
-| `b` | Bookmark (org-protocol) | `inbox.org` |
-| `n`, `N` | Denote note | `notes/` — unchanged, remains in `core-notes` |
+| Key      | Template                | Target                                        |
+|----------|-------------------------|-----------------------------------------------|
+| `t`      | Task                    | `inbox.org`                                   |
+| `T`      | Task in current project | `projects/<current>.org` under `Tasks`        |
+| `h`      | Thought (tagged)        | `inbox.org`                                   |
+| `b`      | Bookmark (org-protocol) | `inbox.org`                                   |
+| `n`, `N` | Denote note             | `notes/` — unchanged, remains in `core-notes` |
 
 The thought template implements tagged thought capture:
 
@@ -262,12 +258,12 @@ identifies the project.
 Roughly 40 lines in `core-org/lib.el`. This is the only hand-written logic in
 the design.
 
-| Function | Responsibility |
-|----------|----------------|
-| `myde-org-sanitize-tag` | Replace every character outside `[[:alnum:]_@#%]` with `_` |
-| `myde-org-project-name` | Path-prefix derivation shown above; nil when outside `myde-org-code-directory` |
-| `myde-org-project-file` | Interactive, `C-c o p`. Open the current project's org file, creating it from the template if absent. Falls back to `completing-read` over existing project files when outside a project |
-| `myde-org-project-capture-file` | Target resolver for capture template `T` |
+| Function                        | Responsibility                                                                                                                                                                           |
+|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `myde-org-sanitize-tag`         | Replace every character outside `[[:alnum:]_@#%]` with `_`                                                                                                                               |
+| `myde-org-project-name`         | Path-prefix derivation shown above; nil when outside `myde-org-code-directory`                                                                                                           |
+| `myde-org-project-file`         | Interactive, `C-c o p`. Open the current project's org file, creating it from the template if absent. Falls back to `completing-read` over existing project files when outside a project |
+| `myde-org-project-capture-file` | Target resolver for capture template `T`                                                                                                                                                 |
 
 Per the convention in `AGENTS.md`, all named definitions live in `lib.el`;
 `cfg.el` holds only `use-package` declarations, hooks, and keybindings.
@@ -309,9 +305,10 @@ Each exclusion below names the condition that would justify adding it:
 - **Nested project directories** — `myde-org-project-name` takes the first path
   component only, and `org-agenda-files` expansion is non-recursive. Add when
   projects need grouping under `~/devel/projects/<group>/<project>/`.
+- **Non-project items** — no catch-all file. Anything outside project work is a
+  tagged thought in `inbox.org` or a denote note. Add a file when that proves
+  insufficient.
 - **Contacts, calendar sync, mobile access, org-habit** — not requested.
-  `org-habit` is the first likely addition if recurring obligations in
-  `projects/personal.org` need streak tracking.
 
 ## Verification
 
