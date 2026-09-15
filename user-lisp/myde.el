@@ -2488,7 +2488,6 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
 ;; Tree-sitter grammar registration for Common Lisp
 (use-package treesit
   :ensure nil
-  :after myde-prog-clisp
   :config
   ;; Register Common Lisp grammar for future tree-sitter-based major mode
   ;; Currently no stable commonlisp-ts-mode on MELPA, but grammar is available
@@ -2499,7 +2498,6 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
 ;; Project root detection for CL toolchains
 (use-package project
   :ensure nil
-  :after myde-prog-clisp
   :config
   ;; Add Common Lisp-specific project markers
   (myde-prog-clisp-setup))
@@ -2734,7 +2732,6 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 ;; Tree-sitter grammar registration for Scheme
 (use-package treesit
   :ensure nil
-  :after myde-prog-scheme
   :config
   ;; Register Scheme grammar for future tree-sitter-based major mode
   ;; Currently no stable scheme-ts-mode on MELPA, but grammar is available
@@ -2745,7 +2742,6 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 ;; Project root detection for Scheme toolchains
 (use-package project
   :ensure nil
-  :after myde-prog-scheme
   :config
   ;; Add Scheme-specific project markers
   (myde-prog-scheme-setup))
@@ -2909,7 +2905,6 @@ Users who prefer zprint can override `cider-format-code-options' via
 
 (use-package treesit
   :ensure nil
-  :after myde-prog-clojure
   :config
   ;; Register Clojure grammar for system-wide availability
   (when (treesit-available-p)
@@ -2918,7 +2913,6 @@ Users who prefer zprint can override `cider-format-code-options' via
 
 (use-package project
   :ensure nil
-  :after myde-prog-clojure
   :config
   ;; Add Clojure-specific project root markers
   (myde-prog-clojure-setup))
