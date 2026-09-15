@@ -4,17 +4,19 @@
 
 **Goal:** Replace 53 module directories and 24 `defcustom` toggles with three elisp files tangled from a single `myde.org`, enabling modules by binary presence and managing packages with elpaca.
 
-**Architecture:** Four sequential phases, each leaving a working config and each verified by a probe harness that captures the observable state of a running Emacs (loaded package set, init time, startup errors). Phase 1 flattens the tree, phase 2 replaces toggles with `executable-find` gates, phase 3 swaps `package.el` for elpaca, phase 4 makes the source literate. All work happens in a git worktree so the live config at `~/.config/emacs` (a symlink into this repo) stays functional throughout.
+**Architecture:** Three sequential phases, each leaving a working config and each verified by a probe harness that captures the observable state of a running Emacs: the set of declared `use-package` forms, the global modes turned on at startup, init time, and startup errors. Phase 1 flattens the tree and replaces toggles with `executable-find` gates in one pass, phase 2 swaps `package.el` for elpaca, phase 3 makes the source literate. All work happens in a git worktree so the live config at `~/.config/emacs` (a symlink into this repo) stays functional throughout.
 
 **Tech Stack:** Emacs 31.1, `use-package`, elpaca 0.12, `org-babel-tangle`, `exec-path-from-shell`, GNU Make.
 
 **Spec:** `docs/superpowers/specs/2026-09-15-three-file-literate-config-design.md`
 
+**Revision:** 2026-09-15, after adversarial review. The toggle-preserving phase is gone, the probe measures declared packages rather than loaded ones, and phase 2 gained the startup-hook rewrite. See the spec's "Why there is no toggle-preserving phase" and "Probe isolation".
+
 ---
 
 ## Critical context for someone with zero familiarity
 
-Read this before Task 1. Each item is a live hazard discovered while writing this plan.
+Read this before Task 0. Each item is a live hazard discovered while writing or reviewing this plan.
 
 1. **`~/.config/emacs` is a symlink to this repository.** Editing files in the main
    working tree changes the running config immediately. All work happens in a git
@@ -22,28 +24,55 @@ Read this before Task 1. Each item is a live hazard discovered while writing thi
 
 2. **`custom.el` is gitignored and untracked.** A fresh worktree has no `custom.el`,
    which means no module toggles are set, which means only `core-*` modules load.
-   It must be copied into the worktree by hand or every phase-1 comparison is
-   meaningless.
+   It must be copied into the worktree by hand or the baseline is meaningless.
 
-3. **`elpa/` is gitignored.** A fresh worktree has no packages. For phases 1 and 2
-   symlink it to the main tree's `elpa/` to avoid a 100-package reinstall. Phase 3
-   deliberately starts from nothing.
+3. **`elpa/` is gitignored.** A fresh worktree has no packages. For phase 1 symlink it
+   to the main tree's `elpa/` to avoid a 100-package reinstall. Phase 2 deliberately
+   starts from nothing.
 
 4. **`--batch` and `-Q` both imply `--no-init-file`.** Neither can be used to test a
    config. Use `--daemon=<unique-socket>` plus `emacsclient -s <socket>`. Always use a
    unique socket name so the probe never touches the user's running Emacs server.
 
-5. **`use-package-always-ensure` is never set in this config.** 32 of 269 `use-package`
-   forms have no `:ensure` keyword and are installed only because they appear in
-   `package-selected-packages` in `custom.el`. When elpaca removes that list, those
-   packages silently vanish. Task 13 fixes all 32.
+5. **A probe daemon inherits the terminal's PATH and shares the live session's XDG
+   state.** The driver script strips PATH to `/usr/bin:/bin` so gates only pass if
+   `exec-path-from-shell` ran, and points `XDG_STATE_HOME` at a scratch directory so
+   the daemon's exit cannot overwrite the live recentf/savehist/bookmarks.
 
-6. **elpaca queues the order *outside* the `use-package` form.** `:if`/`:when` inside
+6. **`load-history` misses deferred packages.** Most language and data modules are
+   `:mode`- or `:hook`-deferred and never load at startup, so a comparison on loaded
+   packages is blind to gating. The probe's primary metric is the set of *declared*
+   packages from `use-package-statistics`, which needs
+   `use-package-compute-statistics t` set in `early-init.el` before the config loads.
+
+7. **A third-party `use-package` placed before `package-initialize` fails**, even
+   when the package is installed under `elpa/`. Under `package.el` (phase 1) the
+   `exec-path-from-shell` form must come *after* the core-base section, which is
+   where `package-initialize` lives. That position is kept under elpaca too.
+
+8. **elpaca queues the order *outside* the `use-package` form.** `:if`/`:when` inside
    the form cannot prevent a clone. Gates must wrap the whole form in `(when …)`.
 
-7. **Three `load-file-name` uses are load-bearing** and break on flattening, plus two
-   hardcoded `modules/core-dashboard/` paths. Task 1 relocates the assets they point at.
-   The other 33 `load-file-name` uses are `featurep` guards that get deleted anyway.
+9. **elpaca runs `use-package` bodies after `after-init-hook` has fired.** Fourteen
+   forms use `:hook (after-init . <global-mode>)`, one uses `(emacs-startup . …)`,
+   and dashboard installs its own startup hooks. All of them silently do nothing
+   under elpaca until rewritten to `elpaca-after-init`. Task 7 does this; the probe's
+   startup-mode list catches any that are missed.
+
+10. **`elpaca-use-package` has no ensure-by-default variable of its own.** The
+    standard `use-package-always-ensure t` is the knob. It turns the 26 third-party
+    forms without `:ensure` into `:ensure t` — and would also try to clone the 6
+    built-in forms without `:ensure` (3 `treesit`, 3 `project`). Task 6 gives those
+    `:ensure nil` first.
+
+11. **Three `load-file-name` uses are load-bearing** and break on flattening, plus two
+    hardcoded `modules/core-dashboard/` paths. Task 1 relocates the assets they point
+    at. The other 33 `load-file-name` uses are `featurep` guards that get deleted.
+
+12. **`server-name` is still `"server"` while `init.el` runs under `--daemon=NAME`.**
+    An unguarded `(server-start)` in `init.el` grabs the user's default socket. The
+    new `init.el` skips server start when `(daemonp)`; startup.el starts the daemon's
+    own server afterwards.
 
 ---
 
@@ -53,11 +82,11 @@ Read this before Task 1. Each item is a live hazard discovered while writing thi
 
 | Path | Responsibility |
 |---|---|
-| `scripts/myde-probe.el` | Captures observable config state (loaded packages, init time, errors) from a running Emacs. The verification harness for every phase. |
-| `scripts/myde-probe.sh` | Boots a config as a throwaway daemon, runs the probe, writes a report, kills the daemon. |
-| `scripts/myde-flatten.el` | One-shot generator: concatenates 53 module files into `user-lisp/myde.el` in `myde-modules` order. Deleted after phase 1. |
-| `user-lisp/myde.el` | All configuration. Tangled output from phase 4 onward. |
-| `myde.org` | Literate source for all three elisp files. Phase 4. |
+| `scripts/myde-probe.el` | Captures observable config state (declared packages, startup modes, loaded packages, init time, errors) from a running Emacs. The verification harness for every phase. |
+| `scripts/myde-probe.sh` | Boots a config as an isolated throwaway daemon, waits for elpaca, runs the probe, writes a report, kills the daemon. |
+| `scripts/myde-flatten.el` | One-shot generator: concatenates 53 module files into `user-lisp/myde.el` in `myde-modules` order. Deleted at the end of phase 1. |
+| `user-lisp/myde.el` | All configuration. Tangled output from phase 3 onward. |
+| `myde.org` | Literate source for all three elisp files. Phase 3. |
 | `snippets/go/`, `snippets/elixir/` | Relocated flat yasnippet dirs. |
 | `etc/myde-banner.png`, `etc/myde-banner.txt`, `etc/preview/mermaid-init.js` | Relocated assets. |
 
@@ -77,6 +106,7 @@ Note on paths: `CLAUDE.md` and `AGENTS.md` are both symlinks to `.agents/AGENTS.
 This is the test-first task. Nothing may be migrated until a baseline exists.
 
 **Files:**
+- Modify: `early-init.el` (one line)
 - Create: `scripts/myde-probe.el`
 - Create: `scripts/myde-probe.sh`
 
@@ -87,7 +117,8 @@ cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
 git worktree add /tmp/myde-migration -b migration/three-file-literate
 ```
 
-Expected: `Preparing worktree (new branch 'migration/three-file-literate')` then `HEAD is now at 9ad474e`.
+Expected: `Preparing worktree (new branch 'migration/three-file-literate')` followed by
+`HEAD is now at <current main HEAD>`.
 
 - [ ] **Step 2: Wire the untracked and ignored files into the worktree**
 
@@ -114,9 +145,28 @@ git status --porcelain
 
 Expected: empty output. Anything listed here will be swept up by a later `git add -A`.
 
-- [ ] **Step 3: Write the probe**
+- [ ] **Step 3: Enable use-package statistics**
 
-Create `scripts/myde-probe.el` in the **main** working tree (it is tooling, not config, and both trees need it):
+The probe's primary metric is the set of declared `use-package` forms, read from
+`use-package-statistics`. That table is only populated when
+`use-package-compute-statistics` is non-nil *before* any `use-package` form is
+evaluated, so it belongs in `early-init.el`. It also powers `M-x use-package-report`,
+which the follow-up deferral audit uses.
+
+In `/tmp/myde-migration/early-init.el`, immediately after the existing
+`use-package-verbose` / `use-package-minimum-reported-time` `setq` (around line 79),
+add:
+
+```elisp
+;; Record every evaluated use-package form.  Read by scripts/myde-probe.el to
+;; compare declared package sets across migration phases, and by
+;; M-x use-package-report afterwards.  Cheap enough to leave on permanently.
+(setq use-package-compute-statistics t)
+```
+
+- [ ] **Step 4: Write the probe**
+
+Create `/tmp/myde-migration/scripts/myde-probe.el`:
 
 ```elisp
 ;;; myde-probe.el --- Capture observable config state -*- lexical-binding: t; -*-
@@ -127,10 +177,37 @@ Create `scripts/myde-probe.el` in the **main** working tree (it is tooling, not 
 ;; Loaded into an already-started Emacs via emacsclient.  Writes a stable,
 ;; diffable report of what the config actually did, for before/after comparison
 ;; across migration phases.  Not part of the config; lives under scripts/.
+;;
+;; The primary metric is the set of *declared* packages: every `use-package'
+;; form that was evaluated, read from `use-package-statistics'.  It is
+;; gate-sensitive (a form inside a false `when' is never expanded) and it
+;; includes deferred packages, which `load-history' does not.  It requires
+;; `use-package-compute-statistics' to be t before the config loads.
 
 ;;; Code:
 
-(require 'cl-lib)
+(defconst myde-probe-gate-binaries
+  '("go" "cargo" "zig" "lua" "ruby" "python3" "node" "elixir" "erl" "clojure"
+    "guile" "sbcl" "clangd" "fish" "nu" "pdftoppm" "op" "kubectl" "claude")
+  "Binaries that gate a module section in myde.el.
+Keep in sync with the gate table in the spec.")
+
+(defconst myde-probe-startup-modes
+  '(buffer-guardian-mode vertico-mode marginalia-mode global-corfu-mode
+    editorconfig-mode global-treesit-auto-mode global-flycheck-mode
+    global-mise-mode global-diff-hl-mode which-key-mode spacious-padding-mode
+    yas-global-mode whole-line-or-region-global-mode)
+  "Global modes the config enables from startup hooks.
+Under elpaca a `:hook (after-init . fn)' never fires, so these are the
+canaries for that failure.  Dashboard is not listed; it is verified in the GUI.")
+
+(defun myde-probe-declared-packages ()
+  "Return sorted names of every `use-package' form that was evaluated."
+  (let ((names '()))
+    (when (boundp 'use-package-statistics)
+      (maphash (lambda (k _v) (push (symbol-name k) names))
+               use-package-statistics))
+    (sort names #'string<)))
 
 (defun myde-probe--package-name (dir)
   "Return package name for elpa/elpaca build directory DIR.
@@ -140,14 +217,15 @@ Elpaca build directories carry no version, so DIR is returned unchanged."
    "-\\(?:[0-9]\\{8\\}\\(?:\\.[0-9]+\\)?\\|[0-9]+\\(?:\\.[0-9]+\\)*\\)\\'" "" dir))
 
 (defun myde-probe-loaded-packages ()
-  "Return a sorted list of third-party packages with a file in `load-history'."
+  "Return a sorted list of third-party packages with a file in `load-history'.
+Secondary metric: only packages actually loaded at startup appear here."
   (let ((names '()))
     (dolist (entry load-history)
       (let ((file (car entry)))
         (when (and (stringp file)
                    (string-match "/\\(?:elpa\\|elpaca/builds\\)/\\([^/]+\\)/" file))
-          (cl-pushnew (myde-probe--package-name (match-string 1 file))
-                      names :test #'string=))))
+          (let ((name (myde-probe--package-name (match-string 1 file))))
+            (unless (member name names) (push name names))))))
     (sort names #'string<)))
 
 (defun myde-probe-startup-errors ()
@@ -163,7 +241,7 @@ Elpaca build directories carry no version, so DIR is returned unchanged."
                         "error in process\\|Wrong type argument\\|"
                         "Wrong number of arguments\\|"
                         "use-package.*Error\\|Package.*is unavailable\\|"
-                        "Failed to\\|Cannot open load file"
+                        "Failed to\\|Cannot open load file\\|Cannot load"
                         "\\).*\\)$")
                 nil t)
           (push (string-trim (match-string 1)) hits))))
@@ -171,7 +249,7 @@ Elpaca build directories carry no version, so DIR is returned unchanged."
 
 (defun myde-probe-enabled-modules ()
   "Return sorted `myde-module-*-enabled' variables that are non-nil.
-Returns nil after phase 2, when toggles no longer exist."
+Only meaningful for the baseline; empty once the toggles are gone."
   (let ((found '()))
     (mapatoms
      (lambda (sym)
@@ -181,154 +259,200 @@ Returns nil after phase 2, when toggles no longer exist."
          (push (match-string 1 (symbol-name sym)) found))))
     (sort found #'string<)))
 
-(defun myde-probe-gated-binaries ()
-  "Return an alist of (BINARY . FOUND-P) for every module gate binary.
-Makes PATH problems visible instead of silent."
-  (mapcar (lambda (b) (cons b (and (executable-find b) t)))
-          '("go" "cargo" "zig" "lua" "ruby" "python3" "node" "elixir" "erl"
-            "clojure" "guile" "sbcl" "clangd" "fish" "nu" "tofu" "terraform"
-            "pkl" "asciidoctor" "pdftoppm" "op" "kubectl" "claude")))
+(defun myde-probe--seconds-since-start (time)
+  "Format TIME as seconds since `before-init-time', or n/a if TIME is nil."
+  (if time
+      (format "%.3f" (float-time (time-subtract time before-init-time)))
+    "n/a"))
 
 (defun myde-probe-write (out)
   "Write the probe report to file OUT."
   (with-temp-file out
-    (let ((print-length nil) (print-level nil))
-      (insert ";; myde probe report\n")
-      (insert (format "emacs-version: %s\n" emacs-version))
-      (insert (format "init-time-seconds: %.3f\n"
-                      (float-time (time-subtract after-init-time before-init-time))))
-      (insert (format "exec-path-entries: %d\n" (length exec-path)))
-      (insert (format "elpaca-after-init: %s\n"
-                      (if (boundp 'elpaca-after-init-time)
-                          (and (symbol-value 'elpaca-after-init-time) t)
-                        'n/a)))
-      (insert "\n;; enabled modules\n")
-      (dolist (m (myde-probe-enabled-modules)) (insert (format "module: %s\n" m)))
-      (insert "\n;; gate binaries\n")
-      (pcase-dolist (`(,b . ,found) (myde-probe-gated-binaries))
-        (insert (format "binary: %-14s %s\n" b (if found "yes" "no"))))
-      (insert "\n;; loaded third-party packages\n")
-      (dolist (p (myde-probe-loaded-packages)) (insert (format "package: %s\n" p)))
-      (insert "\n;; startup errors\n")
-      (let ((errs (myde-probe-startup-errors)))
-        (if errs
-            (dolist (e errs) (insert (format "error: %s\n" e)))
-          (insert "error: (none)\n"))))))
+    (insert ";; myde probe report\n")
+    (insert (format "emacs-version: %s\n" emacs-version))
+    (insert (format "init-file-had-error: %s\n" init-file-had-error))
+    (insert (format "init-time-seconds: %s\n"
+                    (myde-probe--seconds-since-start after-init-time)))
+    (insert (format "elpaca-init-time-seconds: %s\n"
+                    (myde-probe--seconds-since-start
+                     (bound-and-true-p elpaca-after-init-time))))
+    (insert (format "exec-path-entries: %d\n" (length exec-path)))
+    (insert "\n;; enabled modules (toggles; empty once they are gone)\n")
+    (dolist (m (myde-probe-enabled-modules)) (insert (format "module: %s\n" m)))
+    (insert "\n;; gate binaries\n")
+    (dolist (b myde-probe-gate-binaries)
+      (insert (format "binary: %-10s %s\n" b (if (executable-find b) "yes" "no"))))
+    (insert "\n;; startup modes\n")
+    (dolist (m myde-probe-startup-modes)
+      (insert (format "mode: %-34s %s\n" m
+                      (if (and (boundp m) (symbol-value m)) "on" "off"))))
+    (insert "\n;; declared packages (every evaluated use-package form)\n")
+    (dolist (p (myde-probe-declared-packages)) (insert (format "declared: %s\n" p)))
+    (insert "\n;; loaded third-party packages (load-history)\n")
+    (dolist (p (myde-probe-loaded-packages)) (insert (format "loaded: %s\n" p)))
+    (insert "\n;; startup errors\n")
+    (let ((errs (myde-probe-startup-errors)))
+      (if errs
+          (dolist (e errs) (insert (format "error: %s\n" e)))
+        (insert "error: (none)\n")))))
 
 (provide 'myde-probe)
 ;;; myde-probe.el ends here
 ```
 
-- [ ] **Step 4: Write the probe driver**
+- [ ] **Step 5: Write the probe driver**
 
-Create `scripts/myde-probe.sh`:
+Create `/tmp/myde-migration/scripts/myde-probe.sh`:
 
 ```bash
 #!/usr/bin/env bash
-# Boot a config as a throwaway daemon, probe it, write a report, kill it.
+# Boot a config as an isolated throwaway daemon, probe it, write a report,
+# kill it.
 # Usage: scripts/myde-probe.sh <init-directory> <output-file>
+#
+# Isolation:
+#   - unique socket name, so the user's running Emacs server is never touched
+#   - PATH reduced to /usr/bin:/bin, so binary gates only pass if
+#     exec-path-from-shell ran during init (git and the login shell live there
+#     on macOS and Linux; everything else must be recovered from the shell)
+#   - private XDG_STATE_HOME, so the daemon's exit cannot overwrite the live
+#     session's recentf, savehist, and bookmarks
 set -euo pipefail
 
 DIR="${1:?usage: myde-probe.sh <init-directory> <output-file>}"
 OUT="${2:?usage: myde-probe.sh <init-directory> <output-file>}"
 PROBE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/myde-probe.el"
+EMACS="$(command -v emacs)"
 SOCK="myde-probe-$$"
+STATE="$(mktemp -d "${TMPDIR:-/tmp}/myde-probe-state.XXXXXX")"
 
-cleanup() { emacsclient -s "$SOCK" -e '(kill-emacs)' >/dev/null 2>&1 || true; }
+cleanup() {
+  emacsclient -s "$SOCK" -e '(kill-emacs)' >/dev/null 2>&1 || true
+  rm -rf "$STATE"
+}
 trap cleanup EXIT
 
 rm -f "$OUT"
 echo "booting $DIR as daemon $SOCK ..."
-emacs --init-directory="$DIR" --daemon="$SOCK" >/dev/null 2>&1 || {
+env PATH=/usr/bin:/bin XDG_STATE_HOME="$STATE" \
+  "$EMACS" --init-directory="$DIR" --daemon="$SOCK" >/dev/null 2>&1 || {
   echo "FAIL: daemon did not start. Run without redirection to see why:"
-  echo "  emacs --init-directory=$DIR --daemon=$SOCK"
+  echo "  env PATH=/usr/bin:/bin XDG_STATE_HOME=/tmp/x $EMACS --init-directory=$DIR --daemon=$SOCK"
   exit 1
 }
 
-# Elpaca processes its queues asynchronously after init. Wait for it when present.
-emacsclient -s "$SOCK" -e '(when (boundp (quote elpaca-after-init-time))
-                            (let ((n 0))
-                              (while (and (null elpaca-after-init-time) (< n 600))
-                                (sleep-for 0.1) (setq n (1+ n)))))' >/dev/null
+# Elpaca processes its queues asynchronously after init.  A cold build takes
+# minutes, so poll from the shell with a generous deadline rather than
+# nesting a wait inside the server process.
+deadline=$((SECONDS + 1800))
+while [ "$(emacsclient -s "$SOCK" -e '(and (boundp (quote elpaca-after-init-time)) (null elpaca-after-init-time))')" = "t" ]; do
+  if [ "$SECONDS" -gt "$deadline" ]; then
+    echo "FAIL: elpaca still processing after 30 minutes"
+    exit 1
+  fi
+  sleep 2
+done
 
 emacsclient -s "$SOCK" -e "(load \"$PROBE\")" >/dev/null
 emacsclient -s "$SOCK" -e "(myde-probe-write \"$OUT\")" >/dev/null
 
 echo "report written to $OUT"
-grep -c '^package: ' "$OUT" | xargs echo "  packages loaded:"
-grep -c '^module: '  "$OUT" | xargs echo "  modules enabled:"
+grep -E '^(init-file-had-error|init-time-seconds|elpaca-init-time-seconds):' "$OUT" | sed 's/^/  /'
+echo "  declared packages: $(grep -c '^declared: ' "$OUT" || true)"
+echo "  loaded packages:   $(grep -c '^loaded: ' "$OUT" || true)"
+echo "  modes off:         $(grep -c '^mode: .* off$' "$OUT" || true)"
 if grep -q '^error: (none)$' "$OUT"; then
-  echo "  startup errors:  none"
+  echo "  startup errors:    none"
 else
-  echo "  startup errors:  $(grep -c '^error: ' "$OUT")"
+  echo "  startup errors:    $(grep -c '^error: ' "$OUT")"
 fi
 ```
 
 ```bash
-chmod +x scripts/myde-probe.sh
+chmod +x /tmp/myde-migration/scripts/myde-probe.sh
 ```
 
-- [ ] **Step 5: Capture the baseline from the CURRENT config**
+- [ ] **Step 6: Capture the baseline**
 
-This is the target every later phase is compared against.
+The worktree at this point *is* the current config plus the statistics line. This
+report is the contract every later phase is compared against.
 
 ```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
 mkdir -p /tmp/myde-reports
+cd /tmp/myde-migration
 scripts/myde-probe.sh "$PWD" /tmp/myde-reports/00-baseline.txt
+grep -c '^module: ' /tmp/myde-reports/00-baseline.txt
+grep '^binary: ' /tmp/myde-reports/00-baseline.txt | grep -c yes
+grep '^mode: ' /tmp/myde-reports/00-baseline.txt
 ```
 
-Expected: `modules enabled: 24`, a package count in the 90-110 range, and a printed
-error count. Record the actual numbers — they are the contract for Task 6.
+Expected: `init-file-had-error: nil`; `24` modules; declared packages somewhere in the
+150-200 range (every `use-package` form in the 24 enabled modules plus core, including
+built-ins like `emacs` and `treesit`); a printed error count.
 
-- [ ] **Step 6: Verify the probe detects a broken config**
+Expected `yes` count: **0**. The current config only runs `exec-path-from-shell` when
+`window-system` is `mac`/`ns`, which a daemon is not, and the driver stripped PATH.
+This is correct for the baseline and is exactly what phase 1 changes.
+
+Expected modes: most `on`. Record which are `off` in the baseline — some may
+legitimately be off in a frameless daemon — because later phases are compared against
+this list, not against "all on".
+
+- [ ] **Step 7: Record the predicted additions**
+
+Phase 1 turns on 11 modules. The packages they declare are knowable now, from the
+module tree, and become the expected delta in Task 4:
+
+```bash
+cd /tmp/myde-migration
+for m in prog-clojure prog-cpp prog-elixir prog-erlang prog-lua prog-ruby \
+         prog-rust prog-scheme prog-zig text-asciidoc auth-1password; do
+  cat modules/$m/lib.el modules/$m/cfg.el 2>/dev/null
+done | grep -oE '\(use-package [^ )]+' | awk '{print $2}' | sort -u \
+  > /tmp/myde-reports/00-expected-new.txt
+wc -l < /tmp/myde-reports/00-expected-new.txt
+cat /tmp/myde-reports/00-expected-new.txt
+```
+
+Expected: a few dozen names. Eyeball the list for anything that is not a package
+name (a `grep` hit inside a comment, say) and remove it by hand.
+
+- [ ] **Step 8: Verify the probe detects a broken config**
 
 A harness that cannot fail is not a harness.
 
 ```bash
 mkdir -p /tmp/myde-broken
 printf '(require (quote definitely-not-a-real-package))\n' > /tmp/myde-broken/init.el
-scripts/myde-probe.sh /tmp/myde-broken /tmp/myde-reports/00-sanity.txt
-grep '^error: ' /tmp/myde-reports/00-sanity.txt
-```
-
-Expected: at least one line matching `Cannot open load file`. If the report says
-`error: (none)`, the regexp in `myde-probe-startup-errors` is wrong — fix it before
-proceeding.
-
-```bash
+/tmp/myde-migration/scripts/myde-probe.sh /tmp/myde-broken /tmp/myde-reports/00-sanity.txt
+grep -E '^(init-file-had-error|error): ' /tmp/myde-reports/00-sanity.txt
 rm -rf /tmp/myde-broken
 ```
 
-- [ ] **Step 7: Confirm the worktree reproduces the baseline**
+Expected: `init-file-had-error: t` and at least one `error:` line mentioning
+`Cannot open load file`. If `init-file-had-error` is `t` but no `error:` line
+appears, the `*Messages*` regexp is too narrow; widen it, but the flag alone is
+already sufficient to fail a phase.
+
+- [ ] **Step 9: Commit the harness**
 
 ```bash
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/00-worktree.txt
-diff <(grep -E '^(module|package): ' /tmp/myde-reports/00-baseline.txt) \
-     <(grep -E '^(module|package): ' /tmp/myde-reports/00-worktree.txt) && echo "IDENTICAL"
-```
-
-Expected: `IDENTICAL`. If not, step 2 was skipped or incomplete — the worktree is
-missing `custom.el` or `elpa`.
-
-- [ ] **Step 8: Commit the harness**
-
-The scripts were created in the main tree so the baseline could be captured. The
-worktree needs its own copy, since they are not yet committed:
-
-```bash
-mkdir -p /tmp/myde-migration/scripts
-cp /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs/scripts/myde-probe.el \
-   /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs/scripts/myde-probe.sh \
-   /tmp/myde-migration/scripts/
-chmod +x /tmp/myde-migration/scripts/myde-probe.sh
 cd /tmp/myde-migration
-git add scripts/
+git add early-init.el scripts/
 git commit -m "Add config probe harness for migration verification
 
-Captures loaded third-party packages, enabled modules, gate binary
-availability, init time, and startup errors from a running Emacs via a
-throwaway daemon socket. Baseline for comparing each migration phase.
+Captures declared use-package forms (via use-package-statistics),
+startup-enabled global modes, gate binary availability, loaded
+third-party packages, init time, and startup errors from a running Emacs
+via an isolated throwaway daemon. Baseline for comparing each migration
+phase.
+
+The daemon runs with PATH=/usr/bin:/bin so binary gates only pass when
+exec-path-from-shell ran, and with a private XDG_STATE_HOME so exiting
+cannot clobber the live session's state files.
+
+Enables use-package-compute-statistics in early-init.el, which the probe
+depends on and which powers M-x use-package-report.
 
 --batch and -Q both imply --no-init-file, so a daemon is the only way to
 exercise a config non-interactively."
@@ -336,10 +460,11 @@ exercise a config non-interactively."
 
 ---
 
-# Phase 1 — Flatten
+# Phase 1 — Flatten and gate
 
-Goal: one `user-lisp/myde.el` containing everything, with `package.el` and the 24
-toggles still in force, producing an identical package set to the baseline.
+Goal: one `user-lisp/myde.el` containing everything, enablement derived from
+`executable-find`, `package.el` still in force, declared package set equal to the
+baseline plus exactly the packages of the 11 newly-live modules.
 
 ## Task 1: Relocate module assets
 
@@ -421,14 +546,15 @@ which resolves correctly against `etc/` after the move in step 1. Leave it uncha
 - [ ] **Step 6: Verify no regression**
 
 ```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/01-assets.txt
-diff <(grep -E '^(module|package): ' /tmp/myde-reports/00-baseline.txt) \
-     <(grep -E '^(module|package): ' /tmp/myde-reports/01-assets.txt) && echo "IDENTICAL"
-grep '^error: ' /tmp/myde-reports/01-assets.txt
+cd /tmp/myde-migration
+scripts/myde-probe.sh "$PWD" /tmp/myde-reports/01-assets.txt
+diff <(grep -E '^(module|declared|mode): ' /tmp/myde-reports/00-baseline.txt) \
+     <(grep -E '^(module|declared|mode): ' /tmp/myde-reports/01-assets.txt) && echo "IDENTICAL"
+comm -13 <(grep '^error: ' /tmp/myde-reports/00-baseline.txt | sort) \
+         <(grep '^error: ' /tmp/myde-reports/01-assets.txt | sort)
 ```
 
-Expected: `IDENTICAL`, and no new errors versus baseline.
+Expected: `IDENTICAL`, and the `comm` prints nothing (no new errors).
 
 - [ ] **Step 7: Verify the banner and snippets actually resolve**
 
@@ -480,7 +606,7 @@ file cannot drift from the declared load order:
 ;; guards, and `provide' forms.  Run once during phase 1 of the migration, then
 ;; deleted -- myde.el becomes the source of truth (and later, myde.org does).
 ;;
-;; Usage: emacs -Q --batch -l scripts/myde-flatten.el
+;; Usage: MYDE_ROOT=<repo> emacs -Q --batch -l scripts/myde-flatten.el
 
 ;;; Code:
 
@@ -511,8 +637,9 @@ file cannot drift from the declared load order:
     (goto-char (point-min))
     (when (re-search-forward "^(provide '[^)]+)" nil t)
       (delete-region (match-beginning 0) (point-max)))
-    ;; Drop the lib.el-loading featurep guard (two forms in the tree use `load'
-    ;; rather than `load-file'; both are matched).
+    ;; Drop the lib.el-loading featurep guard (one form in the tree uses `load'
+    ;; rather than `load-file'; both are matched).  Every guard in the tree is
+    ;; two lines; verified before writing this.
     (goto-char (point-min))
     (while (re-search-forward "^(unless (featurep '[^)]+)\n[ \t]*(load\\(?:-file\\)? .*\n" nil t)
       (replace-match ""))
@@ -581,9 +708,10 @@ emacs -Q --batch --eval '(with-temp-buffer
 Expected: `OK: N top-level forms` with N in the 400-600 range. A `PARSE FAIL` means
 `myde-flatten--body` mangled a file — inspect the form count to locate roughly where.
 
-- [ ] **Step 4: Verify no stray provides or guards survived**
+- [ ] **Step 4: Verify no stray provides, guards, or load-file-name uses survived**
 
 ```bash
+cd /tmp/myde-migration
 grep -n "provide 'myde-" user-lisp/myde.el || echo "no stray provides"
 grep -n 'featurep .myde-' user-lisp/myde.el || echo "no stray guards"
 grep -n 'load-file-name' user-lisp/myde.el || echo "no load-file-name uses"
@@ -600,132 +728,135 @@ git commit -m "Generate flattened user-lisp/myde.el from module tree
 
 Concatenates all 53 modules' lib.el and cfg.el in myde-modules order,
 stripping per-file headers, featurep guards, and provide forms. Not yet
-loaded by init.el; the next commit switches over.
+loaded by init.el; the next commits gate it and switch over.
 
 scripts/myde-flatten.el is one-shot tooling, removed at the end of phase 1."
 ```
 
-## Task 3: Add temporary toggle scaffolding
+## Task 3: Environment section and binary gates
 
-`myde-customize` generated the 24 `defcustom` toggles from `myde-modules`. Both are
-about to be deleted, but phase 1 must preserve behaviour so its parity check means
-something. These 24 forms are written out literally and deleted in Task 8.
+One wrapping pass. Each toggleable section either becomes unconditional (its `when`
+is simply never written) or gets wrapped in its `executable-find` gate.
 
 **Files:**
 - Modify: `user-lisp/myde.el`
 
-- [ ] **Step 1: Insert the toggle definitions**
+- [ ] **Step 1: Verify the `-l` assumption on this machine**
 
-Immediately after the `;;; Code:` line in `user-lisp/myde.el`, insert:
-
-```elisp
-;;;; Module toggles (TEMPORARY -- removed in phase 2)
-;;;; ------------------------------------------------
-;; Written out literally to preserve phase-1 behaviour after `myde-customize'
-;; was deleted.  Phase 2 replaces every consumer with an `executable-find' gate
-;; and deletes this block along with the matching entries in custom.el.
-
-(defgroup myde-modules nil
-  "MyDE module enablement."
-  :group 'convenience)
-
-(defmacro myde--deftoggle (name)
-  "Define the enablement toggle for module NAME."
-  `(defcustom ,(intern (format "myde-module-%s-enabled" name)) nil
-     ,(format "Non-nil enables the %s module." name)
-     :type 'boolean
-     :group 'myde-modules))
-
-(myde--deftoggle "ai-gptel")       (myde--deftoggle "ai-agents")
-(myde--deftoggle "ai-claude")      (myde--deftoggle "ai-mcp")
-(myde--deftoggle "auth-1password") (myde--deftoggle "containers-kubernetes")
-(myde--deftoggle "data-csv")       (myde--deftoggle "data-dotenv")
-(myde--deftoggle "data-hcl")       (myde--deftoggle "data-json")
-(myde--deftoggle "data-pkl")       (myde--deftoggle "data-toml")
-(myde--deftoggle "data-xml")       (myde--deftoggle "data-yaml")
-(myde--deftoggle "ebook-epub")     (myde--deftoggle "ebook-pdf")
-(myde--deftoggle "prog-bash")      (myde--deftoggle "prog-clisp")
-(myde--deftoggle "prog-clojure")   (myde--deftoggle "prog-cpp")
-(myde--deftoggle "prog-elisp")     (myde--deftoggle "prog-elixir")
-(myde--deftoggle "prog-erlang")    (myde--deftoggle "prog-fish")
-(myde--deftoggle "prog-go")        (myde--deftoggle "prog-javascript")
-(myde--deftoggle "prog-lua")       (myde--deftoggle "prog-nushell")
-(myde--deftoggle "prog-python")    (myde--deftoggle "prog-ruby")
-(myde--deftoggle "prog-rust")      (myde--deftoggle "prog-scheme")
-(myde--deftoggle "prog-typescript")(myde--deftoggle "prog-zig")
-(myde--deftoggle "text-asciidoc")  (myde--deftoggle "text-markdown")
+```bash
+diff <($SHELL -l -c 'printf %s "$PATH"' | tr ':' '\n' | sort -u) \
+     <($SHELL -l -i -c 'printf %s "$PATH"' 2>/dev/null | tr ':' '\n' | sort -u) \
+  && echo "SAFE: -l is sufficient" || echo "UNSAFE: keep -l -i on this machine"
 ```
 
-Note this defines toggles for all 36 toggleable modules, not just the 24 currently
-enabled — `custom.el` supplies values for the enabled subset and the rest stay `nil`,
-exactly as `myde-customize` behaved.
+Expected on the macOS machine: `SAFE`. **Re-run this on the Linux machine before
+trusting the config there** — if it reports `UNSAFE`, use `'("-l" "-i")` there and
+accept the ~575ms.
 
-- [ ] **Step 2: Wrap each toggleable module section in its toggle**
+- [ ] **Step 2: Remove the old deferred exec-path-from-shell hook**
 
-For every `;;;; <category>-<name>` section in `user-lisp/myde.el` that is **not**
-`core-*` and **not** `*-base`, wrap the section body:
+In `user-lisp/myde.el`, within the `;;;; core-base` section, delete the
+`myde-exec-path-from-shell-startup-hook` function definition (carried over from
+`core-base/lib.el:38-49`) and the block carried over from `core-base/cfg.el:108-115`:
+
+```elisp
+;; Environment variables from shell initialization
+;; NOTE: ...
+(when (memq window-system '(mac ns))
+  (add-hook 'emacs-startup-hook #'myde-exec-path-from-shell-startup-hook 90))
+```
+
+```bash
+grep -n 'exec-path-from-shell' /tmp/myde-migration/user-lisp/myde.el
+```
+
+Expected after editing: only the comment line from the core-base commentary, if the
+flattener kept it; no code.
+
+- [ ] **Step 3: Insert the Environment section after core-base**
+
+Find the `;;;; core-ui` section header — the first header after the core-base
+section — and insert this immediately before it:
+
+```elisp
+;;;; Environment
+;;;; -----------
+;; Must precede every `executable-find' gate below.  GUI Emacs on macOS, and
+;; Emacs started from a .desktop entry or systemd user unit on Linux, do not
+;; inherit the login shell's PATH -- so without this, gates would silently
+;; disable modules whose binaries are installed.
+;;
+;; Sits after core-base rather than first in the file: under package.el a
+;; third-party package cannot be required before `package-initialize', which
+;; core-base runs.  The position is harmless under elpaca and is kept fixed.
+;;
+;; Dropping "-i" from the default '("-l" "-i") takes the probe from ~575ms to
+;; ~88ms with an identical resulting PATH, and keeps it under
+;; `exec-path-from-shell-warn-duration-millis' (500).
+
+(use-package exec-path-from-shell
+  :ensure t
+  :demand t
+  :init
+  (setq exec-path-from-shell-arguments '("-l"))
+  :config
+  (when (or (daemonp) window-system)
+    (exec-path-from-shell-initialize)))
+```
+
+`:ensure t` here, not `:ensure (:wait t)` — that changes in Task 7 when elpaca
+arrives.
+
+- [ ] **Step 4: Wrap the gated sections**
+
+For each section below, wrap the whole section body — every form between its `;;;;`
+header and the next section's header — in a `when`, and add a `;; Gate:` comment so
+the rule is legible without consulting this plan:
 
 ```elisp
 ;;;; prog-go
 ;;;; -------
+;; Gate: go
 
-(when myde-module-prog-go-enabled
+(when (executable-find "go")
 
   ;; ... existing section body, indented or not, unchanged ...
 
   )
 ```
 
-For the three `*-base` modules (`prog-base`, `text-base`, `ai-base`), reproduce the
-old auto-load rule — loaded if any sibling in the category is enabled:
+| Section | `when` condition |
+|---|---|
+| `prog-go` | `(executable-find "go")` |
+| `prog-rust` | `(executable-find "cargo")` |
+| `prog-zig` | `(executable-find "zig")` |
+| `prog-lua` | `(executable-find "lua")` |
+| `prog-ruby` | `(executable-find "ruby")` |
+| `prog-python` | `(executable-find "python3")` |
+| `prog-javascript` | `(executable-find "node")` |
+| `prog-typescript` | `(executable-find "node")` |
+| `prog-elixir` | `(executable-find "elixir")` |
+| `prog-erlang` | `(executable-find "erl")` |
+| `prog-clojure` | `(executable-find "clojure")` |
+| `prog-scheme` | `(executable-find "guile")` |
+| `prog-clisp` | `(executable-find "sbcl")` |
+| `prog-cpp` | `(executable-find "clangd")` |
+| `prog-fish` | `(executable-find "fish")` |
+| `prog-nushell` | `(executable-find "nu")` |
+| `ebook-pdf` | `(executable-find "pdftoppm")` |
+| `auth-1password` | `(executable-find "op")` |
+| `containers-kubernetes` | `(executable-find "kubectl")` |
+| `ai-claude` | `(executable-find "claude")` |
 
-```elisp
-;;;; prog-base
-;;;; ---------
+Twenty sections. Everything else stays at top level, unwrapped: all 12 `core-*`
+sections, `prog-base`, `text-base`, `ai-base`, `prog-elisp`, `prog-bash`, every
+`data-*` section (including `data-hcl` and `data-pkl`), `text-asciidoc`,
+`text-markdown`, `ebook-epub`, `ai-gptel`, `ai-mcp`, `ai-agents`. These are editing
+modes that need no toolchain and are `:mode`-deferred, so they cost nothing.
 
-(when (or myde-module-prog-bash-enabled myde-module-prog-clisp-enabled
-          myde-module-prog-clojure-enabled myde-module-prog-cpp-enabled
-          myde-module-prog-elisp-enabled myde-module-prog-elixir-enabled
-          myde-module-prog-erlang-enabled myde-module-prog-fish-enabled
-          myde-module-prog-go-enabled myde-module-prog-javascript-enabled
-          myde-module-prog-lua-enabled myde-module-prog-nushell-enabled
-          myde-module-prog-python-enabled myde-module-prog-ruby-enabled
-          myde-module-prog-rust-enabled myde-module-prog-scheme-enabled
-          myde-module-prog-typescript-enabled myde-module-prog-zig-enabled)
+- [ ] **Step 5: Re-verify the file parses**
 
-  ;; ... existing prog-base body ...
-
-  )
-```
-
-```elisp
-;;;; text-base
-;;;; ---------
-
-(when (or myde-module-text-asciidoc-enabled myde-module-text-markdown-enabled)
-
-  ;; ... existing text-base body ...
-
-  )
-```
-
-```elisp
-;;;; ai-base
-;;;; -------
-
-(when (or myde-module-ai-gptel-enabled myde-module-ai-agents-enabled
-          myde-module-ai-claude-enabled myde-module-ai-mcp-enabled)
-
-  ;; ... existing ai-base body ...
-
-  )
-```
-
-All 12 `core-*` sections stay unwrapped.
-
-- [ ] **Step 3: Re-verify the file parses**
-
-Wrapping 39 sections by hand is where paren errors happen.
+Wrapping 20 sections by hand is where paren errors happen.
 
 ```bash
 emacs -Q --batch --eval '(with-temp-buffer
@@ -736,29 +867,40 @@ emacs -Q --batch --eval '(with-temp-buffer
         (while t (read (current-buffer)) (setq n (1+ n)))
       (end-of-file (message "OK: %d top-level forms" n))
       (error (message "PARSE FAIL after %d forms: %S" n e) (kill-emacs 1)))))'
+grep -c '^;; Gate: ' /tmp/myde-migration/user-lisp/myde.el
 ```
 
-Expected: `OK: N top-level forms`, with N substantially lower than Task 2 step 3 —
-each wrapped section collapses many top-level forms into one `when`.
+Expected: `OK: N top-level forms`, with N lower than Task 2 step 3 (each wrapped
+section collapses many forms into one `when`), and `20` gate comments.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
+cd /tmp/myde-migration
 git add user-lisp/myde.el
-git commit -m "Add temporary module toggles to myde.el
+git commit -m "Gate module sections on binary presence; inline exec-path-from-shell
 
-Writes out the 24-plus-12 defcustom toggles that myde-customize used to
-generate, and wraps each toggleable section in its toggle. The three
-*-base sections reproduce the old sibling-enabled auto-load rule.
+Wraps 20 sections in (when (executable-find ...)) gates. Presence equals
+intent: no override list, no deny list, no defcustom. Sections that are
+editing modes with no toolchain dependency stay unconditional; they are
+:mode-deferred and cost nothing.
 
-Throwaway scaffolding: phase 2 replaces every condition with an
-executable-find gate and deletes this block."
+exec-path-from-shell moves off emacs-startup-hook to a section right after
+core-base, since gates are evaluated during init and need a complete
+exec-path. Drops -i from the shell arguments (~575ms to ~88ms, identical
+PATH) and widens the guard from mac/ns to (or (daemonp) window-system) --
+Linux Emacs started from a .desktop entry or systemd unit has no login
+shell ancestry either.
+
+Not yet loaded by init.el; the next commit switches over."
 ```
 
-## Task 4: Switch init.el to load myde.el
+## Task 4: Switch init.el, delete the module tree, verify against baseline
 
 **Files:**
 - Modify: `init.el` (replace body)
+- Modify: `custom.el` (worktree copy; the live one at go-live)
+- Delete: `modules.el`, `modules/`
 
 - [ ] **Step 1: Replace init.el**
 
@@ -791,8 +933,13 @@ the flattener put it (from `core-base/cfg.el`).
 
 (require 'myde)
 
-(require 'server)
-(unless (server-running-p) (server-start))
+;; A daemon starts its own server from startup.el after init; only GUI and
+;; TTY sessions need one here.  (`server-name' is still "server" at this
+;; point even under --daemon=NAME, so an unguarded start would grab the
+;; user's default socket.)
+(unless (daemonp)
+  (require 'server)
+  (unless (server-running-p) (server-start)))
 
 ;; That's all Folks!
 (provide 'init)
@@ -810,230 +957,11 @@ ls modules.el modules 2>&1 | head -2
 
 Expected: `No such file or directory` for both.
 
-- [ ] **Step 3: Probe and compare against baseline**
+- [ ] **Step 3: Strip the toggles from the worktree custom.el**
 
-This is the phase 1 acceptance gate.
-
-```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/01-flattened.txt
-echo "--- modules ---"
-diff <(grep '^module: ' /tmp/myde-reports/00-baseline.txt) \
-     <(grep '^module: ' /tmp/myde-reports/01-flattened.txt) && echo "MODULES IDENTICAL"
-echo "--- packages ---"
-diff <(grep '^package: ' /tmp/myde-reports/00-baseline.txt) \
-     <(grep '^package: ' /tmp/myde-reports/01-flattened.txt) && echo "PACKAGES IDENTICAL"
-echo "--- errors ---"
-diff <(grep '^error: ' /tmp/myde-reports/00-baseline.txt) \
-     <(grep '^error: ' /tmp/myde-reports/01-flattened.txt) && echo "ERRORS IDENTICAL"
-```
-
-Expected: all three print `IDENTICAL`.
-
-If packages differ, the usual causes are a module section whose `when` wrapper swallowed
-a form it should not have, or a `require` that depended on load order the flattener
-changed. The module tree is deleted in the working directory but still present at `HEAD`
-until this task commits, so diff against the original:
-
-```bash
-git show HEAD:modules/prog-go/cfg.el | diff - <(sed -n '/^;;;; prog-go$/,/^;;;; prog-rust$/p' user-lisp/myde.el)
-```
-
-- [ ] **Step 4: Check init time did not regress**
-
-```bash
-grep 'init-time-seconds' /tmp/myde-reports/00-baseline.txt /tmp/myde-reports/01-flattened.txt
-```
-
-Expected: within a few milliseconds. A large regression suggests something now loads
-eagerly that was previously deferred.
-
-- [ ] **Step 5: Delete the one-shot flattener and commit**
-
-```bash
-cd /tmp/myde-migration
-git rm -q scripts/myde-flatten.el
-git add -A
-git commit -m "Load config from user-lisp/myde.el; delete module tree
-
-init.el becomes a five-line entry point: (require 'myde) plus server
-start. Deletes modules.el, all 53 module directories, and the one-shot
-flattener.
-
-Verified at parity with the pre-migration config: identical enabled
-module set, identical loaded third-party package set, identical startup
-errors."
-```
-
----
-
-# Phase 2 — Binary gates
-
-Goal: delete the toggles, derive enablement from `executable-find`, and get the 11
-newly-live modules loading cleanly.
-
-## Task 5: Inline exec-path-from-shell
-
-Must land before any gate is evaluated, because on macOS GUI Emacs `exec-path` is
-incomplete until it runs.
-
-**Files:**
-- Modify: `user-lisp/myde.el`
-
-- [ ] **Step 1: Verify the `-l` assumption on this machine**
-
-```bash
-diff <($SHELL -l -c 'printf %s "$PATH"' | tr ':' '\n' | sort -u) \
-     <($SHELL -l -i -c 'printf %s "$PATH"' 2>/dev/null | tr ':' '\n' | sort -u) \
-  && echo "SAFE: -l is sufficient" || echo "UNSAFE: keep -l -i on this machine"
-```
-
-Expected on the macOS machine: `SAFE`. **Re-run this on the Linux machine before
-trusting the config there** — if it reports `UNSAFE`, use
-`'("-l" "-i")` there and accept the ~575ms.
-
-- [ ] **Step 2: Add the environment section as the first section of myde.el**
-
-Immediately after `;;; Code:` (above the temporary toggle block):
-
-```elisp
-;;;; Environment
-;;;; -----------
-;; Must precede every `executable-find' gate below.  GUI Emacs on macOS, and
-;; Emacs started from a .desktop entry or systemd user unit on Linux, do not
-;; inherit the login shell's PATH -- so without this, gates would silently
-;; disable modules whose binaries are installed.
-;;
-;; `:wait t' is required: under elpaca a package is not on `load-path' until
-;; queues are processed after init, which is too late for the gates.
-;;
-;; Dropping "-i" from the default '("-l" "-i") takes the probe from ~575ms to
-;; ~88ms with an identical resulting PATH on both target machines, and keeps it
-;; under `exec-path-from-shell-warn-duration-millis' (500).
-
-(use-package exec-path-from-shell
-  :ensure t
-  :demand t
-  :init
-  (setq exec-path-from-shell-arguments '("-l"))
-  :config
-  (when (or (daemonp) window-system)
-    (exec-path-from-shell-initialize)))
-```
-
-`:ensure t` here, not `:ensure (:wait t)` — that changes in Task 11 when elpaca
-arrives. Under `package.el` this form must also be reachable, so verify the package is
-present: it is, at `elpa/exec-path-from-shell-2.2`.
-
-- [ ] **Step 3: Remove the old deferred hook**
-
-Delete from `user-lisp/myde.el` the `core-base` remnants the flattener carried over:
-the `myde-exec-path-from-shell-startup-hook` function definition, and the
-`(when (memq window-system '(mac ns)) (add-hook 'emacs-startup-hook ...))` form.
-
-```bash
-grep -n 'myde-exec-path-from-shell-startup-hook' /tmp/myde-migration/user-lisp/myde.el
-```
-
-Expected after editing: no output.
-
-- [ ] **Step 4: Verify exec-path is now complete during init**
-
-```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/02-path.txt
-grep -E '^(exec-path-entries|binary): ' /tmp/myde-reports/02-path.txt
-```
-
-Expected: `exec-path-entries` around 42, and `yes` for `go cargo zig lua ruby python3
-node elixir erl clojure guile clangd fish nu tofu op kubectl claude pdftoppm
-asciidoctor`; `no` for `sbcl pkl terraform`.
-
-If binaries report `no` that you know are installed, `exec-path-from-shell` did not run
-— check the `(or (daemonp) window-system)` guard, remembering that a daemon satisfies
-`daemonp`.
-
-- [ ] **Step 5: Commit**
-
-```bash
-cd /tmp/myde-migration
-git add user-lisp/myde.el
-git commit -m "Inline exec-path-from-shell ahead of module configuration
-
-Moves it off emacs-startup-hook to the first section of myde.el, since
-binary gates in the next commit are evaluated during init and need a
-complete exec-path. Drops -i from the shell arguments: ~575ms to ~88ms
-with a verified-identical PATH.
-
-Widens the guard from mac/ns to (or (daemonp) window-system) -- Linux
-Emacs started from a .desktop entry or systemd unit has no login shell
-ancestry either."
-```
-
-## Task 6: Replace toggles with binary gates
-
-**Files:**
-- Modify: `user-lisp/myde.el`
-- Modify: `custom.el` (worktree copy and, at go-live, the real one)
-
-- [ ] **Step 1: Delete the temporary toggle block**
-
-Remove the entire `;;;; Module toggles (TEMPORARY ...)` section added in Task 3 —
-`defgroup`, `myde--deftoggle`, and all 36 calls.
-
-- [ ] **Step 2: Replace each section's condition**
-
-Unconditional — delete the `(when …)` wrapper entirely, leaving the body at top level.
-All 12 `core-*` sections plus: `prog-base`, `text-base`, `ai-base`, `prog-elisp`,
-`prog-bash`, `data-csv`, `data-dotenv`, `data-json`, `data-toml`, `data-xml`,
-`data-yaml`, `text-markdown`, `ebook-epub`, `ai-gptel`, `ai-mcp`, `ai-agents`.
-
-The `*-base` sections become unconditional because their categories now always have at
-least one live member.
-
-Gated — replace the toggle condition with the gate:
-
-| Section | Replace `when` condition with |
-|---|---|
-| `prog-go` | `(executable-find "go")` |
-| `prog-rust` | `(executable-find "cargo")` |
-| `prog-zig` | `(executable-find "zig")` |
-| `prog-lua` | `(executable-find "lua")` |
-| `prog-ruby` | `(executable-find "ruby")` |
-| `prog-python` | `(executable-find "python3")` |
-| `prog-javascript` | `(executable-find "node")` |
-| `prog-typescript` | `(executable-find "node")` |
-| `prog-elixir` | `(executable-find "elixir")` |
-| `prog-erlang` | `(executable-find "erl")` |
-| `prog-clojure` | `(executable-find "clojure")` |
-| `prog-scheme` | `(executable-find "guile")` |
-| `prog-clisp` | `(executable-find "sbcl")` |
-| `prog-cpp` | `(executable-find "clangd")` |
-| `prog-fish` | `(executable-find "fish")` |
-| `prog-nushell` | `(executable-find "nu")` |
-| `data-hcl` | `(or (executable-find "tofu") (executable-find "terraform"))` |
-| `data-pkl` | `(executable-find "pkl")` |
-| `text-asciidoc` | `(executable-find "asciidoctor")` |
-| `ebook-pdf` | `(executable-find "pdftoppm")` |
-| `auth-1password` | `(executable-find "op")` |
-| `containers-kubernetes` | `(executable-find "kubectl")` |
-| `ai-claude` | `(executable-find "claude")` |
-
-Each gated section gets a comment naming its gate, so the rule is legible without
-consulting this plan:
-
-```elisp
-;;;; prog-go
-;;;; -------
-;; Gate: go
-
-(when (executable-find "go")
-  ...)
-```
-
-- [ ] **Step 3: Strip the toggles from custom.el**
-
-All 24 are on their own line in a fixed format, so a filter is enough:
+The 24 `defcustom`s no longer exist, but `custom-set-variables` would still set the
+bare symbols, and the probe's `module:` count would lie. All 24 are on their own line
+in a fixed format:
 
 ```bash
 cd /tmp/myde-migration
@@ -1043,50 +971,84 @@ mv custom.el.new custom.el
 grep -c "myde-module-.*-enabled" custom.el || echo "0 remaining"
 ```
 
-Expected: `24`, then `0 remaining`.
+Expected: `24`, then `0 remaining`. `package-selected-packages` stays for now;
+`package.el` still needs it.
 
-- [ ] **Step 4: Verify the file parses and gates resolve as predicted**
+- [ ] **Step 4: Probe and compare against baseline**
 
-```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/02-gated.txt
-echo "--- modules (should be empty; toggles are gone) ---"
-grep -c '^module: ' /tmp/myde-reports/02-gated.txt
-echo "--- packages newly loaded vs baseline ---"
-comm -13 <(grep '^package: ' /tmp/myde-reports/00-baseline.txt) \
-         <(grep '^package: ' /tmp/myde-reports/02-gated.txt)
-echo "--- packages no longer loaded vs baseline ---"
-comm -23 <(grep '^package: ' /tmp/myde-reports/00-baseline.txt) \
-         <(grep '^package: ' /tmp/myde-reports/02-gated.txt)
-```
-
-Expected: module count `0`. Newly loaded packages should be those belonging to the 11
-newly-live modules (`clojure-mode`, `cider`, `elixir-ts-mode`, `rust-mode`, `zig-ts-mode`,
-`lua-mode`, `geiser`, `adoc-mode`, and similar). Packages no longer loaded should be
-`pkl-mode` only.
-
-Anything else in either list is a mistake in step 2's mapping.
-
-- [ ] **Step 5: Commit**
+This is the phase 1 acceptance gate.
 
 ```bash
 cd /tmp/myde-migration
-git add user-lisp/myde.el
-git commit -m "Replace module toggles with binary presence gates
+scripts/myde-probe.sh "$PWD" /tmp/myde-reports/01-gated.txt
+R=/tmp/myde-reports
+decl() { grep '^declared: ' "$1" | sed 's/^declared: //'; }
 
-Enablement now derives from executable-find rather than 24 hand-maintained
-defcustom toggles. Presence equals intent: no override list, no deny list.
-
-Sections with no meaningful gating binary become unconditional -- they are
-:mode-deferred, so they cost nothing at startup. The three *-base sections
-become unconditional too, since their categories always have a live member.
-
-On the development machine this enables 11 previously-disabled modules
-(clojure, cpp, elixir, erlang, lua, ruby, rust, scheme, zig, asciidoc,
-1password) and disables data-pkl, which has no pkl binary installed."
+echo "--- init ---"
+grep -E '^(init-file-had-error|exec-path-entries):' $R/01-gated.txt
+echo "--- modules (must be 0) ---"
+grep -c '^module: ' $R/01-gated.txt || true
+echo "--- gate binaries ---"
+grep '^binary: ' $R/01-gated.txt
+echo "--- declared: lost vs baseline (must be empty) ---"
+comm -23 <(decl $R/00-baseline.txt) <(decl $R/01-gated.txt)
+echo "--- declared: gained vs predicted ---"
+diff <(comm -13 <(decl $R/00-baseline.txt) <(decl $R/01-gated.txt)) \
+     <(comm -13 <(decl $R/00-baseline.txt) $R/00-expected-new.txt) && echo "GAINED = PREDICTED"
+echo "--- startup modes ---"
+diff <(grep '^mode: ' $R/00-baseline.txt) <(grep '^mode: ' $R/01-gated.txt) && echo "MODES IDENTICAL"
+echo "--- new errors ---"
+comm -13 <(grep '^error: ' $R/00-baseline.txt | sort) <(grep '^error: ' $R/01-gated.txt | sort)
 ```
 
-## Task 7: Fix the newly-live modules
+Expected:
+
+- `init-file-had-error: nil`; `exec-path-entries` around 42 (was ~8 in the baseline).
+- `0` modules.
+- `binary:` `yes` for `go cargo zig lua ruby python3 node elixir erl clojure guile
+  clangd fish nu pdftoppm op kubectl claude`; `no` for `sbcl`. If binaries you know
+  are installed report `no`, `exec-path-from-shell` did not run — check the
+  `(or (daemonp) window-system)` guard, remembering a daemon satisfies `daemonp`.
+- Nothing lost. `GAINED = PREDICTED`.
+- `MODES IDENTICAL`.
+- New errors: expect some. They come from the 11 modules that have never run; Task 5
+  works them off. Anything mentioning a module that was *already* enabled is a
+  flattening mistake — fix it now.
+
+If `GAINED = PREDICTED` fails, `diff` shows the discrepancy. A package predicted but
+not gained means its section's `when` swallowed a form or its gate is false. A package
+gained but not predicted means a section that should be unconditional got wrapped, or
+the Task 0 step 7 list missed a form.
+
+- [ ] **Step 5: Check init time did not regress**
+
+```bash
+grep 'init-time-seconds' /tmp/myde-reports/00-baseline.txt /tmp/myde-reports/01-gated.txt
+```
+
+Expected: within tens of milliseconds, allowing for ~88ms of `exec-path-from-shell`
+that now runs during init instead of after it. A large regression suggests something
+in a newly-live module loads eagerly.
+
+- [ ] **Step 6: Delete the one-shot flattener and commit**
+
+```bash
+cd /tmp/myde-migration
+git rm -q scripts/myde-flatten.el
+git add -A
+git commit -m "Load config from user-lisp/myde.el; delete module tree
+
+init.el becomes a short entry point: (require 'myde) plus server start
+for non-daemon sessions. Deletes modules.el, all 53 module directories,
+and the one-shot flattener.
+
+Verified against the pre-migration baseline: no declared package lost;
+the packages gained are exactly those declared by the 11 modules that
+binary gating switches on (clojure, cpp, elixir, erlang, lua, ruby, rust,
+scheme, zig, asciidoc, 1password); startup-enabled modes identical."
+```
+
+## Task 5: Fix the newly-live modules
 
 ~1,700 lines across 11 modules have never executed. Expect real breakage here; it is
 pre-existing, not caused by the migration.
@@ -1094,21 +1056,18 @@ pre-existing, not caused by the migration.
 **Files:**
 - Modify: `user-lisp/myde.el` (sections for the 11 newly-live modules)
 
-- [ ] **Step 1: Get the full error list**
+- [ ] **Step 1: Get the new error list**
 
 ```bash
-grep '^error: ' /tmp/myde-reports/02-gated.txt
-comm -13 <(grep '^error: ' /tmp/myde-reports/00-baseline.txt) \
-         <(grep '^error: ' /tmp/myde-reports/02-gated.txt)
+comm -13 <(grep '^error: ' /tmp/myde-reports/00-baseline.txt | sort) \
+         <(grep '^error: ' /tmp/myde-reports/01-gated.txt | sort)
 ```
-
-The second command isolates errors the migration introduced from ones that predate it.
 
 - [ ] **Step 2: Fix the known-missing `:ensure` on geiser**
 
 `prog-scheme`'s `geiser` form has no `:ensure` and was never exercised. Under
-`package.el` it loads only because `geiser` is in `package-selected-packages`; it is
-not. Add it:
+`package.el` it loads only if `geiser` is in `package-selected-packages`; it is not.
+Add it:
 
 ```elisp
 (use-package geiser
@@ -1121,8 +1080,9 @@ not. Add it:
 
 For each error line, the three patterns seen in this codebase and their fixes:
 
-- `Cannot open load file: <pkg>` — the package is not installed. Add `:ensure t` to its
-  `use-package` form if it is a third-party package, or `:ensure nil` if built-in.
+- `Cannot open load file: <pkg>` / `Cannot load <pkg>` — the package is not installed.
+  Add `:ensure t` to its `use-package` form if it is a third-party package, or
+  `:ensure nil` if built-in.
 - `Invalid function: <fn>` in a `:hook` — the hook target does not exist in the
   installed version. Verify with
   `emacsclient -s <sock> -e '(fboundp (quote <fn>))'` and correct the name.
@@ -1132,20 +1092,25 @@ For each error line, the three patterns seen in this codebase and their fixes:
 Re-probe after each fix:
 
 ```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/02-fixed.txt
-grep '^error: ' /tmp/myde-reports/02-fixed.txt
+cd /tmp/myde-migration
+scripts/myde-probe.sh "$PWD" /tmp/myde-reports/01-fixed.txt
+comm -13 <(grep '^error: ' /tmp/myde-reports/00-baseline.txt | sort) \
+         <(grep '^error: ' /tmp/myde-reports/01-fixed.txt | sort)
 ```
 
-- [ ] **Step 4: Confirm no new errors remain**
+- [ ] **Step 4: Confirm no new errors remain and nothing else moved**
 
 ```bash
-comm -13 <(grep '^error: ' /tmp/myde-reports/00-baseline.txt) \
-         <(grep '^error: ' /tmp/myde-reports/02-fixed.txt)
+R=/tmp/myde-reports
+decl() { grep '^declared: ' "$1" | sed 's/^declared: //'; }
+comm -13 <(grep '^error: ' $R/00-baseline.txt | sort) <(grep '^error: ' $R/01-fixed.txt | sort)
+diff <(decl $R/01-gated.txt) <(decl $R/01-fixed.txt) && echo "DECLARED UNCHANGED"
+diff <(grep '^mode: ' $R/00-baseline.txt) <(grep '^mode: ' $R/01-fixed.txt) && echo "MODES IDENTICAL"
 ```
 
-Expected: empty output. The migration has introduced no errors the old config did not
-already have.
+Expected: empty `comm` output, `DECLARED UNCHANGED`, `MODES IDENTICAL`. Fixing a
+module may legitimately add a declared package (a missing `use-package` for a
+dependency); if so, note it in the commit message and accept the diff.
 
 - [ ] **Step 5: Smoke-test one newly-live language interactively**
 
@@ -1161,7 +1126,9 @@ rm -f /tmp/smoke.ex
 ```
 
 Expected: `(elixir-ts-mode ...)`. The major mode is the assertion; eglot may be nil if
-`elixir-ls` needs a project root.
+`elixir-ls` needs a project root. If the mode falls back to `fundamental-mode`, the
+tree-sitter grammar is missing — that is a grammar installation matter, not a
+migration defect; install it and re-check.
 
 - [ ] **Step 6: Commit**
 
@@ -1179,57 +1146,25 @@ Startup error set now matches the pre-migration config exactly."
 
 ---
 
-# Phase 3 — elpaca
+# Phase 2 — elpaca
 
-Goal: replace `package.el` with elpaca and prove a cold clone builds from nothing.
+Goal: replace `package.el` with elpaca and prove a cold clone builds from nothing with
+the same declared packages and the same startup modes as the end of phase 1.
 
-## Task 8: Make :ensure explicit and defer what can be deferred
+## Task 6: Make built-ins explicit
 
-Do the `:ensure` work **before** elpaca arrives. Under `package.el` these packages load
-anyway via `package-selected-packages`, so steps 1-4 are a behaviour-preserving no-op
-that becomes load-bearing in Task 9. Steps 5-6 then serve the spec's deferred-loading
-goal, which nothing else in this plan addresses.
+`use-package-always-ensure t` (Task 7) turns every form without `:ensure` into
+`:ensure t`. For the 26 third-party forms that is the point. For the 6 built-in forms
+it would make elpaca try to clone `treesit` and `project`. Fix those first, while
+`package.el` is still in charge and the change is a verifiable no-op.
 
 **Files:**
 - Modify: `user-lisp/myde.el`
 
-- [ ] **Step 1: Collapse the 25 duplicate indent-bars forms into one**
-
-`indent-bars` appears 25 times, once per language and data-format section, each with
-`:hook` and no `:ensure`. Delete all 25 and add a single form in the `prog-base`
-section. Hook targets are harmless when a mode never activates, so this needs no
-gating:
-
-```elisp
-;; indent-bars for every mode that wants it.  Collapsed from 25 duplicate
-;; declarations across the module tree; hooks on modes that never activate are
-;; inert, so this needs no binary gating.
-(use-package indent-bars
-  :ensure t
-  :hook ((bash-ts-mode c-ts-mode c++-ts-mode clojure-mode csv-mode
-          dotenv-mode elixir-ts-mode emacs-lisp-mode erlang-mode
-          fish-mode go-ts-mode heex-ts-mode hcl-mode js-ts-mode json-ts-mode
-          lisp-mode lua-ts-mode nushell-mode nxml-mode python-ts-mode
-          ruby-ts-mode rust-ts-mode scheme-mode toml-ts-mode
-          typescript-ts-mode tsx-ts-mode yaml-ts-mode zig-ts-mode)
-         . indent-bars-mode))
-```
-
-Before writing the list, harvest the actual modes from the current file so none are
-lost:
-
-```bash
-cd /tmp/myde-migration
-grep -A3 'use-package indent-bars' user-lisp/myde.el | grep -oE '[a-z0-9+-]+-mode' | sort -u
-```
-
-Use that output as the authoritative hook list rather than the illustrative list above.
-
-- [ ] **Step 2: Add `:ensure nil` to the six built-in forms**
+- [ ] **Step 1: Add `:ensure nil` to the six built-in forms**
 
 Three `treesit` forms (in the `prog-clisp`, `prog-clojure`, `prog-scheme` sections) and
-three `project` forms (same sections) have no `:ensure`. Both are built-in, so without
-`:ensure nil` elpaca would try to clone them:
+three `project` forms (same sections) have no `:ensure`:
 
 ```elisp
 (use-package treesit
@@ -1245,173 +1180,89 @@ three `project` forms (same sections) have no `:ensure`. Both are built-in, so w
   )
 ```
 
-- [ ] **Step 3: Verify nothing is left without `:ensure`**
+- [ ] **Step 2: Verify every form without `:ensure` is third-party**
+
+The walker recurses on `car`/`cdr` rather than `mapc`, because `:hook (mode . fn)`
+dotted pairs make `mapc` signal `wrong-type-argument`:
 
 ```bash
 cd /tmp/myde-migration
-emacs -Q --batch --eval '(let ((missing 0) (total 0))
-  (letrec ((walk (lambda (f)
-                   (when (consp f)
-                     (when (eq (car-safe f) (quote use-package))
-                       (setq total (1+ total))
-                       (unless (memq :ensure f)
-                         (setq missing (1+ missing))
-                         (message "MISSING :ensure -- %s" (cadr f))))
-                     (mapc walk f)))))
-    (with-temp-buffer
-      (insert-file-contents "user-lisp/myde.el")
-      (goto-char (point-min))
-      (condition-case nil
-          (while t (funcall walk (read (current-buffer))))
-        (end-of-file nil))))
-  (message "total use-package forms: %d, missing :ensure: %d" total missing)
-  (when (> missing 0) (kill-emacs 1)))'
-```
-
-Expected: `total use-package forms: ~245, missing :ensure: 0`. The total is lower than
-the original 269 because 25 `indent-bars` forms collapsed into one.
-
-- [ ] **Step 4: Confirm behaviour is unchanged under package.el**
-
-Do this before touching deferral, so the `:ensure` work is verified in isolation.
-
-```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/03-ensure.txt
-diff <(grep '^package: ' /tmp/myde-reports/02-fixed.txt) \
-     <(grep '^package: ' /tmp/myde-reports/03-ensure.txt) && echo "PACKAGES IDENTICAL"
-```
-
-Expected: `PACKAGES IDENTICAL`. Adding `:ensure` changes only declarations, not outcomes.
-
-- [ ] **Step 5: Audit for eager loading**
-
-Deferred loading is a stated goal of the spec, and nothing so far verifies it. The same
-walker finds forms that load at startup rather than on demand — `:demand t`, or no
-deferring keyword at all:
-
-```bash
-cd /tmp/myde-migration
-emacs -Q --batch --eval '(letrec
-  ((deferring (quote (:mode :interpreter :commands :bind :bind-keymap :hook
-                      :magic :magic-fallback :defer :after)))
-   (walk (lambda (f)
+cat > /tmp/myde-ensure-walk.el <<'EOF'
+;;; -*- lexical-binding: t -*-
+(letrec
+  ((walk (lambda (f)
            (when (consp f)
-             (when (eq (car-safe f) (quote use-package))
-               (cond ((memq :demand f)
-                      (message "DEMAND  %s" (cadr f)))
-                     ((not (seq-some (lambda (k) (memq k f)) deferring))
-                      (message "EAGER   %s" (cadr f)))))
-             (mapc walk f)))))
+             (when (and (eq (car-safe f) 'use-package) (not (memq :ensure f)))
+               (message "MISSING :ensure -- %s" (cadr f)))
+             (funcall walk (car f))
+             (funcall walk (cdr f))))))
   (with-temp-buffer
     (insert-file-contents "user-lisp/myde.el")
     (goto-char (point-min))
     (condition-case nil
         (while t (funcall walk (read (current-buffer))))
-      (end-of-file nil))))'
+      (end-of-file nil))))
+EOF
+emacs -Q --batch -l /tmp/myde-ensure-walk.el 2>&1 | sort | uniq -c
+rm -f /tmp/myde-ensure-walk.el
 ```
 
-Every line is a package loaded at startup. Expected `DEMAND`: `exec-path-from-shell`
-only. Expected `EAGER`: the `core-*` packages that genuinely must be present at startup
-— theme, modeline, dashboard, completion framework, `emacs`/`treesit`/`recentf` and the
-other `:ensure nil` built-in settings blocks.
+Expected: exactly one line, `25 MISSING :ensure -- indent-bars`. Any other name is
+either a built-in that needs `:ensure nil` or a third-party package that is fine
+either way. Check `(package-built-in-p 'NAME)` for anything unfamiliar.
 
-For each remaining line, decide and act:
-
-- A built-in settings block (`:ensure nil`, only `:init`/`:custom`) — leave it. Setting
-  variables is not loading a package.
-- A third-party package whose effect is a global mode enabled at startup (theme,
-  `diminish`, `dashboard`) — leave it, and add a one-line comment saying why it cannot
-  defer.
-- A third-party package tied to a file type or a command — add `:mode`, `:hook`, or
-  `:commands`. That is the deferral the spec asks for.
-
-Record the counts before and after in the commit message. This is the only step that
-directly serves the deferred-loading goal, so do not skip it because the count looks
-tolerable.
-
-- [ ] **Step 6: Confirm deferral did not break anything**
+- [ ] **Step 3: Confirm behaviour is unchanged under package.el**
 
 ```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/03-deferred.txt
-grep 'init-time-seconds' /tmp/myde-reports/02-fixed.txt /tmp/myde-reports/03-deferred.txt
-comm -13 <(grep '^error: ' /tmp/myde-reports/02-fixed.txt) \
-         <(grep '^error: ' /tmp/myde-reports/03-deferred.txt)
+cd /tmp/myde-migration
+scripts/myde-probe.sh "$PWD" /tmp/myde-reports/02-ensure.txt
+R=/tmp/myde-reports
+diff <(grep -E '^(declared|mode): ' $R/01-fixed.txt) <(grep -E '^(declared|mode): ' $R/02-ensure.txt) && echo "IDENTICAL"
+comm -13 <(grep '^error: ' $R/01-fixed.txt | sort) <(grep '^error: ' $R/02-ensure.txt | sort)
 ```
 
-Expected: no new errors. The loaded-package count will legitimately *drop* here — that
-is the point of deferring — so do not compare package sets against the baseline after
-this step. Compare error sets only.
+Expected: `IDENTICAL`, no new errors.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 cd /tmp/myde-migration
 git add user-lisp/myde.el
-git commit -m "Make :ensure explicit and defer what can be deferred
+git commit -m "Mark built-in treesit and project forms :ensure nil
 
-32 of 269 use-package forms had no :ensure and were installed only
-because they appeared in package-selected-packages. That list disappears
-with package.el, so each would have silently failed to install under
-elpaca.
+The next commit sets use-package-always-ensure, which turns every
+use-package form without :ensure into :ensure t. These six forms are
+built-ins and must opt out or elpaca would try to clone them.
 
-Adds :ensure t to indent-bars and geiser, :ensure nil to the three
-treesit and three project forms, and collapses 25 duplicate indent-bars
-declarations into a single form with a combined hook list.
-
-Also adds :mode/:hook/:commands to third-party packages that had no
-deferring keyword, cutting startup-loaded packages from N to M. Packages
-left eager are global modes that cannot defer by nature; each now carries
-a comment saying so."
+No behaviour change under package.el."
 ```
 
-Replace `N` and `M` with the counts from step 5 before committing.
+## Task 7: Bootstrap elpaca
 
-## Task 9: Bootstrap elpaca
+Everything package.el-specific goes, elpaca comes in, startup hooks move to
+`elpaca-after-init`, the eight git-only packages get recipes, and a cold build from an
+empty `elpaca/` is the acceptance gate.
 
 **Files:**
-- Modify: `early-init.el`
 - Modify: `init.el`
+- Modify: `user-lisp/myde.el`
+- Modify: `custom.el`
 - Modify: `.gitignore`
 
-- [ ] **Step 1: Disable package.el at startup**
-
-Add to `early-init.el`, near the other startup settings:
-
-```elisp
-;; Elpaca replaces package.el entirely; package.el must not activate packages
-;; at startup or the two will fight over load-path.
-(setq package-enable-at-startup nil)
-```
-
-- [ ] **Step 2: Move the GC and handler restoration to elpaca's hook**
-
-Elpaca processes its queues on `after-init-hook`, so anything on `after-init-hook` or
-`emacs-startup-hook` now runs *before* packages are activated. Find the restoration
-hooks in `early-init.el` and change their hook variable:
-
-```elisp
-;; Elpaca activates packages on after-init-hook, so restoration must wait for
-;; `elpaca-after-init-hook' -- elpaca's documented analogue of after-init-hook.
-(add-hook 'elpaca-after-init-hook #'myde--restore-gc-settings)
-(add-hook 'elpaca-after-init-hook #'myde--restore-file-name-handler-alist)
-```
-
-Use the actual function names present in `early-init.el`; inspect it first:
+- [ ] **Step 1: Confirm early-init.el already disables package.el**
 
 ```bash
-grep -n 'after-init-hook\|emacs-startup-hook' /tmp/myde-migration/early-init.el
+grep -n 'package-enable-at-startup' /tmp/myde-migration/early-init.el
 ```
 
-`elpaca-after-init-hook` is not bound when `early-init.el` runs, but `add-hook` creates
-an unbound hook variable safely, and elpaca's `defcustom` will not clobber an existing
-value.
+Expected: one line, `(setq package-enable-at-startup nil)`. It is already there; do not
+add a second. GC and `file-name-handler-alist` restoration stay on `emacs-startup-hook`
+— see the spec's early-init section for why they must not move to elpaca's hook.
 
-- [ ] **Step 3: Add the installer to init.el**
+- [ ] **Step 2: Replace init.el with the elpaca entry point**
 
-Replace `init.el` with the elpaca-based entry point. The installer block is
-reproduced verbatim from elpaca's README (installer version 0.12):
+The installer block is reproduced verbatim from elpaca's README (installer version
+0.12):
 
 ```elisp
 ;;; init.el --- Loaded after early-init.el -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
@@ -1481,6 +1332,10 @@ reproduced verbatim from elpaca's README (installer version 0.12):
 
 ;;;; Use-package support
 
+;; Every use-package form is :ensure t unless it says :ensure nil.  Built-in
+;; forms must say so; elpaca-use-package has no by-default knob of its own.
+(setq use-package-always-ensure t)
+
 ;; The elpaca-use-package menu recipe carries :wait t, so this blocks until
 ;; elpaca-use-package is built and `use-package' :ensure support is active --
 ;; which myde.el depends on from its first form.
@@ -1491,77 +1346,51 @@ reproduced verbatim from elpaca's README (installer version 0.12):
 
 (require 'myde)
 
-;;;; Deferred startup
-
-;; Elpaca processes queues after init, so custom.el and the server must wait
-;; for `elpaca-after-init-hook' rather than after-init-hook.
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(add-hook 'elpaca-after-init-hook #'myde-load-custom-file)
-(add-hook 'elpaca-after-init-hook #'myde-start-server)
+;; A daemon starts its own server from startup.el after init; only GUI and
+;; TTY sessions need one here.
+(unless (daemonp)
+  (require 'server)
+  (unless (server-running-p) (server-start)))
 
 ;; That's all Folks!
 (provide 'init)
 ;;; init.el ends here
 ```
 
-- [ ] **Step 4: Define the two named hook functions**
+`custom-file` is already set in `early-init.el:159` and loaded by the core-base
+section of `myde.el` during init; nothing left in it depends on a package, so it does
+not need to wait for elpaca.
 
-The project convention forbids lambdas as hook functions. Add to the `Environment`
-section of `user-lisp/myde.el`, before the `exec-path-from-shell` form:
-
-```elisp
-(defun myde-load-custom-file ()
-  "Load `custom-file' if it exists.
-Runs on `elpaca-after-init-hook' so that any package a saved
-customization refers to has already been activated."
-  (when (and custom-file (file-exists-p custom-file))
-    (load custom-file :noerror)))
-
-(defun myde-start-server ()
-  "Start the Emacs server unless one is already running."
-  (require 'server)
-  (unless (server-running-p) (server-start)))
-```
-
-- [ ] **Step 5: Remove the package.el setup from myde.el**
+- [ ] **Step 3: Remove the package.el setup from myde.el**
 
 Delete from the `core-base` section: the `(require 'package)`, `package-user-dir`,
-`package-archives`, `package-archive-priorities`, the `package-pinned-packages` `dolist`
-for `csharp-mode`/`wallpaper`, `package-install-upgrade-built-in`,
-`(package-initialize)`, the `advice-add` on `package--upgradeable-packages`, the
-`package-refresh-contents` guard, and the `custom-file` loading block that Task 9
-step 3 replaced.
+`package-archives`, `package-archive-priorities`, the `package-pinned-packages`
+`dolist` for `csharp-mode`/`wallpaper`, `package-install-upgrade-built-in`,
+`(package-initialize)`, the `advice-add` on `package--upgradeable-packages`, and the
+`package-refresh-contents` guard — everything from the "Package initialization" comment
+through the refresh guard (`core-base/cfg.el:46-86` in the original). **Keep** the
+`custom.el` loading `let*` that follows it.
 
 Also delete the now-orphaned `myde/filter-git-only-vc-packages` function definition and
 both version-conditional `transient` `use-package` forms (the `:pin` mechanism is
-package.el-only):
+package.el-only). Keep the first `transient` form — the one setting XDG paths — which
+already has `:ensure nil`.
 
 ```bash
 cd /tmp/myde-migration
-for s in 'require .package' package-user-dir package-archives package-archive-priorities \
-         package-pinned-packages package-install-upgrade-built-in 'package-initialize' \
+for s in "require 'package" package-user-dir package-archives package-archive-priorities \
+         package-pinned-packages package-install-upgrade-built-in '(package-initialize)' \
          'myde/filter-git-only-vc-packages' 'package-refresh-contents' ':pin '; do
-  printf '%-40s %s\n' "$s" "$(grep -c "$s" user-lisp/myde.el)"
+  printf '%-40s %s\n' "$s" "$(grep -c -- "$s" user-lisp/myde.el || true)"
 done
+grep -c '(use-package transient' user-lisp/myde.el
 ```
 
-Expected after editing: `0` for every one.
+Expected after editing: `0` for every pattern, and `1` transient form.
 
-Keep the first `transient` form — the one setting XDG paths for
-`transient-levels-file` and friends — and give it `:ensure nil`.
+- [ ] **Step 4: Change exec-path-from-shell to `:wait t`**
 
-- [ ] **Step 6: Ignore the elpaca directory**
-
-In `.gitignore`, replace the `elpa/` entry:
-
-```
-# installed packages
-elpaca/
-```
-
-- [ ] **Step 7: Change exec-path-from-shell to `:wait t`**
-
-Now that elpaca is present, the Task 5 form must block. In `user-lisp/myde.el`:
+In the Environment section:
 
 ```elisp
 (use-package exec-path-from-shell
@@ -1574,38 +1403,64 @@ Now that elpaca is present, the Task 5 form must block. In `user-lisp/myde.el`:
     (exec-path-from-shell-initialize)))
 ```
 
-- [ ] **Step 8: Commit before the cold test**
+Under elpaca a package is not on `load-path` until queues process after init, which is
+after `myde.el` has been read. `:wait t` processes the queue immediately, so the gates
+below see a complete `exec-path`.
+
+- [ ] **Step 5: Move startup hooks to elpaca-after-init**
+
+Under elpaca, a `use-package` body runs after the package is activated, which is
+during or after `after-init-hook`. A `:hook (after-init . vertico-mode)` added at that
+point never fires, and vertico is silently off. The current tree has 14 such forms:
+
+`buffer-guardian-mode`, `dashboard-setup-startup-hook`, `vertico-mode`,
+`marginalia-mode`, `global-corfu-mode`, `editorconfig-mode`,
+`global-treesit-auto-mode`, `global-flycheck-mode`, `global-mise-mode`,
+`global-diff-hl-mode`, `which-key-mode`, `spacious-padding-mode`, `yas-global-mode`,
+`whole-line-or-region-global-mode`
+
+plus `:hook (emacs-startup . myde/mcp-server-startup-hook)` in the `ai-mcp` section.
+
+Rewrite all of them except dashboard mechanically:
 
 ```bash
 cd /tmp/myde-migration
-git add -A
-git commit -m "Replace package.el with elpaca
-
-Bootstraps elpaca in init.el, enables elpaca-use-package-mode, and moves
-custom.el loading and server start to elpaca-after-init-hook, since
-elpaca processes its queues after init.
-
-exec-path-from-shell becomes :ensure (:wait t) -- under elpaca a package
-is not on load-path until queues process, which is after myde.el is read,
-and every binary gate depends on it.
-
-Deletes all package.el scaffolding and the five workarounds it required:
-built-in archive pinning for csharp-mode and wallpaper,
-package-install-upgrade-built-in, the package--upgradeable-packages
-advice for git-only VC packages, version-conditional transient pinning,
-and the package-initialize ordering constraints."
+grep -c '(after-init \. \|(emacs-startup \. ' user-lisp/myde.el
+sed -i.bak -e 's/(after-init \. /(elpaca-after-init . /g' \
+           -e 's/(emacs-startup \. /(elpaca-after-init . /g' user-lisp/myde.el
+rm user-lisp/myde.el.bak
+grep -c '(elpaca-after-init \. ' user-lisp/myde.el
+grep -n '(after-init \. \|(emacs-startup \. ' user-lisp/myde.el || echo "none left"
 ```
 
-## Task 10: Convert the VC packages to elpaca recipes
+Expected: `15`, then `15`, then `none left`. (On Linux `sed -i` takes no suffix; drop
+the `.bak`.)
 
-**Files:**
-- Modify: `user-lisp/myde.el`
-- Modify: `custom.el`
+Then rewrite dashboard by hand. Its `dashboard-setup-startup-hook` installs its own
+`after-init`/`window-setup` hooks, which have also already fired, so the mechanical
+rewrite is not enough. Replace `:hook (elpaca-after-init . dashboard-setup-startup-hook)`
+in the `core-dashboard` section with the recipe from dashboard's README:
 
-- [ ] **Step 1: Convert each `:vc` declaration**
+```elisp
+  :config
+  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+  (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
+  (dashboard-setup-startup-hook)
+```
 
-Eight packages move from `package-vc-selected-packages` in `custom.el` to elpaca
-recipes on their `use-package` forms. `ob-csharp` is dropped — there is no C# module.
+If the section already has a `:config`, merge into it. Verify both functions exist in
+the installed dashboard after the cold build in step 8 (the project rule about hook
+targets applies):
+`emacsclient -s <sock> -e '(list (fboundp (quote dashboard-insert-startupify-lists)) (fboundp (quote dashboard-initialize)))'`.
+
+Finally, `core-ui`'s top-level `(add-hook 'emacs-startup-hook #'myde/clear-echo-area)`
+exists to erase startup messages. Under elpaca the messages arrive later; change it to
+`elpaca-after-init-hook` so it still does its job.
+
+- [ ] **Step 6: Convert the VC packages to elpaca recipes**
+
+Eight packages move from `package-vc-selected-packages` in `custom.el` to recipes on
+their `use-package` forms. `ob-csharp` is dropped — there is no C# module.
 
 ```elisp
 (use-package mcp-server
@@ -1649,11 +1504,16 @@ recipes on their `use-package` forms. `ob-csharp` is dropped — there is no C# 
   )
 ```
 
-- [ ] **Step 2: Strip the package lists from custom.el**
+Remove any `:vc` keyword those forms carried.
 
-Everything package-related leaves `custom.el`. What remains is small enough to write out
-in full — replace the whole file with this, which is the original minus the 24 toggles
-(already gone from Task 6) and the two package lists:
+```bash
+grep -n ':vc ' /tmp/myde-migration/user-lisp/myde.el || echo "no :vc left"
+```
+
+- [ ] **Step 7: Reduce custom.el and ignore the elpaca directory**
+
+Everything package-related leaves `custom.el`. Replace the worktree copy with the
+original minus the 24 toggles (already gone in Task 4) and the two package lists:
 
 ```elisp
 ;;; -*- lexical-binding: t -*-
@@ -1685,45 +1545,64 @@ wc -l custom.el
 
 Expected: `0 remaining` and `19`.
 
-- [ ] **Step 3: Cold-start test — the phase 3 acceptance gate**
+In `.gitignore`, replace the `elpa/` entry:
 
-This is the real test: build every package from nothing.
-
-```bash
-rm -rf /tmp/myde-migration/elpa /tmp/myde-migration/elpaca
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-time scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/03-cold.txt
+```
+# installed packages
+elpaca/
 ```
 
-The `elpa` symlink from Task 0 must go — leaving it lets package.el leftovers mask a
-missing elpaca recipe.
+- [ ] **Step 8: Cold-start test — the phase 2 acceptance gate**
 
-Expected: several minutes on first run while elpaca clones and builds. Then a report.
-If the daemon fails to start, run it in the foreground to watch the bootstrap:
-
-```bash
-emacs --init-directory=/tmp/myde-migration --daemon=coldcheck
-```
-
-- [ ] **Step 4: Compare the cold build against the package.el result**
+Build every package from nothing. The `elpa` symlink from Task 0 must go — leaving it
+lets package.el leftovers mask a missing recipe. It is a symlink, so `rm` without a
+trailing slash removes only the link:
 
 ```bash
-comm -23 <(grep '^package: ' /tmp/myde-reports/03-ensure.txt) \
-         <(grep '^package: ' /tmp/myde-reports/03-cold.txt)
+rm -f /tmp/myde-migration/elpa
+rm -rf /tmp/myde-migration/elpaca
+cd /tmp/myde-migration
+time scripts/myde-probe.sh "$PWD" /tmp/myde-reports/02-cold.txt
 ```
 
-Expected: empty, or `pkl-mode` only. Anything else is a package elpaca failed to
-install — almost always a `use-package` form still missing `:ensure`, or a recipe whose
-`:host`/`:repo` is wrong.
+Expected: several minutes on first run while elpaca clones and builds; the driver
+waits up to 30 minutes. Then a report. If the daemon fails to start, run it in the
+foreground to watch the bootstrap:
 
 ```bash
-grep '^error: ' /tmp/myde-reports/03-cold.txt
+env PATH=/usr/bin:/bin emacs --init-directory=/tmp/myde-migration --daemon=coldcheck
 ```
 
-- [ ] **Step 5: Check for packages that cloned but failed to build**
+- [ ] **Step 9: Compare the cold build against the end of phase 1**
+
+```bash
+R=/tmp/myde-reports
+decl() { grep '^declared: ' "$1" | sed 's/^declared: //'; }
+echo "--- init ---"
+grep -E '^(init-file-had-error|init-time-seconds|elpaca-init-time-seconds|exec-path-entries):' $R/02-cold.txt
+echo "--- gate binaries ---"
+grep '^binary: ' $R/02-cold.txt
+echo "--- declared ---"
+diff <(decl $R/02-ensure.txt) <(decl $R/02-cold.txt) && echo "DECLARED IDENTICAL"
+echo "--- startup modes ---"
+diff <(grep '^mode: ' $R/02-ensure.txt) <(grep '^mode: ' $R/02-cold.txt) && echo "MODES IDENTICAL"
+echo "--- new errors ---"
+comm -13 <(grep '^error: ' $R/02-ensure.txt | sort) <(grep '^error: ' $R/02-cold.txt | sort)
+```
+
+Expected: `init-file-had-error: nil`; `elpaca-init-time-seconds` is a real number, not
+`n/a`; the same `binary:` yes/no pattern as Task 4; `DECLARED IDENTICAL`;
+`MODES IDENTICAL`; no new errors.
+
+A mode that is `on` in `02-ensure.txt` and `off` here is a startup hook step 5 missed.
+A declared package missing here is a `use-package` form elpaca could not satisfy —
+almost always a recipe whose `:host`/`:repo` is wrong, or a package that is on neither
+MELPA nor GNU/NonGNU ELPA and needs a recipe.
+
+- [ ] **Step 10: Check for packages that cloned but failed to build**
 
 A package can clone successfully and still fail to byte-compile, in which case it has a
-directory under `sources/` but none under `builds/`. This check uses no elpaca internals:
+directory under `sources/` but none under `builds/`:
 
 ```bash
 cd /tmp/myde-migration
@@ -1734,53 +1613,63 @@ Expected: empty output. Any name listed here needs investigating — open
 `M-x elpaca-log` in a real Emacs and read its entry. A few recipes legitimately declare
 no build step, so treat a listed name as a question rather than a confirmed failure.
 
-- [ ] **Step 6: Address the org upgrade if it failed**
-
-Upgrading built-in `org` is elpaca's known sharp edge. If step 5 reports `org` failed,
-the config's `org` form must either use `:ensure nil` and stay on the built-in version,
-or carry elpaca's documented org recipe. Check what the current form does:
+- [ ] **Step 11: Warm-start check**
 
 ```bash
-grep -n -A5 '(use-package org$' /tmp/myde-migration/user-lisp/myde.el | head -20
+cd /tmp/myde-migration
+scripts/myde-probe.sh "$PWD" /tmp/myde-reports/02-warm.txt
+grep -E '^(init-time-seconds|elpaca-init-time-seconds):' /tmp/myde-reports/02-cold.txt /tmp/myde-reports/02-warm.txt
+diff <(grep -E '^(declared|mode): ' /tmp/myde-reports/02-cold.txt) <(grep -E '^(declared|mode): ' /tmp/myde-reports/02-warm.txt) && echo "IDENTICAL"
 ```
 
-Prefer `:ensure nil` — the built-in `org` in Emacs 31.1 is recent, and this avoids the
-problem entirely. Only pursue a recipe if a specific needed feature is missing.
+Expected: warm `elpaca-init-time-seconds` well under a second; `IDENTICAL`.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
 cd /tmp/myde-migration
 git add -A
-git commit -m "Convert VC packages to elpaca recipes
+git commit -m "Replace package.el with elpaca
 
-Eight git-only packages move from package-vc-selected-packages in
-custom.el to :ensure recipes on their use-package forms. Drops ob-csharp,
-which had no corresponding module.
+Bootstraps elpaca in init.el, sets use-package-always-ensure, and enables
+elpaca-use-package-mode. exec-path-from-shell becomes :ensure (:wait t)
+so the binary gates that follow it see a complete exec-path during init.
 
-custom.el shrinks to faces, safe themes, and a handful of settings --
-package-selected-packages and package-vc-selected-packages are no longer
-a source of truth for anything.
+Moves 15 startup hooks from after-init/emacs-startup to elpaca-after-init
+and rewrites dashboard's startup per its README: under elpaca a
+use-package body runs after those hooks have fired, so every one of those
+global modes would otherwise stay silently off.
 
-Verified by a cold build: elpaca clones and builds every package from an
-empty elpaca/ directory with no failures."
+Converts eight git-only packages to elpaca recipes and drops ob-csharp,
+which had no module. custom.el shrinks to faces, safe themes, and a
+handful of settings.
+
+Deletes all package.el scaffolding and the five workarounds it required:
+built-in archive pinning for csharp-mode and wallpaper,
+package-install-upgrade-built-in, the package--upgradeable-packages
+advice for git-only VC packages, version-conditional transient pinning,
+and the package-initialize ordering constraints.
+
+Verified by a cold build from an empty elpaca/: declared package set and
+startup-enabled modes identical to the package.el config; every clone has
+a build."
 ```
 
 ---
 
-# Phase 4 — Literate
+# Phase 3 — Literate
 
 Goal: `myde.org` becomes the single editable source, tangling all three elisp files.
 
-## Task 11: Create myde.org
+## Task 8: Create myde.org
 
 **Files:**
 - Create: `myde.org`
 
 - [ ] **Step 1: Build the org file with three subtrees**
 
-Create `myde.org` at the worktree root with this exact skeleton. Each top-level heading
-sets its tangle target via a property drawer, and the file-level property defaults to
+Create `myde.org` at the worktree root with this skeleton. Each top-level heading sets
+its tangle target via a property drawer, and the file-level property defaults to
 `:tangle no` so a stray block cannot leak into an output file:
 
 ```org
@@ -1807,6 +1696,7 @@ Bootstraps elpaca, enables its ~use-package~ support, then loads ~user-lisp/myde
 :header-args:emacs-lisp: :tangle user-lisp/myde.el :mkdirp yes
 :END:
 
+** Core base
 ** Environment
 ** Core
 ** AI
@@ -1826,19 +1716,18 @@ Then fill it, moving content rather than rewriting it:
 2. Under `* Bootstrap`, one block containing the entire current `init.el`, likewise
    byte for byte.
 3. Under `* Configuration`, split the current `user-lisp/myde.el` at its `;;;;` section
-   comments. Each module section becomes one `#+begin_src` block under the matching `**`
-   heading. The `myde.el` file header goes in a block under `** Environment` (first) and
-   the `(provide 'myde)` plus `;;; myde.el ends here` lines go in a final block under
-   `** Ebooks` (last).
+   comments. Each section becomes one `#+begin_src` block under the matching `**`
+   heading. The `myde.el` file header goes in a block under `** Core base` (first),
+   the Environment section under `** Environment`, and the `(provide 'myde)` plus
+   `;;; myde.el ends here` lines go in a final block under `** Ebooks` (last).
 
-The `**` heading order above deliberately matches the *existing* section order in
-`myde.el`, which came from `myde-modules` load order — not the grouping sketched in the
-spec's "Literate workflow" section. Load order is known-working and reordering it risks
-breaking dependencies for no benefit; see "Deferred, with rationale" at the end of this
-plan.
+The `**` heading order deliberately matches the *existing* section order in `myde.el`,
+which came from `myde-modules` load order plus the Environment insertion. Load order
+is known-working and reordering it risks breaking dependencies for no benefit.
 
-`:comments no` is what keeps `org-babel` from injecting provenance comments into the
-output, which would otherwise defeat the byte-identical check in the next step.
+`:comments no` keeps `org-babel` from injecting provenance comments into the output.
+`org-babel`'s default `:padline yes` inserts a blank line before every block except
+the first in a file, which is why the check in step 3 ignores blank lines.
 
 - [ ] **Step 2: Tangle**
 
@@ -1850,49 +1739,50 @@ emacs -Q --batch --eval '(progn (require (quote org))
 
 Expected: a message listing the three tangled files.
 
-- [ ] **Step 3: Verify the tangled output is byte-identical to the committed files**
+- [ ] **Step 3: Verify the tangled output matches the committed files**
 
-This is the phase 4 acceptance gate. The org file must reproduce phase 3's output
-exactly — no reformatting, no lost forms.
-
-Compare the tangled files on disk against the blobs committed at the end of phase 3:
+This is the phase 3 acceptance gate. The org file must reproduce phase 2's output with
+no forms lost or changed. Blank-line differences from `:padline` are tolerated; they
+carry no code:
 
 ```bash
 cd /tmp/myde-migration
 for f in early-init.el init.el user-lisp/myde.el; do
-  if git show "HEAD:$f" | diff -q - "$f" >/dev/null; then
-    echo "IDENTICAL  $f"
+  if git show "HEAD:$f" | diff -B -q - "$f" >/dev/null; then
+    echo "SAME       $f"
   else
     echo "DIFFERS    $f"
-    git show "HEAD:$f" | diff - "$f" | head -20
+    git show "HEAD:$f" | diff -B - "$f" | head -20
   fi
 done
+head -1 early-init.el init.el user-lisp/myde.el | grep -c 'lexical-binding: t'
 ```
 
-Expected: `IDENTICAL` for all three. Whitespace differences are the usual cause —
-check for a trailing newline added or removed at a block boundary.
+Expected: `SAME` for all three, and `3` — every output still has its
+`lexical-binding` cookie on line 1, which `:padline` respects for the first block.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Probe once more, then commit the org file and the tangled outputs**
 
 ```bash
 cd /tmp/myde-migration
-git add myde.org
+scripts/myde-probe.sh "$PWD" /tmp/myde-reports/03-tangled.txt
+diff <(grep -E '^(declared|mode): ' /tmp/myde-reports/02-warm.txt) <(grep -E '^(declared|mode): ' /tmp/myde-reports/03-tangled.txt) && echo "IDENTICAL"
+git add myde.org early-init.el init.el user-lisp/myde.el
 git commit -m "Add myde.org as literate source for all three elisp files
 
 Single org file tangles early-init.el, init.el, and user-lisp/myde.el via
-per-subtree :tangle properties. Tangled output is byte-identical to the
-hand-maintained files it replaces, so this commit changes no behaviour.
+per-subtree :tangle properties. Tangled output is identical to the
+hand-maintained files it replaces except for blank lines, so this commit
+changes no behaviour.
 
 Outputs stay committed: a fresh clone works without tangling, and startup
 never loads org."
 ```
 
-## Task 12: Wire up the tangle workflow
+## Task 9: Wire up the tangle workflow
 
 **Files:**
 - Modify: `Makefile`
-- Modify: `myde.org` (file-local variables)
-- Modify: `user-lisp/myde.el` (safe-local-eval-forms)
 
 - [ ] **Step 1: Add Make targets**
 
@@ -1948,47 +1838,22 @@ git diff --exit-code -- early-init.el init.el user-lisp/myde.el && echo "restore
 Expected: the `ERROR: tangled output differs` message, a non-zero exit, then `restored`.
 A passing `check` means the target is broken.
 
-- [ ] **Step 3: Add auto-tangle on save**
+There is deliberately no auto-tangle on save. `make check` catches drift, and
+re-tangling a 7,000-line file on every save is latency for no gain.
 
-Append to `myde.org`:
-
-```org
-# Local Variables:
-# eval: (add-hook 'after-save-hook #'org-babel-tangle nil t)
-# End:
-```
-
-- [ ] **Step 4: Whitelist the local eval form**
-
-Without this, opening `myde.org` prompts about unsafe local variables every time. Add
-to the `Core` section of the `Configuration` subtree in `myde.org`, so it lands in
-`user-lisp/myde.el`:
-
-```elisp
-;; Let myde.org's file-local auto-tangle hook run without prompting.
-(with-eval-after-load 'files
-  (add-to-list 'safe-local-eval-forms
-               '(add-hook 'after-save-hook #'org-babel-tangle nil t)))
-```
-
-- [ ] **Step 5: Re-tangle, verify, commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 cd /tmp/myde-migration
-make tangle
-make check
-git add Makefile myde.org user-lisp/myde.el
-git commit -m "Add tangle and check targets, and auto-tangle on save
+git add Makefile
+git commit -m "Add tangle and check targets
 
 make tangle regenerates the three elisp files from myde.org. make check
 tangles and fails if the result differs from what is committed, catching
-drift between source and output.
-
-A file-local after-save-hook in myde.org tangles on every save;
-safe-local-eval-forms is extended so it runs without prompting."
+drift between source and output."
 ```
 
-## Task 13: Update documentation and agent skills, then go live
+## Task 10: Update documentation and agent skills, then go live
 
 **Files:**
 - Modify: `.agents/AGENTS.md` (reached via the `CLAUDE.md` / `AGENTS.md` symlinks)
@@ -2001,15 +1866,19 @@ safe-local-eval-forms is extended so it runs without prompting."
 `.agents/AGENTS.md` documents the module system, the package.el invariants, and the
 `lib.el`/`cfg.el` split — all now gone. Replace those sections with:
 
-- **Commands**: add `make tangle` and `make check` alongside `make link`/`make unlink`.
+- **Commands**: add `make tangle` and `make check` alongside `make link`/`make unlink`,
+  and `scripts/myde-probe.sh <init-dir> <report>` for verifying a config change.
 - **Architecture**: the three tangled files and `myde.org` as sole editable source.
 - **Module enablement**: presence-as-intent via `executable-find`; the gate table from
-  the spec; no toggles, no override list.
-- **Package management**: elpaca; `:ensure t` for third-party, `:ensure nil` for
-  built-ins, recipes for git-only packages; `elpaca-after-init-hook` in place of
-  `after-init-hook`.
-- **Editing workflow**: edit `myde.org`, never the tangled `.el` files; they are
-  regenerated and committed.
+  the spec; no toggles, no override list; editing modes with no toolchain dependency
+  are unconditional.
+- **Package management**: elpaca; `use-package-always-ensure t`, so third-party forms
+  need nothing and **every built-in form must say `:ensure nil`**; recipes for
+  git-only packages.
+- **Startup hooks**: `:hook (elpaca-after-init . fn)`, never `after-init` or
+  `emacs-startup` inside a `use-package` form — the body runs after those have fired.
+- **Editing workflow**: edit `myde.org`, never the tangled `.el` files; run
+  `make check` before committing.
 
 Delete outright: the module-system section, the declarative-loading table, the
 package-system-invariants section, the built-in-exclusion table, the
@@ -2025,14 +1894,17 @@ the old `init.el` header said `((emacs "30.1"))`; this config now requires 31.1 
 (Emacs 30)` heading's version qualifier along with the two Emacs-30-specific bullets
 about `use-package-ensure-function` and version-conditional pinning.
 
-Add two new cautions worth recording:
+Add these cautions:
 
 ```markdown
 - `user-lisp/` sits at `load-path` position 0 and shadows built-ins. Only
   `myde.el` belongs there — a file named `org.el` would shadow built-in Org.
 - Binary gates are evaluated during init, so `exec-path` must be complete first.
-  `exec-path-from-shell` uses `:ensure (:wait t)` and must remain the first
-  `use-package` form in the Configuration subtree.
+  The `exec-path-from-shell` form uses `:ensure (:wait t)` and must stay in the
+  Environment section, ahead of the first gated section.
+- GC and `file-name-handler-alist` restoration stay on `emacs-startup-hook`, not
+  `elpaca-after-init-hook`, so a failed elpaca bootstrap cannot leave a session
+  with GC disabled and TRAMP broken.
 ```
 
 - [ ] **Step 2: Rewrite the `myde` agent skill**
@@ -2045,17 +1917,21 @@ modules", so leaving it in place actively misleads any agent that loads it.
 Replace its body with the conventions that now apply:
 
 - Edit `myde.org` only. Never edit `early-init.el`, `init.el`, or `user-lisp/myde.el`
-  directly — they are tangled output and the next save of `myde.org` overwrites them.
+  directly — they are tangled output; `make tangle` overwrites them.
 - Adding support for a tool: add a `#+begin_src emacs-lisp` block under the appropriate
   `**` heading in the Configuration subtree, wrapped in
-  `(when (executable-find "<binary>") …)` where a gating binary exists. No toggle, no
-  registration list, no `custom.el` entry.
-- Every `use-package` form needs an explicit `:ensure` — `t` for third-party, `nil` for
-  built-ins, a recipe plist for git-only packages.
+  `(when (executable-find "<binary>") …)` if the tool needs a toolchain to be useful.
+  Editing modes stay unconditional. No toggle, no registration list, no `custom.el`
+  entry.
+- `use-package-always-ensure` is on: third-party forms need no `:ensure`; built-in
+  forms **must** say `:ensure nil`; git-only packages take a recipe plist.
 - The gate wraps the whole form. `:if` inside a `use-package` form does not stop elpaca
   from cloning.
+- Startup hooks inside `use-package` forms use `elpaca-after-init`, never `after-init`
+  or `emacs-startup`.
 - Prefer a deferring keyword (`:mode`, `:hook`, `:commands`) over eager loading.
-- Run `make check` before committing.
+- Run `make check` before committing. Run `scripts/myde-probe.sh` to verify a change
+  did not drop a declared package or turn off a startup mode.
 
 Update its `description:` frontmatter to match, so it stops advertising the module
 system:
@@ -2070,7 +1946,7 @@ description: This skill should be used when editing myde.org, the literate sourc
 untouched. Read it and correct only what the migration invalidates:
 
 ```bash
-grep -n 'package-install\|package-selected\|:pin\|lib\.el\|cfg\.el\|modules/\|emacs "30' \
+grep -n 'package-install\|package-selected\|:pin\|lib\.el\|cfg\.el\|modules/\|emacs "30\|after-init' \
   /tmp/myde-migration/.agents/skills/elisp/SKILL.md
 ```
 
@@ -2078,27 +1954,32 @@ Fix any hit. Expected: few or none — if the grep is empty, this step is done.
 
 - [ ] **Step 4: Update README.md**
 
-Update the installation and structure sections to describe `myde.org` plus three
-tangled files, and replace any description of `M-x customize-group RET myde-modules`
+`README.md` lines 19-89 describe `modules/`, `myde-modules`, `myde-customize`, and
+`M-x customize-group RET myde-modules`. Update the installation and structure sections
+to describe `myde.org` plus three tangled files, and replace the customize instructions
 with the binary-detection rule.
 
 - [ ] **Step 5: Full verification before going live**
 
 ```bash
-cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-scripts/myde-probe.sh /tmp/myde-migration /tmp/myde-reports/04-final.txt
-echo "--- errors ---"
-grep '^error: ' /tmp/myde-reports/04-final.txt
-echo "--- packages lost vs original baseline ---"
-comm -23 <(grep '^package: ' /tmp/myde-reports/00-baseline.txt) \
-         <(grep '^package: ' /tmp/myde-reports/04-final.txt)
-echo "--- init time ---"
-grep 'init-time-seconds' /tmp/myde-reports/00-baseline.txt /tmp/myde-reports/04-final.txt
-cd /tmp/myde-migration && make check
+cd /tmp/myde-migration
+scripts/myde-probe.sh "$PWD" /tmp/myde-reports/04-final.txt
+R=/tmp/myde-reports
+decl() { grep '^declared: ' "$1" | sed 's/^declared: //'; }
+echo "--- init ---"
+grep -E '^(init-file-had-error|init-time-seconds|elpaca-init-time-seconds):' $R/00-baseline.txt $R/04-final.txt
+echo "--- declared lost vs original baseline (must be empty) ---"
+comm -23 <(decl $R/00-baseline.txt) <(decl $R/04-final.txt)
+echo "--- startup modes vs original baseline ---"
+diff <(grep '^mode: ' $R/00-baseline.txt) <(grep '^mode: ' $R/04-final.txt) && echo "MODES IDENTICAL"
+echo "--- new errors vs original baseline ---"
+comm -13 <(grep '^error: ' $R/00-baseline.txt | sort) <(grep '^error: ' $R/04-final.txt | sort)
+make check
 ```
 
-Expected: no errors beyond the baseline's; `pkl-mode` as the only lost package; `make
-check` clean.
+Expected: nothing lost, `MODES IDENTICAL`, no new errors, `make check` clean. Compare
+`elpaca-init-time-seconds` in the final report against `init-time-seconds` in the
+baseline; that is the like-for-like startup number.
 
 - [ ] **Step 6: Commit the documentation and skills**
 
@@ -2108,22 +1989,21 @@ git add .agents/ README.md
 git commit -m "Update docs and agent skills for three-file literate config
 
 Documents myde.org as the sole editable source, presence-as-intent module
-enablement, and elpaca package management. Removes the module system,
+enablement, elpaca package management with use-package-always-ensure, and
+the elpaca-after-init rule for startup hooks. Removes the module system,
 declarative loading, and package.el invariant sections, none of which
 describe the config any more. Raises the version floor to Emacs 31.1,
 required for user-lisp-directory.
 
 Rewrites the myde skill, which described only the deleted module system
-and would have misled any agent that loaded it.
-
-Adds two cautions: user-lisp shadows built-ins at load-path position 0,
-and exec-path-from-shell must stay first so binary gates see a complete
-exec-path."
+and would have misled any agent that loaded it."
 ```
 
 - [ ] **Step 7: Go live**
 
 `~/.config/emacs` already symlinks to the repository, so merging is all that is needed.
+Move the worktree's built `elpaca/` across first so the first live start does not
+spend minutes rebuilding in a frozen GUI:
 
 ```bash
 cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
@@ -2132,39 +2012,38 @@ git merge --no-ff migration/three-file-literate -m "Merge three-file literate co
 Collapses 53 module directories and 24 defcustom toggles into three elisp
 files tangled from a single myde.org. Module enablement now derives from
 binary presence; packages are managed by elpaca."
-```
-
-Then copy the reduced `custom.el` over the live one — it is untracked, so the merge
-does not touch it:
-
-```bash
 cp /tmp/myde-migration/custom.el custom.el
+mv /tmp/myde-migration/elpaca ./elpaca
 ```
+
+`custom.el` is untracked, so the merge does not touch it; the copy replaces the live
+one with the reduced version.
 
 - [ ] **Step 8: Verify the live config**
 
-Quit any running Emacs, then start a real GUI Emacs from the desktop or Dock — not from
-a terminal — so the `exec-path-from-shell` path is genuinely exercised.
+Quit any running Emacs. Note that this severs the `emacs` MCP server that agent
+sessions use; reconnect after restart. Then start a real GUI Emacs from the desktop or
+Dock — not from a terminal — so the `exec-path-from-shell` path is genuinely
+exercised. With `elpaca/` moved across, startup should only activate, not build.
 
-The main tree has no `elpaca/`, so this first start clones and builds every package.
-Expect several minutes and a visible `*elpaca-log*`. Confirm afterwards:
+Confirm from a terminal:
 
 ```bash
-emacsclient -e '(list (length exec-path) (executable-find "go") emacs-init-time)'
+emacsclient -e '(list (length exec-path) (executable-find "go") (bound-and-true-p vertico-mode) (get-buffer "*dashboard*"))'
 ```
 
-Expected: an `exec-path` length near 42, a resolved `go` path, and an init time in the
-same range as the probe reported.
+Expected: an `exec-path` length near 42, a resolved `go` path, `t`, and a dashboard
+buffer. The dashboard is the one startup item the probe could not check.
 
 - [ ] **Step 9: Clean up**
 
 Only after the live config is confirmed working. `git worktree remove` refuses to delete
-a worktree with untracked files, and `elpaca/` is untracked:
+a worktree with untracked files:
 
 ```bash
 cd /Users/edwin-gooch/devel/repos/github.com/mojochao/myde.emacs
-rm -rf /tmp/myde-migration/elpaca /tmp/myde-migration/elpa
-git worktree remove /tmp/myde-migration
+rm -f /tmp/myde-migration/elpa
+git worktree remove --force /tmp/myde-migration
 git branch -d migration/three-file-literate
 rm -rf elpa
 git status --porcelain
@@ -2176,12 +2055,29 @@ pre-migration state.
 
 ---
 
+## Follow-up work, outside this migration
+
+Each of these changes behaviour and gets its own before/after probe comparison. None
+is a precondition for the migration.
+
+- **Deferral audit.** `M-x use-package-report` lists every form that loaded at startup
+  (`use-package-compute-statistics` is on). For each third-party package tied to a
+  file type or a command, add `:mode`, `:hook`, or `:commands`. Global modes (theme,
+  modeline, dashboard, completion) legitimately stay eager. The probe's `loaded:` set
+  is the before/after metric.
+- **Collapse the 25 duplicate `indent-bars` forms** into one with a combined hook
+  list. Harvest the mode list with
+  `grep -A3 'use-package indent-bars' user-lisp/myde.el | grep -oE '[a-z0-9+-]+-mode' | sort -u`
+  before writing it.
+- **Linux `-l` verification** (Task 3 step 1) before the Linux machine adopts the
+  config, and `emacs --version` there: `user-lisp-directory` needs 31.1.
+
 ## Deferred, with rationale
 
 - **Byte-compiling `myde.el`.** All three files keep `no-byte-compile: t`, matching the
   current `init.el`. A stale `.elc` beside a tangled `.el` is a confusing failure mode,
   and the tangle workflow would need a compile step. Revisit if load time becomes
-  measurable — `emacs-init-time` is the signal.
+  measurable — `elpaca-init-time-seconds` in the probe is the signal.
 - **`myde.el` as several files.** The spec fixes three loaded files. If the ~7,000-line
   buffer proves unpleasant despite org folding, `myde.el` can tangle into
   `user-lisp/myde-{core,prog,data}.el` with `myde.el` requiring them, without touching
@@ -2189,10 +2085,7 @@ pre-migration state.
 - **Removing the `zig`/`ruby` LSP config.** `zls` and `ruby-lsp` are absent, so those
   eglot blocks are inert. They cost nothing and become correct the moment the servers
   are installed.
-- **Reordering sections to the spec's grouping.** The spec's "Literate workflow" section
-  sketches the order Environment → Core → Languages → Formats → Ebooks/AI/Auth. The
-  actual order is Environment → Core → AI → Auth → Data → Containers → Languages → Text
-  → Ebooks, inherited from `myde-modules` load order. That order is known-working;
-  changing it risks breaking a load-order dependency for a purely cosmetic gain. Org
-  folding makes navigation order largely irrelevant. Revisit only if a dependency audit
-  is done first.
+- **Reordering sections.** The `**` headings follow `myde-modules` load order plus the
+  Environment insertion. That order is known-working; changing it risks breaking a
+  load-order dependency for a purely cosmetic gain. Revisit only after a dependency
+  audit.
