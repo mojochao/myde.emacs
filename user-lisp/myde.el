@@ -2808,6 +2808,7 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 ;; Standard keybindings for geiser (C-c i prefix)
 ;; These are defaults from geiser but can be customized here if needed
 (use-package geiser
+  :ensure t
   :after scheme
   :config
   ;; C-c i i — geiser (open REPL, prompts for implementation)
