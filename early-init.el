@@ -79,6 +79,11 @@
 (setq use-package-verbose nil
       use-package-minimum-reported-time (if init-file-debug 0 0.1))
 
+;; Record every evaluated use-package form.  Read by scripts/myde-probe.el to
+;; compare declared package sets across migration phases, and by
+;; M-x use-package-report afterwards.  Cheap enough to leave on permanently.
+(setq use-package-compute-statistics t)
+
 ;;;; Frame setup (avoid redraw overhead)
 
 ;; Set frame parameters early to avoid expensive mode function calls
