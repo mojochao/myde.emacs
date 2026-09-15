@@ -961,8 +961,6 @@ entirely.  Intended for use inside a capture template via `%(...)':
 ;;;; core-notes
 ;;;; ----------
 
-(require 'myde-core-org)
-
 (defvar myde-denote-directory myde-org-notes-directory
   "Root directory for denote notes.")
 
