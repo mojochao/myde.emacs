@@ -31,8 +31,8 @@
 
 
 (defconst myde-text-markdown-dir
-  (file-name-directory (or load-file-name buffer-file-name))
-  "Directory containing the text-markdown module files.")
+  (expand-file-name "etc/" user-emacs-directory)
+  "Directory containing text-markdown module assets.")
 
 (defun myde-markdown-preview-script-tag (relative-path)
   "Return the contents of RELATIVE-PATH wrapped in a <script> tag.

@@ -21,11 +21,11 @@
 
 
 (defvar myde-banner-image-file
-  (expand-file-name "modules/core-dashboard/myde-banner.png" user-emacs-directory)
+  (expand-file-name "etc/myde-banner.png" user-emacs-directory)
   "Path to the dashboard banner image file.")
 
 (defvar myde-banner-text-file
-  (expand-file-name "modules/core-dashboard/myde-banner.txt" user-emacs-directory)
+  (expand-file-name "etc/myde-banner.txt" user-emacs-directory)
   "Path to the dashboard banner text fallback file.")
 
 (provide 'myde-core-dashboard)

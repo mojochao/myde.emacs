@@ -278,7 +278,7 @@
   :ensure t)
 
 (myde-register-snippets
- (expand-file-name "snippets" (file-name-directory load-file-name))
+ (expand-file-name "snippets/elixir" user-emacs-directory)
  'elixir-ts-mode)
 
 (use-package indent-bars
