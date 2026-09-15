@@ -19,10 +19,6 @@
 ;;; Code:
 
 
-;;;; <category>-<name>
-;;;; -----------------
-
-
 ;;;; core-base
 ;;;; ---------
 
@@ -41,19 +37,6 @@
 (defun myde-delete-trailing-whitespace-setup ()
   "Delete trailing whitespace on save."
   (add-hook 'before-save-hook #'delete-trailing-whitespace nil t))
-
-(defun myde-exec-path-from-shell-startup-hook ()
-  "Install exec-path-from-shell if needed and import shell environment.
-Runs after init so neither the package download nor the shell subprocess
-can block startup."
-  (condition-case err
-      (progn
-        (unless (package-installed-p 'exec-path-from-shell)
-          (package-install 'exec-path-from-shell))
-        (require 'exec-path-from-shell)
-        (exec-path-from-shell-initialize))
-    (error (message "myde: exec-path-from-shell setup failed: %s"
-                    (error-message-string err)))))
 
 (defun myde-treesit-install-language-grammar-advice (orig-fn lang &optional out-dir)
   "Redirect tree-sitter grammar installation to the XDG data directory.
@@ -165,15 +148,6 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
 ;; Auto-detect shebang comments and use shell-script-mode appropriately.
 (dolist (interp '("bash" "sh" "zsh"))
   (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
-
-;; Environment variables from shell initialization
-;; NOTE: This is only needed on macOS where GUI applications don't inherit
-;; the shell environment. On Linux, Emacs already has the correct environment
-;; from the login shell via execve.
-;; Installation and initialization are both deferred to emacs-startup-hook so
-;; that neither the package download nor the shell subprocess can block init.
-(when (memq window-system '(mac ns))
-  (add-hook 'emacs-startup-hook #'myde-exec-path-from-shell-startup-hook 90))
 
 ;; Recent files management
 (use-package recentf
@@ -301,6 +275,31 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
         (or (executable-find "gls") insert-directory-program))
   (setq dired-listing-switches "-aBhl --group-directories-first")
   :ensure nil)
+
+
+;;;; Environment
+;;;; -----------
+;; Must precede every `executable-find' gate below.  GUI Emacs on macOS, and
+;; Emacs started from a .desktop entry or systemd user unit on Linux, do not
+;; inherit the login shell's PATH -- so without this, gates would silently
+;; disable modules whose binaries are installed.
+;;
+;; Sits after core-base rather than first in the file: under package.el a
+;; third-party package cannot be required before `package-initialize', which
+;; core-base runs.  The position is harmless under elpaca and is kept fixed.
+;;
+;; Dropping "-i" from the default '("-l" "-i") takes the probe from ~575ms to
+;; ~88ms with an identical resulting PATH, and keeps it under
+;; `exec-path-from-shell-warn-duration-millis' (500).
+
+(use-package exec-path-from-shell
+  :ensure t
+  :demand t
+  :init
+  (setq exec-path-from-shell-arguments '("-l"))
+  :config
+  (when (or (daemonp) window-system)
+    (exec-path-from-shell-initialize)))
 
 
 ;;;; core-ui
@@ -1538,6 +1537,9 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 ;;;; ai-claude
 ;;;; ---------
+;; Gate: claude
+
+(when (executable-find "claude")
 
 
 
@@ -1552,6 +1554,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   (claude-code-ide-emacs-tools-setup)
   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
   :ensure t)
+
+  )
 
 
 ;;;; ai-mcp
@@ -1577,6 +1581,9 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 ;;;; auth-1password
 ;;;; --------------
+;; Gate: op
+
+(when (executable-find "op")
 
 (defun myde-auth-source-1password-construct-secret-reference
     (_backend _type host &optional user _port)
@@ -1598,6 +1605,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :custom
   (auth-source-1password-vault "My API credentials")
   :ensure t)
+
+  )
 
 
 ;;;; data-csv
@@ -1897,6 +1906,9 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 ;;;; containers-kubernetes
 ;;;; ---------------------
+;; Gate: kubectl
+
+(when (executable-find "kubectl")
 
 
 
@@ -1904,6 +1916,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :bind-keymap
   ("C-c k" . kubed-prefix-map)
   :ensure t)
+
+  )
 
 
 ;;;; prog-base
@@ -2148,6 +2162,9 @@ Opens the shell buffer if it does not already exist."
 
 ;;;; prog-fish
 ;;;; ---------
+;; Gate: fish
+
+(when (executable-find "fish")
 
 
 
@@ -2167,9 +2184,14 @@ Opens the shell buffer if it does not already exist."
 (use-package indent-bars
   :hook (fish-mode . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-nushell
 ;;;; ------------
+;; Gate: nu
+
+(when (executable-find "nu")
 
 (defun myde-nushell-mode-setup ()
   "Set buffer-local settings for nushell-mode buffers."
@@ -2322,6 +2344,8 @@ Opens the REPL buffer if it does not already exist."
 (use-package indent-bars
   :hook (nushell-mode . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-elisp
 ;;;; ----------
@@ -2391,6 +2415,9 @@ Opens the REPL buffer if it does not already exist."
 
 ;;;; prog-clisp
 ;;;; ----------
+;; Gate: sbcl
+
+(when (executable-find "sbcl")
 
 (defun myde-prog-clisp-setup ()
   "Setup Common Lisp development environment.
@@ -2630,9 +2657,14 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
 (use-package indent-bars
   :hook (lisp-mode . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-scheme
 ;;;; -----------
+;; Gate: guile
+
+(when (executable-find "guile")
 
 (defun myde-prog-scheme-setup ()
   "Setup Scheme development environment.
@@ -2834,9 +2866,14 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 (use-package indent-bars
   :hook (scheme-mode . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-clojure
 ;;;; ------------
+;; Gate: clojure
+
+(when (executable-find "clojure")
 
 (defun myde-prog-clojure-setup ()
   "Setup Clojure development environment.
@@ -2986,9 +3023,14 @@ Users who prefer zprint can override `cider-format-code-options' via
 (use-package indent-bars
   :hook ((clojure-ts-mode clojure-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-erlang
 ;;;; -----------
+;; Gate: erl
+
+(when (executable-find "erl")
 
 (defun myde-erlang-mode-setup ()
   "Set buffer-local settings for erlang-mode buffers."
@@ -3052,9 +3094,14 @@ Users who prefer zprint can override `cider-format-code-options' via
 (use-package indent-bars
   :hook (erlang-mode . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-elixir
 ;;;; -----------
+;; Gate: elixir
+
+(when (executable-find "elixir")
 
 (defun myde-elixir-ts-ensure-grammars ()
   "Ensure Elixir and HEEx tree-sitter grammars are installed."
@@ -3343,9 +3390,14 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 (use-package indent-bars
   :hook ((elixir-ts-mode heex-ts-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-cpp
 ;;;; --------
+;; Gate: clangd
+
+(when (executable-find "clangd")
 
 (defun myde-cpp-ts-mode-setup ()
   "Set buffer-local settings for c++-ts-mode buffers."
@@ -3479,9 +3531,14 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 (use-package indent-bars
   :hook ((c++-ts-mode c-ts-mode cmake-ts-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-go
 ;;;; --------
+;; Gate: go
+
+(when (executable-find "go")
 
 (defvar myde-go-tab-width 2
   "Tab width for Go buffers.")
@@ -3609,9 +3666,14 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 (use-package indent-bars
   :hook ((go-ts-mode go-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-rust
 ;;;; ---------
+;; Gate: cargo
+
+(when (executable-find "cargo")
 
 (defun myde-rust-mode-setup ()
   "Set buffer-local settings for rustic-mode buffers."
@@ -3715,9 +3777,14 @@ Used as the `:program' callback for dape Rust debug configurations."
 (use-package indent-bars
   :hook ((rustic-mode rust-ts-mode rust-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-zig
 ;;;; --------
+;; Gate: zig
+
+(when (executable-find "zig")
 
 (defun myde-zig-ts-or-plain-mode ()
   "Use `zig-ts-mode' if tree-sitter is available, otherwise fall back to `zig-mode'."
@@ -3833,9 +3900,14 @@ Used as the `:program' callback for dape Zig debug configurations."
 (use-package indent-bars
   :hook ((zig-ts-mode zig-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-python
 ;;;; -----------
+;; Gate: python3
+
+(when (executable-find "python3")
 
 (defun myde-python-ts-mode-setup ()
   "Set buffer-local settings for python-ts-mode buffers.
@@ -3953,9 +4025,14 @@ Runs after mise-mode has applied the project environment, so
 (use-package indent-bars
   :hook (python-ts-mode . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-ruby
 ;;;; ---------
+;; Gate: ruby
+
+(when (executable-find "ruby")
 
 (defun myde-ruby-ts-or-plain-mode ()
   "Use `ruby-ts-mode' if tree-sitter is available, otherwise fall back to `ruby-mode'."
@@ -4102,9 +4179,14 @@ Runs after mise-mode has applied the project environment, so
 (use-package indent-bars
   :hook ((ruby-ts-mode ruby-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-lua
 ;;;; --------
+;; Gate: lua
+
+(when (executable-find "lua")
 
 (defun myde-lua-ts-or-plain-mode ()
   "Use `lua-ts-mode' if tree-sitter is available, otherwise fall back to `lua-mode'."
@@ -4212,9 +4294,14 @@ Runs after mise-mode has applied the project environment, so
 (use-package indent-bars
   :hook ((lua-ts-mode lua-mode) . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-javascript
 ;;;; ---------------
+;; Gate: node
+
+(when (executable-find "node")
 
 (defun myde-js-ts-mode-setup ()
   "Set buffer-local settings for js-ts-mode buffers."
@@ -4405,9 +4492,14 @@ Enables inlay hints when eglot is managing the buffer."
 (use-package indent-bars
   :hook (js-ts-mode . indent-bars-mode))
 
+  )
+
 
 ;;;; prog-typescript
 ;;;; ---------------
+;; Gate: node
+
+(when (executable-find "node")
 
 (defun myde-typescript-ts-mode-setup ()
   "Set buffer-local settings for typescript-ts-mode buffers."
@@ -4620,6 +4712,8 @@ Enables inlay hints when eglot is managing the buffer."
 
 (use-package indent-bars
   :hook ((typescript-ts-mode tsx-ts-mode) . indent-bars-mode))
+
+  )
 
 
 ;;;; text-base
@@ -4866,6 +4960,9 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
 
 ;;;; ebook-pdf
 ;;;; ---------
+;; Gate: pdftoppm
+
+(when (executable-find "pdftoppm")
 
 
 
@@ -4883,6 +4980,8 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
   (define-key pdf-view-mode-map (kbd "t") #'pdf-annot-add-text-annotation)
   :mode ("\\.pdf\\'" . pdf-view-mode)
   :ensure t)
+
+  )
 
 
 (provide 'myde)
