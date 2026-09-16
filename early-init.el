@@ -5,7 +5,7 @@
 ;; Author:   Allen Gooch <allen.gooch@gmail.com>
 ;; URL:      https://github.com/mojochao/myde.emacs
 ;; Keywords: convenience, configuration
-;; Package-Requires: ((emacs "30.1"))
+;; Package-Requires: ((emacs "31.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -78,6 +78,11 @@
 ;; use-package configuration for fast startup:
 (setq use-package-verbose nil
       use-package-minimum-reported-time (if init-file-debug 0 0.1))
+
+;; Record every evaluated use-package form.  Read by scripts/myde-probe.el to
+;; compare declared package sets across migration phases, and by
+;; M-x use-package-report afterwards.  Cheap enough to leave on permanently.
+(setq use-package-compute-statistics t)
 
 ;;;; Frame setup (avoid redraw overhead)
 

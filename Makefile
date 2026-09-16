@@ -74,3 +74,19 @@ uninstall-xdg: ## Remove XDG desktop files
 	@echo 'removing XDG desktop files from $(XDG_APPS_DIR)'
 	rm -f $(XDG_APPS_DIR)/org-protocol.desktop
 	update-desktop-database $(XDG_APPS_DIR)
+
+##@ Literate config targets
+
+.PHONY: tangle
+tangle: ## Tangle myde.org into early-init.el, init.el, and user-lisp/myde.el
+	@echo 'tangling myde.org'
+	emacs -Q --batch --eval "(progn (require 'org) \
+	  (org-babel-tangle-file \"$(ROOT_DIR)/myde.org\"))"
+
+.PHONY: check
+check: tangle ## Verify committed elisp matches myde.org
+	@echo 'checking tangled output is up to date'
+	@git diff --exit-code -- early-init.el init.el user-lisp/myde.el \
+	  || { echo 'ERROR: tangled output differs from committed files.'; \
+	       echo 'Run make tangle and commit the result.'; exit 1; }
+	@echo 'tangled output is up to date'

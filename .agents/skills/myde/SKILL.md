@@ -1,52 +1,73 @@
 ---
 name: myde
-description: This skill should be used when adding or editing modules in the myde.el repository, creating lib.el or cfg.el files, wiring use-package declarations for myde modules, or working with the myde module system (myde-modules, myde/m, myde-initialize).
-version: 1.0.0
+description: This skill should be used when editing myde.org, the literate source for the myde.emacs configuration — adding or changing use-package declarations, binary-presence gates, elpaca recipes, or startup hooks.
+version: 2.0.0
 ---
 
 # Myde Project Conventions
 
-Apply these rules whenever writing code in the myde.el repository. They extend the `elisp` skill — follow both.
+Apply these rules whenever changing configuration in the myde.emacs repository. They extend the `elisp` skill — follow both.
 
-## Module file split
+## Edit myde.org only
 
-Every module under `modules/<category>-<name>/` contains exactly two files:
+`myde.org` is the single source. `early-init.el`, `init.el`, and `user-lisp/myde.el` are tangled output; `make tangle` overwrites them, so never edit them directly.
 
-- `lib.el` — named definitions and built-in Emacs setup only: `defun`, `defvar`, `defcustom`, `setq`, direct built-in mode/variable configuration. No `use-package`, no external package hooks, no keybindings.
-- `cfg.el` — external package wiring via `use-package`: hooks, keybindings, package configuration.
+- `* Early Init` tangles to `early-init.el`, `* Bootstrap` to `init.el`, `* Configuration` to `user-lisp/myde.el`.
+- Under `* Configuration`, `**` headings are categories (Core base, Environment, Core, AI, Auth, Data formats, Containers, Languages, Text formats, Ebooks) in load order. Each `***` heading holds one `#+begin_src emacs-lisp` block for one section, starting with its `;;;; name` comment header.
+- Do not reorder sections. The order is load order and is known-working.
 
-`cfg.el` must begin with a `featurep` guard that loads its own `lib.el`:
+## Adding support for a tool
+
+Add a `***` heading and one source block under the matching `**` heading. If the tool needs a toolchain to be useful, wrap the **whole block body** in a gate:
 
 ```elisp
-(unless (featurep 'myde-<category>-<name>)
-  (load (expand-file-name "lib" (file-name-directory load-file-name))))
+;;;; prog-foo
+;;;; --------
+
+(when (executable-find "foo")
+
+(use-package foo-mode
+  :mode "\\.foo\\'")
+
+  )
 ```
 
-`cfg.el` must end with `(provide 'myde-<category>-<name>-cfg)`.
-`lib.el` must end with `(provide 'myde-<category>-<name>)`.
+- Editing modes that need no toolchain stay unconditional.
+- No toggle, no registration list, no `custom.el` entry. Presence of the binary is the intent.
+- The gate wraps the form. `:if` inside a `use-package` form does **not** stop elpaca from cloning — the order is queued when the form is expanded.
+- Runtime and tooling presence differ: inside a gated section, guard an LSP or debugger form with `:if (executable-find "<server>")` when the server is optional.
 
-## Naming
+## Packages: elpaca with use-package-always-ensure
 
-Public symbols are prefixed `myde-<category>-<name>-` matching the module path.  
-Internal symbols use `myde--` as the secondary separator.  
-Interactive helper functions exposed as commands use the `/` separator: `myde/do-thing`.
+- Third-party forms need no `:ensure`. **Built-in forms must say `:ensure nil`**, or elpaca tries to clone them.
+- Git-only packages take a recipe plist: `:ensure (:host github :repo "owner/name")`. Add `:files (:defaults "subdir")` if the package loads files outside the default set.
+- **One ensuring form per package.** Further `use-package` forms for the same package say `:ensure nil`. A duplicate order aborts init under elpaca 0.12.
+- A secondary `:ensure nil` form that is not deferred by `:hook`/`:bind`/`:mode`/`:commands` must add `:after <package>`; during init the package is not yet on `load-path`.
+- Prefer a deferring keyword (`:mode`, `:hook`, `:commands`, `:bind`) over eager loading.
+
+## Startup hooks
+
+Inside `use-package`, use `:hook (elpaca-after-init . fn)` — never `after-init` or `emacs-startup`. The form's body runs after those hooks have fired, so the mode would stay silently off. Top-level `add-hook` calls that must wait for packages also use `elpaca-after-init-hook`.
 
 ## Hook functions
 
-**Never use lambdas as hook functions.** Define a named function in `lib.el` and reference it by symbol in `cfg.el`:
+**Never use lambdas as hook functions.** Define a named function in the same section and reference it by symbol:
 
 ```elisp
-;; lib.el
-(defun myde/foo-mode-hook ()
+(defun myde-foo-mode-setup ()
   (setq-local fill-column 100))
 
-;; cfg.el
-(add-hook 'foo-mode-hook #'myde/foo-mode-hook)
+(use-package foo-mode
+  :hook (foo-mode . myde-foo-mode-setup))
 ```
+
+## Naming
+
+Section-scoped symbols are prefixed `myde-<section>-` (e.g. `myde-prog-go-…`). Internal symbols use `myde--`. Interactive commands may use the `/` separator: `myde/do-thing`.
 
 ## Keybinding prefixes
 
-Language modules share these prefixes consistently across all `prog-*` modules:
+Language sections share these prefixes consistently across all `prog-*` sections:
 
 | Prefix  | Purpose            |
 |---------|--------------------|
@@ -57,35 +78,27 @@ Language modules share these prefixes consistently across all `prog-*` modules:
 
 ## LSP workspace config
 
-Use `myde/eglot-add-workspace-config` (defined in `core-projects/lib.el`) to upsert LSP server settings. Never assign `eglot-workspace-configuration` directly — it clobbers other modules' settings.
+Use `myde-eglot-add-workspace-config` (defined in the `core-projects` section) to upsert LSP server settings. Never assign `eglot-workspace-configuration` directly — it clobbers other sections' settings.
 
 ```elisp
-(myde/eglot-add-workspace-config :my-server '(:option value))
+(myde-eglot-add-workspace-config :my-server '(:option value))
 ```
 
 ## Snippets
 
-Custom snippets live flat under `modules/<category>-<name>/snippets/` — no mode-name subdirectory. Register them near the bottom of `cfg.el`:
+Custom snippets live flat under `snippets/<language>/` at the repo root — no mode-name subdirectory. Register them at the bottom of the language section:
 
 ```elisp
-(myde/register-snippets
- (expand-file-name "snippets" (file-name-directory load-file-name))
- 'the-major-mode)
+(myde-register-snippets
+ (expand-file-name "snippets/go" user-emacs-directory)
+ 'go-ts-mode)
 ```
 
-`myde/register-snippets` is defined in `core-snippets/lib.el` and is safe to call before yasnippet loads.
+`myde-register-snippets` is defined in the `core-snippets` section and is safe to call before yasnippet loads.
 
 ## XDG paths
 
-All state/data/cache redirection is handled in `core-base/cfg.el`. Never redirect XDG paths in other modules.
-
-## Adding a new module
-
-1. Create `modules/<category>-<name>/lib.el` ending with `(provide 'myde-<category>-<name>)`.
-2. Create `modules/<category>-<name>/cfg.el` with the `featurep` guard at top and `(provide 'myde-<category>-<name>-cfg)` at bottom.
-3. Add `(myde/m "<category>-<name>" "<one-line description>")` to `myde-modules` in `init.el` at the desired load position.
-
-The `defcustom` toggle is generated automatically unless the module is `core-*` or `*-base`.
+All state/data/cache redirection is handled in the `core-base` section (and `early-init.el` for the two paths Emacs needs before init). Never redirect XDG paths elsewhere.
 
 ## use-package keyword ordering
 
@@ -105,11 +118,19 @@ come before it:
   :ensure t)
 ```
 
+## Verifying a change
+
+1. `make tangle`.
+2. `scripts/myde-probe.sh "$PWD" /tmp/after.txt`, then diff its `declared:` and `mode:` lines against a report taken before the change. A declared package that vanished or a mode that turned `off` is a regression. `init-file-had-error: t` means init aborted — read `*Messages*` in the probe daemon or start one by hand.
+3. `make check` before committing; commit `myde.org` with the tangled files.
+
 ## Quality checklist (before declaring done)
 
-- [ ] `lib.el` contains only named definitions and built-in setup — no `use-package`.
-- [ ] `cfg.el` starts with `featurep` guard, ends with `provide`.
-- [ ] All hook references are named functions defined in `lib.el`.
+- [ ] Change made in `myde.org`, tangled with `make tangle`, and `make check` passes.
+- [ ] New block sits under the right `**` heading, in its own `***` heading, gated if it needs a toolchain.
+- [ ] Every built-in `use-package` form says `:ensure nil`; each third-party package is ensured by exactly one form.
+- [ ] Startup hooks use `elpaca-after-init`, not `after-init`/`emacs-startup`.
+- [ ] All hook references are named functions.
 - [ ] Keybindings use the shared `C-c e/t/i/d` prefixes where applicable.
-- [ ] LSP config uses `myde/eglot-add-workspace-config`, not direct assignment.
-- [ ] New module is registered in `init.el` `myde-modules` list.
+- [ ] LSP config uses `myde-eglot-add-workspace-config`, not direct assignment.
+- [ ] Probe report shows no lost declared packages, no modes off, no new errors.

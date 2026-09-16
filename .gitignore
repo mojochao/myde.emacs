@@ -11,7 +11,7 @@ eln-cache/
 custom.el
 
 # installed packages
-elpa/
+elpaca/
 
 # macos finder junk
 .DS_Store
