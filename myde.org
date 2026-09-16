@@ -1,3 +1,313 @@
+#+title: MyDE — *MY* Development Environment
+#+author: Allen Gooch
+#+property: header-args:emacs-lisp :tangle no :results none :comments no
+
+* Early Init
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle early-init.el :mkdirp yes
+:END:
+
+Runs before ~init.el~, and before Emacs startup creates its directories.
+
+#+begin_src emacs-lisp
+;;; early-init.el --- Emacs early initialization -*- no-byte-compile: t; lexical-binding: t; -*-
+
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.emacs
+;; Keywords: convenience, configuration
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
+;;; Commentary:
+
+;; Loaded before init.el and before Emacs startup.el creates directories.
+;; This file is the highest-leverage place to optimize startup: runs before
+;; the GUI initializes and before package loading begins.
+
+;;; Code:
+
+;;;; Garbage collection optimization
+
+;; Garbage collection is a major contributor to slow startup. Temporarily
+;; disable it during init by raising the threshold to its maximum value.
+;; This will be restored to a sensible value after init completes.
+(defvar myde--gc-cons-threshold gc-cons-threshold)
+(defvar myde--gc-cons-percentage gc-cons-percentage)
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 1.0)
+
+(defun myde--restore-gc ()
+  "Restore garbage collection to normal values after init."
+  (setq gc-cons-threshold (* 32 1024 1024)  ; 32 MB (vs. default 800 KB)
+        gc-cons-percentage 0.1))
+
+(add-hook 'emacs-startup-hook #'myde--restore-gc 105)
+
+;;;; File name handler optimization
+
+;; The `file-name-handler-alist' is checked on every file operation.
+;; Temporarily clearing it during startup saves thousands of regex checks.
+;; We restore it after init so TRAMP and other handlers work normally.
+(defvar myde--file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
+
+(defun myde--restore-file-name-handler-alist ()
+  "Restore `file-name-handler-alist' after init."
+  (setq file-name-handler-alist
+        (delete-dups (append file-name-handler-alist
+                             myde--file-name-handler-alist))))
+
+(add-hook 'emacs-startup-hook #'myde--restore-file-name-handler-alist 104)
+
+;;;; Package system configuration
+
+;; Prevent package.el from auto-initializing before init.el runs.
+;; This prevents package-initialize from running twice (once here, once in init.el).
+;; Package archive configuration is handled by core-base/cfg.el.
+(setq package-enable-at-startup nil)
+
+;;;; Native compilation cache redirection
+
+;; Must happen in early-init.el before any compilation occurs.
+;; Redirect eln-cache to XDG_CACHE_HOME instead of user-emacs-directory.
+(when (native-comp-available-p)
+  (startup-redirect-eln-cache
+   (expand-file-name "emacs/eln-cache"
+                     (or (getenv "XDG_CACHE_HOME")
+                         (expand-file-name ".cache" "~")))))
+
+;;;; Load preference and use-package optimization
+
+;; Prefer newer compiled files (.elc, .eln) over their .el sources.
+(setq load-prefer-newer t)
+
+;; use-package configuration for fast startup:
+(setq use-package-verbose nil
+      use-package-minimum-reported-time (if init-file-debug 0 0.1))
+
+;; Record every evaluated use-package form.  Read by scripts/myde-probe.el to
+;; compare declared package sets across migration phases, and by
+;; M-x use-package-report afterwards.  Cheap enough to leave on permanently.
+(setq use-package-compute-statistics t)
+
+;;;; Frame setup (avoid redraw overhead)
+
+;; Set frame parameters early to avoid expensive mode function calls
+;; (tool-bar-mode, menu-bar-mode, scroll-bar-mode all trigger redraws).
+;; We use default-frame-alist to set these once and avoid redundant calls.
+(setq default-frame-alist
+      `((menu-bar-lines . 0)      ; disable menu bar
+        (tool-bar-lines . 0)      ; disable tool bar
+        (vertical-scroll-bars)    ; disable scroll bars
+        (horizontal-scroll-bars)
+        (width  . 120)            ; set initial frame width (columns)
+        (height . 50)             ; set initial frame height (rows)
+        ,@(when (eq system-type 'darwin)
+            '((ns-use-proxy-icon . nil)))))
+
+(when (eq system-type 'darwin)
+  (setq ns-use-proxy-icon nil))
+
+;;;; Early frame optimization
+
+;; Prevent Emacs from trying to resize the frame to a specific column size.
+(setq frame-inhibit-implied-resize t)
+
+;; Resizing the frame when changing the font is expensive. Defer this.
+(setq frame-resize-pixelwise t)
+
+;;;; File name handler optimization (filesystem checks)
+
+;; A second, case-insensitive pass over auto-mode-alist is redundant.
+(setq auto-mode-case-fold nil)
+
+;;;; Font cache optimization
+
+;; Font compacting can be very resource-intensive, especially on Windows.
+;; Disable it to improve startup times.
+(setq inhibit-compacting-font-caches t)
+
+;;;; Process buffer optimization
+
+;; Increase how much is read from processes in a single chunk.
+;; This improves performance for LSP servers and other subprocesses.
+(setq read-process-output-max (* 2 1024 1024))  ; 2 MB
+(setq process-adaptive-read-buffering nil)
+
+;;;; Initial buffer optimization
+
+;; The initial buffer is created during startup. Using fundamental-mode
+;; avoids loading extra packages and running hooks from lisp-interaction-mode.
+(setq initial-major-mode 'fundamental-mode
+      initial-scratch-message nil)
+
+;;;; Startup screen suppression
+
+;; Disable startup screens and messages for a cleaner, faster experience.
+(setq inhibit-startup-screen t
+      inhibit-startup-echo-area-message user-login-name
+      inhibit-startup-buffer-menu t
+      inhibit-x-resources t)
+
+;; Suppress the "For information about GNU Emacs..." message at startup.
+(advice-add 'display-startup-echo-area-message :override #'ignore)
+(advice-add 'display-startup-screen :override #'ignore)
+
+;;;; Input/Output optimization
+
+;; Don't ping things that look like domain names.
+(setq ffap-machine-p-known 'reject)
+
+;;;; XDG path redirection (must stay here — before init.el)
+
+;; This must be set in early-init.el because Emacs creates the directory
+;; from the default value before init.el runs.
+(let ((state-home (or (getenv "XDG_STATE_HOME")
+                      (expand-file-name ".local/state" "~"))))
+  (setq auto-save-list-file-prefix
+        (expand-file-name "emacs/auto-save-list/.saves-" state-home)))
+
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+
+;;;; Miscellaneous optimizations
+
+(set-language-environment "UTF-8")
+
+;; Suppress warnings from the legacy advice API.
+(setq ad-redefinition-action 'accept)
+
+;; In PGTK, this timeout introduces latency. Reducing it improves responsiveness.
+(when (boundp 'pgtk-wait-for-event-timeout)
+  (setq pgtk-wait-for-event-timeout 0.001))
+
+(setq warning-minimum-level (if init-file-debug :warning :error))
+(setq warning-suppress-types '((lexical-binding)))
+
+(when init-file-debug
+  (setq message-log-max 16384))
+
+(provide 'early-init)
+;;; early-init.el ends here
+#+end_src
+
+* Bootstrap
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle init.el :mkdirp yes
+:END:
+
+Bootstraps elpaca, enables its ~use-package~ support, then loads ~user-lisp/myde.el~.
+
+#+begin_src emacs-lisp
+;;; init.el --- Loaded after early-init.el -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
+
+;; Copyright (C) 2020-2026  Allen Gooch
+
+;; Author:   Allen Gooch <allen.gooch@gmail.com>
+;; URL:      https://github.com/mojochao/myde.emacs
+;; Keywords: convenience, configuration
+;; Package-Requires: ((emacs "31.1"))
+
+;; This file is not part of GNU Emacs.
+
+;; Released under the MIT License; see the LICENSE file at the repository
+;; root for the full text.
+
+;;; Commentary:
+;;
+;; Entry point for MyDE -- *MY* Development Environment.
+;;
+;; Bootstraps elpaca, enables its use-package support, then loads all
+;; configuration from user-lisp/myde.el, which Emacs 31 places on `load-path'
+;; automatically via `user-lisp-directory'.
+
+;;; Code:
+
+;;;; Elpaca bootstrap
+
+(defvar elpaca-installer-version 0.12)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca-activate)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (<= emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+
+;;;; Use-package support
+
+;; Every use-package form is :ensure t unless it says :ensure nil.  Built-in
+;; forms must say so; elpaca-use-package has no by-default knob of its own.
+(setq use-package-always-ensure t)
+
+;; The elpaca-use-package menu recipe carries :wait t, so this blocks until
+;; elpaca-use-package is built and `use-package' :ensure support is active --
+;; which myde.el depends on from its first form.
+(elpaca elpaca-use-package
+  (elpaca-use-package-mode))
+
+;;;; Configuration
+
+(require 'myde)
+
+;; A daemon starts its own server from startup.el after init; only GUI and
+;; TTY sessions need one here.
+(unless (daemonp)
+  (require 'server)
+  (unless (server-running-p) (server-start)))
+
+;; That's all Folks!
+(provide 'init)
+;;; init.el ends here
+#+end_src
+
+* Configuration
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle user-lisp/myde.el :mkdirp yes
+:END:
+
+Everything else.  Section order is load order and is known-working; sections that need a toolchain are wrapped in ~(when (executable-find ...) ...)~.
+
+** Core base
+
+*** Header
+
+#+begin_src emacs-lisp
 ;;; myde.el --- MyDE configuration -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
@@ -17,7 +327,11 @@
 ;; The whole of MyDE.  Loaded from init.el via (require 'myde).
 
 ;;; Code:
+#+end_src
 
+*** core-base
+
+#+begin_src emacs-lisp
 ;;;; core-base
 ;;;; ---------
 
@@ -207,7 +521,13 @@ interactive entry point."
         (or (executable-find "gls") insert-directory-program))
   (setq dired-listing-switches "-aBhl --group-directories-first")
   :ensure nil)
+#+end_src
 
+** Environment
+
+*** Environment
+
+#+begin_src emacs-lisp
 ;;;; Environment
 ;;;; -----------
 ;; Must precede every `executable-find' gate below.  GUI Emacs on macOS, and
@@ -231,7 +551,13 @@ interactive entry point."
   :config
   (when (or (daemonp) window-system)
     (exec-path-from-shell-initialize)))
+#+end_src
 
+** Core
+
+*** core-ui
+
+#+begin_src emacs-lisp
 ;;;; core-ui
 ;;;; --------
 
@@ -393,7 +719,11 @@ Outside a project: full path, or buffer name for non-file buffers."
   :config
   (setq-default mode-line-format modusregel-format)
   :ensure (:host codeberg :repo "jjba23/modusregel"))
+#+end_src
 
+*** core-ux
+
+#+begin_src emacs-lisp
 ;;;; core-ux
 ;;;; --------
 
@@ -516,7 +846,11 @@ minibuffer, even without explicitly focusing it."
   :config
   (ultra-scroll-mode 1)
   :ensure t)
+#+end_src
 
+*** core-org
+
+#+begin_src emacs-lisp
 ;;;; core-org
 ;;;; --------
 
@@ -715,7 +1049,11 @@ entirely.  Intended for use inside a capture template via `%(...)':
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)
   :ensure nil)
+#+end_src
 
+*** core-help
+
+#+begin_src emacs-lisp
 ;;;; core-help
 ;;;; ---------
 
@@ -744,7 +1082,11 @@ entirely.  Intended for use inside a capture template via `%(...)':
   :hook (elpaca-after-init . which-key-mode)
   :diminish which-key-mode
   :ensure nil)
+#+end_src
 
+*** core-terminals
+
+#+begin_src emacs-lisp
 ;;;; core-terminals
 ;;;; --------------
 
@@ -785,7 +1127,11 @@ entirely.  Intended for use inside a capture template via `%(...)':
   :config
   (keymap-set project-prefix-map "t" #'myde/project-vterm)
   :ensure nil)
+#+end_src
 
+*** core-dashboard
+
+#+begin_src emacs-lisp
 ;;;; core-dashboard
 ;;;; --------------
 
@@ -827,7 +1173,11 @@ entirely.  Intended for use inside a capture template via `%(...)':
                      (agenda    . 5)))
   (dashboard-agenda-release-buffers t)
   :ensure t)
+#+end_src
 
+*** core-complete
+
+#+begin_src emacs-lisp
 ;;;; core-complete
 ;;;; -------------
 
@@ -890,7 +1240,11 @@ entirely.  Intended for use inside a capture template via `%(...)':
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
   :ensure t)
+#+end_src
 
+*** core-notes
+
+#+begin_src emacs-lisp
 ;;;; core-notes
 ;;;; ----------
 
@@ -964,7 +1318,11 @@ for a title when invoked from a browser bookmarklet."
                  :jump-to-captured t)
                t)
   :ensure nil)
+#+end_src
 
+*** core-snippets
+
+#+begin_src emacs-lisp
 ;;;; core-snippets
 ;;;; -------------
 
@@ -990,7 +1348,11 @@ Safe to call before yasnippet has loaded."
 (use-package yasnippet-classic-snippets  ;; https://elpa.gnu.org/packages/yasnippet-classic-snippets.html
   :after yasnippet
   :ensure t)
+#+end_src
 
+*** core-projects
+
+#+begin_src emacs-lisp
 ;;;; core-projects
 ;;;; -------------
 
@@ -1228,7 +1590,11 @@ any existing entry for SERVER-KEY without clobbering other languages."
   (setq blamer-max-commit-message-length 100)
   (setq blamer-min-offset 70)
   :ensure t)
+#+end_src
 
+*** core-spell
+
+#+begin_src emacs-lisp
 ;;;; core-spell
 ;;;; ----------
 
@@ -1281,7 +1647,13 @@ any existing entry for SERVER-KEY without clobbering other languages."
    ("C-M-$" . jinx-correct-all))
   :diminish
   :ensure t)
+#+end_src
 
+** AI
+
+*** ai-base
+
+#+begin_src emacs-lisp
 ;;;; ai-base
 ;;;; --------
 
@@ -1351,7 +1723,11 @@ any existing entry for SERVER-KEY without clobbering other languages."
     z-ai/glm-4.7-flash
     z-ai/glm-5
     z-ai/glm-5.1))
+#+end_src
 
+*** ai-gptel
+
+#+begin_src emacs-lisp
 ;;;; ai-gptel
 ;;;; --------
 
@@ -1435,7 +1811,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
    ("M-a" . #'minuet-accept-suggestion-line)
    ("M-e" . #'minuet-dismiss-suggestion))
   :ensure t)
+#+end_src
 
+*** ai-agents
+
+#+begin_src emacs-lisp
 ;;;; ai-agents
 ;;;; ---------
 
@@ -1456,7 +1836,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package agent-shell  ;; https://github.com/xenodium/agent-shell
   :after transient
   :ensure t)
+#+end_src
 
+*** ai-claude
+
+#+begin_src emacs-lisp
 ;;;; ai-claude
 ;;;; ---------
 ;; Gate: claude
@@ -1477,7 +1861,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure (:host github :repo "manzaltu/claude-code-ide.el"))
 
   )
+#+end_src
 
+*** ai-mcp
+
+#+begin_src emacs-lisp
 ;;;; ai-mcp
 ;;;; --------
 
@@ -1499,7 +1887,13 @@ Otherwise, derive the variable name from the current gptel-backend type."
   ;; relative to itself; elpaca's default :files would leave them behind.
   :ensure (:host github :repo "rhblind/emacs-mcp-server"
                  :files (:defaults "tools")))
+#+end_src
 
+** Auth
+
+*** auth-1password
+
+#+begin_src emacs-lisp
 ;;;; auth-1password
 ;;;; --------------
 ;; Gate: op
@@ -1528,7 +1922,13 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
   )
+#+end_src
 
+** Data formats
+
+*** data-csv
+
+#+begin_src emacs-lisp
 ;;;; data-csv
 ;;;; --------
 
@@ -1542,7 +1942,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package indent-bars
   :hook (csv-mode . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** data-dotenv
+
+#+begin_src emacs-lisp
 ;;;; data-dotenv
 ;;;; -----------
 
@@ -1555,7 +1959,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
    ("\\.envrc\\'" . dotenv-mode)
    ("\\.env\\.[^/]*\\'" . dotenv-mode))
   :ensure t)
+#+end_src
 
+*** data-hcl
+
+#+begin_src emacs-lisp
 ;;;; data-hcl
 ;;;; --------
 
@@ -1578,7 +1986,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package indent-bars
   :hook (terraform-mode . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** data-json
+
+#+begin_src emacs-lisp
 ;;;; data-json
 ;;;; ---------
 
@@ -1613,7 +2025,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package indent-bars
   :hook (json-ts-mode . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** data-pkl
+
+#+begin_src emacs-lisp
 ;;;; data-pkl
 ;;;; --------
 
@@ -1635,7 +2051,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package indent-bars
   :hook (pkl-mode . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** data-toml
+
+#+begin_src emacs-lisp
 ;;;; data-toml
 ;;;; ---------
 
@@ -1692,7 +2112,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package indent-bars
   :hook ((toml-ts-mode toml-mode) . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** data-xml
+
+#+begin_src emacs-lisp
 ;;;; data-xml
 ;;;; --------
 
@@ -1806,7 +2230,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package indent-bars
   :hook ((xml-ts-mode nxml-mode) . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** data-yaml
+
+#+begin_src emacs-lisp
 ;;;; data-yaml
 ;;;; ---------
 
@@ -1822,7 +2250,13 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package indent-bars
   :hook (yaml-mode . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+** Containers
+
+*** containers-kubernetes
+
+#+begin_src emacs-lisp
 ;;;; containers-kubernetes
 ;;;; ---------------------
 ;; Gate: kubectl
@@ -1837,7 +2271,13 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
   )
+#+end_src
 
+** Languages
+
+*** prog-base
+
+#+begin_src emacs-lisp
 ;;;; prog-base
 ;;;; ---------
 
@@ -1894,7 +2334,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
          (slime-repl-mode . rainbow-delimiters-mode))
   :diminish rainbow-delimiters-mode
   :ensure t)
+#+end_src
 
+*** prog-bash
+
+#+begin_src emacs-lisp
 ;;;; prog-bash
 ;;;; ---------
 
@@ -2078,7 +2522,11 @@ Opens the shell buffer if it does not already exist."
 (use-package indent-bars
   :hook (bash-ts-mode . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** prog-fish
+
+#+begin_src emacs-lisp
 ;;;; prog-fish
 ;;;; ---------
 ;; Gate: fish
@@ -2105,7 +2553,11 @@ Opens the shell buffer if it does not already exist."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-nushell
+
+#+begin_src emacs-lisp
 ;;;; prog-nushell
 ;;;; ------------
 ;; Gate: nu
@@ -2265,7 +2717,11 @@ Opens the REPL buffer if it does not already exist."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-elisp
+
+#+begin_src emacs-lisp
 ;;;; prog-elisp
 ;;;; ----------
 
@@ -2331,7 +2787,11 @@ Opens the REPL buffer if it does not already exist."
 (use-package indent-bars
   :hook (emacs-lisp-mode . indent-bars-mode)
   :ensure nil)
+#+end_src
 
+*** prog-clisp
+
+#+begin_src emacs-lisp
 ;;;; prog-clisp
 ;;;; ----------
 ;; Gate: sbcl
@@ -2578,7 +3038,11 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-scheme
+
+#+begin_src emacs-lisp
 ;;;; prog-scheme
 ;;;; -----------
 ;; Gate: guile
@@ -2788,7 +3252,11 @@ This allows schemat to be optional; formatting silently skips if binary is absen
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-clojure
+
+#+begin_src emacs-lisp
 ;;;; prog-clojure
 ;;;; ------------
 ;; Gate: clojure
@@ -2945,7 +3413,11 @@ Users who prefer zprint can override `cider-format-code-options' via
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-erlang
+
+#+begin_src emacs-lisp
 ;;;; prog-erlang
 ;;;; -----------
 ;; Gate: erl
@@ -3015,7 +3487,11 @@ Users who prefer zprint can override `cider-format-code-options' via
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-elixir
+
+#+begin_src emacs-lisp
 ;;;; prog-elixir
 ;;;; -----------
 ;; Gate: elixir
@@ -3311,7 +3787,11 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-cpp
+
+#+begin_src emacs-lisp
 ;;;; prog-cpp
 ;;;; --------
 ;; Gate: clangd
@@ -3453,7 +3933,11 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-go
+
+#+begin_src emacs-lisp
 ;;;; prog-go
 ;;;; --------
 ;; Gate: go
@@ -3588,7 +4072,11 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-rust
+
+#+begin_src emacs-lisp
 ;;;; prog-rust
 ;;;; ---------
 ;; Gate: cargo
@@ -3700,7 +4188,11 @@ Used as the `:program' callback for dape Rust debug configurations."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-zig
+
+#+begin_src emacs-lisp
 ;;;; prog-zig
 ;;;; --------
 ;; Gate: zig
@@ -3822,7 +4314,11 @@ Used as the `:program' callback for dape Zig debug configurations."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-python
+
+#+begin_src emacs-lisp
 ;;;; prog-python
 ;;;; -----------
 ;; Gate: python3
@@ -3947,7 +4443,11 @@ Runs after mise-mode has applied the project environment, so
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-ruby
+
+#+begin_src emacs-lisp
 ;;;; prog-ruby
 ;;;; ---------
 ;; Gate: ruby
@@ -4102,7 +4602,11 @@ Runs after mise-mode has applied the project environment, so
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-lua
+
+#+begin_src emacs-lisp
 ;;;; prog-lua
 ;;;; --------
 ;; Gate: lua
@@ -4216,7 +4720,11 @@ Runs after mise-mode has applied the project environment, so
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-javascript
+
+#+begin_src emacs-lisp
 ;;;; prog-javascript
 ;;;; ---------------
 ;; Gate: node
@@ -4415,7 +4923,11 @@ Enables inlay hints when eglot is managing the buffer."
   :ensure nil)
 
   )
+#+end_src
 
+*** prog-typescript
+
+#+begin_src emacs-lisp
 ;;;; prog-typescript
 ;;;; ---------------
 ;; Gate: node
@@ -4637,7 +5149,13 @@ Enables inlay hints when eglot is managing the buffer."
   :ensure nil)
 
   )
+#+end_src
 
+** Text formats
+
+*** text-base
+
+#+begin_src emacs-lisp
 ;;;; text-base
 ;;;; ---------
 
@@ -4646,7 +5164,11 @@ Enables inlay hints when eglot is managing the buffer."
   (display-line-numbers-mode t))
 
 (add-hook 'text-mode-hook #'myde-text-mode-hook-function)
+#+end_src
 
+*** text-asciidoc
+
+#+begin_src emacs-lisp
 ;;;; text-asciidoc
 ;;;; -------------
 
@@ -4710,7 +5232,11 @@ Requires asciidoctor-pdf (gem install asciidoctor-pdf)."
               ("C-c C-e h" . myde-adoc-export-html)
               ("C-c C-e p" . myde-adoc-export-pdf))
   :ensure t)
+#+end_src
 
+*** text-markdown
+
+#+begin_src emacs-lisp
 ;;;; text-markdown
 ;;;; -------------
 
@@ -4846,7 +5372,13 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
   :bind (:map markdown-mode-map
               ("C-c C-g" . grip-mode))
   :ensure t)
+#+end_src
 
+** Ebooks
+
+*** ebook-epub
+
+#+begin_src emacs-lisp
 ;;;; ebook-epub
 ;;;; ----------
 
@@ -4875,7 +5407,11 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
   :mode
   ("\\.epub\\'" . nov-mode)
   :ensure t)
+#+end_src
 
+*** ebook-pdf
+
+#+begin_src emacs-lisp
 ;;;; ebook-pdf
 ;;;; ---------
 ;; Gate: pdftoppm
@@ -4900,6 +5436,11 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
   :ensure t)
 
   )
+#+end_src
 
+*** Footer
+
+#+begin_src emacs-lisp
 (provide 'myde)
 ;;; myde.el ends here
+#+end_src
