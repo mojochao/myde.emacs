@@ -58,16 +58,6 @@ interactive entry point."
                                   (mapcar #'car treesit-language-source-alist)))))
   (treesit-install-language-grammar lang))
 
-(defun myde/filter-git-only-vc-packages (upgradeable)
-  "Remove VC-installed packages with no archive entry from UPGRADEABLE.
-`package--upgradeable-packages' unconditionally marks all kind=vc packages
-as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
-  (seq-remove (lambda (name)
-                (when-let ((pkg (cadr (assq name package-alist))))
-                  (and (package-vc-p pkg)
-                       (null (assq name package-archive-contents)))))
-              upgradeable))
-
 (defun de-dosify ()
   "Remove all Windows/DOS carriage return (^M) characters in the current buffer."
   (interactive)
@@ -87,50 +77,7 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
   (setq backup-directory-alist `(("." . ,backup-dir)))
   (make-directory backup-dir :parents))
 
-;; Package initialization — must run before custom.el is loaded because
-;; package-vc-selected-packages' :set function triggers package-vc--ensure,
-;; which calls package-vc-install and requires an initialized package system.
-(require 'package)
-(setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
-
-(setq package-archives
-      '(("gnu"          . "https://elpa.gnu.org/packages/")
-        ("nongnu"       . "https://elpa.nongnu.org/nongnu/")
-        ("melpa"        . "https://melpa.org/packages/")
-        ("melpa-stable" . "https://stable.melpa.org/packages/")))
-
-(setq package-archive-priorities
-      '(("gnu"    . 99)
-        ("nongnu" . 80)
-        ("melpa"  . 70)
-        ("melpa-stable" . 50)))
-
-;; Pin built-in packages that should never be managed by the external package
-;; system.  Pinning to the non-existent "builtin" archive causes package.el to
-;; omit them from package-archive-contents entirely, so package-upgrade-all
-;; never sees them as upgradeable even when package-install-upgrade-built-in
-;; is t.  Both variables and these built-ins exist in Emacs 29+ (30 and 31).
-(dolist (pkg '(csharp-mode wallpaper))
-  (add-to-list 'package-pinned-packages (cons pkg "builtin")))
-
-;; Disable automatic upgrade of built-in packages.  Built-ins that have been
-;; upgraded into elpa (org, tramp, transient) are handled by the standard
-;; first condition in package--upgradeable-packages (installed elpa version vs
-;; archive version).  Keeping this t permanently re-adds upgraded built-ins to
-;; the upgradeable list via a separate built-in version check, which causes
-;; spurious "Cannot upgrade 'X'" errors once the elpa version matches the
-;; archive.
-(setq package-install-upgrade-built-in nil)
-(package-initialize)
-(advice-add 'package--upgradeable-packages :filter-return
-            #'myde/filter-git-only-vc-packages)
-;; Refresh package archives only on first run (empty package-user-dir).
-;; Avoids blocking startup once packages are installed.
-(unless (file-exists-p package-user-dir)
-  (package-refresh-contents))
-
-;; Load user customizations after the package system is initialized so that
-;; package-vc-selected-packages' :set handler can find installed packages.
+;; Load user customizations.
 (let* ((path (expand-file-name "custom.el" user-emacs-directory))
        (exists (file-exists-p path)))
   (setq custom-file path)
@@ -203,20 +150,6 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
           transient-history-file (expand-file-name "history.el" dir)))
   :ensure nil)
 
-;; Pin transient to the archive whose compat requirement matches the running
-;; Emacs.  MELPA transient requires (compat (31 0)), which the built-in compat
-;; satisfies only on Emacs 31+ (built-in version is (major minor 9999)).
-;; melpa-stable transient requires only (compat (30 1)), satisfiable on both.
-(use-package transient
-  :if (= emacs-major-version 30)
-  :pin "melpa-stable"
-  :ensure nil)
-
-(use-package transient
-  :if (>= emacs-major-version 31)
-  :pin "melpa"
-  :ensure nil)
-
 ;; Auto-save buffers on focus loss
 (use-package buffer-guardian  ;; https://github.com/jamescherti/buffer-guardian.el
   :custom
@@ -226,7 +159,7 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
   (buffer-guardian-verbose nil)                           ;; Non-nil to enable verbose mode to log when a buffer is automatically saved
   ;; (buffer-guardian-save-all-buffers-idle 30)           ;; Save all buffers after N seconds of user idle time. (Disabled by default)
   :hook
-  (after-init . buffer-guardian-mode)
+  (elpaca-after-init . buffer-guardian-mode)
   :diminish buffer-guardian-mode
   :ensure t)
 
@@ -293,7 +226,7 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
 ;; `exec-path-from-shell-warn-duration-millis' (500).
 
 (use-package exec-path-from-shell
-  :ensure t
+  :ensure (:wait t)
   :demand t
   :init
   (setq exec-path-from-shell-arguments '("-l"))
@@ -316,8 +249,8 @@ as upgradeable; this corrects that for git-only packages not on MELPA/ELPA."
 (winner-mode)
 
 ;; Clear informational startup noise from the echo area after all hooks run.
-;; emacs-startup-hook fires after after-init-hook, so this erases whatever
-;; informational message (e.g. yasnippet JIT-loading notice) was last written.
+;; elpaca-after-init-hook fires once every queued package has been activated,
+;; so this erases whatever informational message was last written.
 (defun myde/clear-echo-area ()
   "Clear the echo area / minibuffer after startup."
   (message nil))
@@ -340,7 +273,7 @@ Outside a project: full path, or buffer name for non-file buffers."
     (or buffer-file-name (buffer-name))))
 
 ;; Clear echo area after all startup hooks have run (removes last info message).
-(add-hook 'emacs-startup-hook #'myde/clear-echo-area)
+(add-hook 'elpaca-after-init-hook #'myde/clear-echo-area)
 
 ;; Disable startup splash screen and initial scratch message
 (setq inhibit-startup-message t
@@ -382,10 +315,12 @@ Outside a project: full path, or buffer name for non-file buffers."
 
 ;; UI quality of life improvements
 (use-package spacious-padding  ;; https://github.com/protesilaos/spacious-padding
-  :hook (after-init . spacious-padding-mode)
+  :hook (elpaca-after-init . spacious-padding-mode)
   :ensure t)
 
-;; Indent guides
+;; Indent guides.  This is the only form that ensures indent-bars; the
+;; per-language :hook forms below say :ensure nil so elpaca queues the
+;; package once (a duplicate order aborts init under elpaca 0.12).
 (use-package indent-bars  ;; https://github.com/jdtsmith/indent-bars
   :custom
   ;; The macOS NS/Cocoa build of Emacs has poor stipple support, rendering the
@@ -460,8 +395,7 @@ Outside a project: full path, or buffer name for non-file buffers."
 (use-package modusregel
   :config
   (setq-default mode-line-format modusregel-format)
-  :vc (:url "https://codeberg.org/jjba23/modusregel")
-  :ensure t)
+  :ensure (:host codeberg :repo "jjba23/modusregel"))
 
 
 ;;;; core-ux
@@ -556,7 +490,7 @@ minibuffer, even without explicitly focusing it."
 
 ;; Operate on whole line or region
 (use-package whole-line-or-region  ;; https://github.com/purcell/whole-line-or-region
-  :hook (after-init . whole-line-or-region-global-mode)
+  :hook (elpaca-after-init . whole-line-or-region-global-mode)
   :diminish whole-line-or-region-local-mode
   :ensure t)
 
@@ -813,7 +747,7 @@ entirely.  Intended for use inside a capture template via `%(...)':
   :ensure t)
 
 (use-package which-key
-  :hook (after-init . which-key-mode)
+  :hook (elpaca-after-init . which-key-mode)
   :diminish which-key-mode
   :ensure nil)
 
@@ -876,8 +810,17 @@ entirely.  Intended for use inside a capture template via `%(...)':
 ;; -----------------------------------------------------------------------------
 
 (use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
-  :hook (after-init . dashboard-setup-startup-hook)
   :config
+  ;; Under elpaca this body runs after after-init-hook has already fired, so
+  ;; dashboard's own startup hooks would never run.  This is the recipe from
+  ;; dashboard's README for elpaca users, kept behind the same "no file
+  ;; argument" guard `dashboard-setup-startup-hook' uses.  A daemon has no
+  ;; frame to draw into, and rendering there can block startup on a prompt
+  ;; (e.g. org asking about a missing agenda file) before the server is up.
+  (when (and (not (daemonp)) (< (length command-line-args) 2))
+    (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+    (add-hook 'elpaca-after-init-hook #'dashboard-initialize))
+  (dashboard-setup-startup-hook)
   (setq dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
   (setq dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")
   (setq dashboard-display-icons-p t)
@@ -904,7 +847,7 @@ entirely.  Intended for use inside a capture template via `%(...)':
 ;; -----------------------------------------------------------------------------
 
 (use-package vertico  ;; https://github.com/minad/vertico
-  :hook (after-init . vertico-mode)
+  :hook (elpaca-after-init . vertico-mode)
   :ensure t)
 
 (use-package orderless  ;; https://github.com/oantolin/orderless
@@ -915,7 +858,7 @@ entirely.  Intended for use inside a capture template via `%(...)':
   :ensure t)
 
 (use-package marginalia  ;; https://github.com/minad/marginalia
-  :hook (after-init . marginalia-mode)
+  :hook (elpaca-after-init . marginalia-mode)
   :ensure t)
 
 (use-package consult  ;; https://github.com/minad/consult
@@ -940,7 +883,7 @@ entirely.  Intended for use inside a capture template via `%(...)':
 ;; -----------------------------------------------------------------------------
 
 (use-package corfu  ;; https://github.com/minad/corfu
-  :hook (after-init . global-corfu-mode)
+  :hook (elpaca-after-init . global-corfu-mode)
   :custom
   (corfu-auto t)          ;; show popup automatically as you type
   (corfu-auto-delay 0.2)  ;; seconds before popup appears
@@ -1045,7 +988,7 @@ Safe to call before yasnippet has loaded."
       (yas--load-directory-1 dir mode))))
 
 (use-package yasnippet  ;; https://github.com/joaotavora/yasnippet
-  :hook (after-init . yas-global-mode)
+  :hook (elpaca-after-init . yas-global-mode)
   :config
   ;; Do not bind TAB globally for snippet expansion -- it conflicts with
   ;; comint/REPL completion (e.g. inf-elixir).  Snippets can still be
@@ -1117,7 +1060,7 @@ any existing entry for SERVER-KEY without clobbering other languages."
 
 ;; EditorConfig support for project-wide formatting rules
 (use-package editorconfig
-  :hook (after-init . editorconfig-mode)
+  :hook (elpaca-after-init . editorconfig-mode)
   :diminish editorconfig-mode
   :ensure nil)
 
@@ -1161,7 +1104,7 @@ any existing entry for SERVER-KEY without clobbering other languages."
   :ensure nil)
 
 (use-package treesit-auto  ;; https://github.com/renzmann/treesit-auto
-  :hook (after-init . global-treesit-auto-mode)
+  :hook (elpaca-after-init . global-treesit-auto-mode)
   :config
   (setq treesit-auto-install t) ; install grammars automatically, if missing
   :diminish treesit-auto-mode
@@ -1196,7 +1139,7 @@ any existing entry for SERVER-KEY without clobbering other languages."
 
 ;; Flycheck (on-the-fly syntax checking)
 (use-package flycheck  ;; https://github.com/flycheck/flycheck
-  :hook (after-init . global-flycheck-mode)
+  :hook (elpaca-after-init . global-flycheck-mode)
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   :diminish (flycheck-mode . " ✓")
@@ -1229,7 +1172,7 @@ any existing entry for SERVER-KEY without clobbering other languages."
   :ensure t)
 
 (use-package mise  ;; https://github.com/eki3z/mise.el
-  :hook (after-init . global-mise-mode)
+  :hook (elpaca-after-init . global-mise-mode)
   :diminish mise-mode
   :ensure t)
 
@@ -1281,7 +1224,7 @@ any existing entry for SERVER-KEY without clobbering other languages."
   :ensure t)
 
 (use-package diff-hl  ;; https://github.com/dgutov/diff-hl
-  :hook (after-init . global-diff-hl-mode)
+  :hook (elpaca-after-init . global-diff-hl-mode)
   :config
   (add-hook 'magit-pre-refresh-hook  #'diff-hl-magit-pre-refresh)
   (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)
@@ -1550,8 +1493,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
   ("C-c C" . claude-code-ide-menu)
   :config
   (claude-code-ide-emacs-tools-setup)
-  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
-  :ensure t)
+  :ensure (:host github :repo "manzaltu/claude-code-ide.el"))
 
   )
 
@@ -1572,9 +1514,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :init
   (setq mcp-server-socket-directory (expand-file-name "emacs/" (xdg-cache-home))
         mcp-server-socket-name nil)
-  :hook (emacs-startup . myde/mcp-server-startup-hook)
-  :vc (:url "https://github.com/rhblind/emacs-mcp-server" :rev :newest)
-  :ensure t)
+  :hook (elpaca-after-init . myde/mcp-server-startup-hook)
+  ;; The tool modules live in tools/, which mcp-server-emacs-tools.el resolves
+  ;; relative to itself; elpaca's default :files would leave them behind.
+  :ensure (:host github :repo "rhblind/emacs-mcp-server"
+                 :files (:defaults "tools")))
 
 
 ;;;; auth-1password
@@ -1618,7 +1562,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
 (use-package indent-bars
-  :hook (csv-mode . indent-bars-mode))
+  :hook (csv-mode . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; data-dotenv
@@ -1655,7 +1600,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
 (use-package indent-bars
-  :hook (terraform-mode . indent-bars-mode))
+  :hook (terraform-mode . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; data-json
@@ -1690,7 +1636,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
 (use-package indent-bars
-  :hook (json-ts-mode . indent-bars-mode))
+  :hook (json-ts-mode . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; data-pkl
@@ -1712,7 +1659,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
 (use-package indent-bars
-  :hook (pkl-mode . indent-bars-mode))
+  :hook (pkl-mode . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; data-toml
@@ -1769,7 +1717,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
 (use-package indent-bars
-  :hook ((toml-ts-mode toml-mode) . indent-bars-mode))
+  :hook ((toml-ts-mode toml-mode) . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; data-xml
@@ -1883,7 +1832,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
 (use-package indent-bars
-  :hook ((xml-ts-mode nxml-mode) . indent-bars-mode))
+  :hook ((xml-ts-mode nxml-mode) . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; data-yaml
@@ -1899,7 +1849,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
   :ensure t)
 
 (use-package indent-bars
-  :hook (yaml-mode . indent-bars-mode))
+  :hook (yaml-mode . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; containers-kubernetes
@@ -1959,7 +1910,8 @@ Otherwise, derive the variable name from the current gptel-backend type."
          (sly-mode . enable-paredit-mode)
          (slime-repl-mode . enable-paredit-mode))
   :diminish paredit-mode
-  :ensure t)
+  ;; The MELPA recipe clones paredit.org, which no longer resolves in DNS.
+  :ensure (:host github :repo "emacsmirror/paredit"))
 
 ;; Colorize nested parentheses for readability in Lisp-family languages
 (use-package rainbow-delimiters
@@ -2108,6 +2060,7 @@ Opens the shell buffer if it does not already exist."
 ;; -----------------------------------------------------------------------------
 
 (use-package apheleia
+  :after apheleia
   :config
   (setf (alist-get 'bash-ts-mode apheleia-mode-alist) 'shfmt)
   :ensure nil)
@@ -2122,7 +2075,7 @@ Opens the shell buffer if it does not already exist."
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
-  :after transient
+  :after dape
   :config
   (add-to-list 'dape-configs
                `(bash-debug
@@ -2155,7 +2108,8 @@ Opens the shell buffer if it does not already exist."
   :ensure nil)
 
 (use-package indent-bars
-  :hook (bash-ts-mode . indent-bars-mode))
+  :hook (bash-ts-mode . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; prog-fish
@@ -2180,7 +2134,8 @@ Opens the shell buffer if it does not already exist."
   :ensure nil)
 
 (use-package indent-bars
-  :hook (fish-mode . indent-bars-mode))
+  :hook (fish-mode . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -2322,6 +2277,7 @@ Opens the REPL buffer if it does not already exist."
 ;; -----------------------------------------------------------------------------
 
 (use-package apheleia
+  :after apheleia
   :config
   ;; Register nufmt formatter (not auto-enabled)
   (add-to-list 'apheleia-formatters
@@ -2334,13 +2290,13 @@ Opens the REPL buffer if it does not already exist."
 
 ;; Requires the nu tree-sitter grammar: M-x treesit-install-language-grammar RET nu
 (use-package nushell-ts-babel  ;; https://github.com/herbertjones/nushell-ts-babel
-  :vc (:url "https://github.com/herbertjones/nushell-ts-babel" :rev :newest)
   :after org
   :if (treesit-language-available-p 'nu)
-  :ensure t)
+  :ensure (:host github :repo "herbertjones/nushell-ts-babel"))
 
 (use-package indent-bars
-  :hook (nushell-mode . indent-bars-mode))
+  :hook (nushell-mode . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -2408,7 +2364,8 @@ Opens the REPL buffer if it does not already exist."
   :ensure t)
 
 (use-package indent-bars
-  :hook (emacs-lisp-mode . indent-bars-mode))
+  :hook (emacs-lisp-mode . indent-bars-mode)
+  :ensure nil)
 
 
 ;;;; prog-clisp
@@ -2653,7 +2610,8 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
   :ensure nil)
 
 (use-package indent-bars
-  :hook (lisp-mode . indent-bars-mode))
+  :hook (lisp-mode . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -2790,7 +2748,7 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 
 ;; Formatting support: schemat (opt-in)
 (use-package apheleia
-  :after scheme
+  :after (scheme apheleia)
   :config
   ;; Register schemat as Scheme formatter
   ;; schemat is cross-implementation (R5RS/R6RS/R7RS)
@@ -2803,13 +2761,12 @@ This allows schemat to be optional; formatting silently skips if binary is absen
   ;; Buffer-local before-save formatter: schemat runs only if available and eglot
   ;; is managing the buffer (see myde-prog-scheme-format-buffer-maybe).
   (add-hook 'scheme-mode-hook #'myde-prog-scheme-format-on-save-setup)
-  :ensure t)
+  :ensure nil)
 
 ;; Standard keybindings for geiser (C-c i prefix)
 ;; These are defaults from geiser but can be customized here if needed
 (use-package geiser
-  :ensure t
-  :after scheme
+  :after (scheme geiser)
   :config
   ;; C-c i i — geiser (open REPL, prompts for implementation)
   ;; C-c i r — geiser-eval-region
@@ -2818,7 +2775,8 @@ This allows schemat to be optional; formatting silently skips if binary is absen
   ;; C-c i z — geiser-switch-to-repl
   ;; C-c i d — geiser-doc
   ;; (Most are already bound by geiser; this is for documentation)
-  nil)
+  nil
+  :ensure nil)
 
 ;; Known Limitations
 ;;
@@ -2863,7 +2821,8 @@ This allows schemat to be optional; formatting silently skips if binary is absen
   :ensure nil)
 
 (use-package indent-bars
-  :hook (scheme-mode . indent-bars-mode))
+  :hook (scheme-mode . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -2973,7 +2932,7 @@ Users who prefer zprint can override `cider-format-code-options' via
   :ensure t)
 
 (use-package apheleia
-  :after clojure-ts-mode
+  :after (clojure-ts-mode apheleia)
   :config
   ;; Register cljfmt (built into clojure-lsp) as default formatter
   (add-to-list 'apheleia-formatters
@@ -3002,7 +2961,7 @@ Users who prefer zprint can override `cider-format-code-options' via
   ;; ((clojure-ts-mode
   ;;   (apheleia-formatter . zprint)
   ;;   (cider-format-code-options . {:style :community})))
-  :ensure t)
+  :ensure nil)
 
 ;; paredit and rainbow-delimiters are configured in prog-base
 ;; (shared across all Lisp-family languages)
@@ -3020,7 +2979,8 @@ Users who prefer zprint can override `cider-format-code-options' via
   :ensure nil)
 
 (use-package indent-bars
-  :hook ((clojure-ts-mode clojure-mode) . indent-bars-mode))
+  :hook ((clojure-ts-mode clojure-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -3086,12 +3046,12 @@ Users who prefer zprint can override `cider-format-code-options' via
 ;; -----------------------------------------------------------------------------
 
 (use-package ob-erlang  ;; https://github.com/xfwduke/ob-erlang
-  :vc (:url "https://github.com/xfwduke/ob-erlang" :rev :newest)
   :after org
-  :ensure t)
+  :ensure (:host github :repo "xfwduke/ob-erlang"))
 
 (use-package indent-bars
-  :hook (erlang-mode . indent-bars-mode))
+  :hook (erlang-mode . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -3180,7 +3140,7 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
-  :after transient
+  :after dape
   :config
   ;; Default mix task configuration
   (add-to-list 'dape-configs
@@ -3387,7 +3347,8 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
  'elixir-ts-mode)
 
 (use-package indent-bars
-  :hook ((elixir-ts-mode heex-ts-mode) . indent-bars-mode))
+  :hook ((elixir-ts-mode heex-ts-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -3504,6 +3465,7 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
+  :after dape
   :config
   (add-to-list 'dape-configs
                '(cpp-debug
@@ -3528,7 +3490,8 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
   :ensure nil)
 
 (use-package indent-bars
-  :hook ((c++-ts-mode c-ts-mode cmake-ts-mode) . indent-bars-mode))
+  :hook ((c++-ts-mode c-ts-mode cmake-ts-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -3621,14 +3584,14 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
               ("C-c t f" . gotest-ts-run-file)
               ("C-c t p" . gotest-ts-run-package)
               ("C-c t r" . gotest-ts-repeat))
-  :ensure t)
+  :ensure (:host github :repo "chmouel/gotest-ts.el"))
 
 ;; -----------------------------------------------------------------------------
 ;; Debugging via dape + dlv
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
-  :after transient
+  :after dape
   :config
   (add-to-list 'dape-configs
                '(go-debug
@@ -3663,7 +3626,8 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
  'go-ts-mode)
 
 (use-package indent-bars
-  :hook ((go-ts-mode go-mode) . indent-bars-mode))
+  :hook ((go-ts-mode go-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -3743,6 +3707,7 @@ Used as the `:program' callback for dape Rust debug configurations."
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
+  :after dape
   :config
   (add-to-list 'dape-configs
                `(rust-debug
@@ -3774,7 +3739,8 @@ Used as the `:program' callback for dape Rust debug configurations."
   :ensure t)
 
 (use-package indent-bars
-  :hook ((rustic-mode rust-ts-mode rust-mode) . indent-bars-mode))
+  :hook ((rustic-mode rust-ts-mode rust-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -3863,18 +3829,18 @@ Used as the `:program' callback for dape Zig debug configurations."
 ;; -----------------------------------------------------------------------------
 
 (use-package zig-ts-mode  ;; https://github.com/emacsmirror/zig-ts-mode
-  :vc (:url "https://github.com/emacsmirror/zig-ts-mode" :rev :newest)
   :hook ((zig-ts-mode . myde-zig-mode-setup)
          (zig-ts-mode . myde-zig-format-on-save-setup))
   :bind (:map zig-ts-mode-map
               ("C-c t p" . zig-test-all))
-  :ensure t)
+  :ensure (:host github :repo "emacsmirror/zig-ts-mode"))
 
 ;; -----------------------------------------------------------------------------
 ;; Debugging via dape + codelldb
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
+  :after dape
   :config
   (add-to-list 'dape-configs
                `(zig-debug
@@ -3892,12 +3858,12 @@ Used as the `:program' callback for dape Zig debug configurations."
 ;; -----------------------------------------------------------------------------
 
 (use-package ob-zig  ;; https://github.com/jolby/ob-zig.el
-  :vc (:url "https://github.com/jolby/ob-zig.el" :rev :newest)
   :after org
-  :ensure t)
+  :ensure (:host github :repo "jolby/ob-zig.el"))
 
 (use-package indent-bars
-  :hook ((zig-ts-mode zig-mode) . indent-bars-mode))
+  :hook ((zig-ts-mode zig-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -3987,7 +3953,7 @@ Runs after mise-mode has applied the project environment, so
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
-  :after transient
+  :after dape
   :config
   (add-to-list 'dape-configs
                '(python-debug
@@ -4022,7 +3988,8 @@ Runs after mise-mode has applied the project environment, so
   :ensure nil)
 
 (use-package indent-bars
-  :hook (python-ts-mode . indent-bars-mode))
+  :hook (python-ts-mode . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -4152,6 +4119,7 @@ Runs after mise-mode has applied the project environment, so
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
+  :after dape
   :config
   (add-to-list 'dape-configs
                `(ruby-debug
@@ -4176,7 +4144,8 @@ Runs after mise-mode has applied the project environment, so
   :ensure nil)
 
 (use-package indent-bars
-  :hook ((ruby-ts-mode ruby-mode) . indent-bars-mode))
+  :hook ((ruby-ts-mode ruby-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -4274,10 +4243,9 @@ Runs after mise-mode has applied the project environment, so
 ;; -----------------------------------------------------------------------------
 
 (use-package inf-lua  ;; https://github.com/nverno/inf-lua
-  :vc (:url "https://github.com/nverno/inf-lua" :rev :newest)
   :hook ((lua-mode    . inf-lua-minor-mode)
          (lua-ts-mode . inf-lua-minor-mode))
-  :ensure t)
+  :ensure (:host github :repo "nverno/inf-lua"))
 
 ;; -----------------------------------------------------------------------------
 ;; Org Babel
@@ -4291,7 +4259,8 @@ Runs after mise-mode has applied the project environment, so
   :ensure nil)
 
 (use-package indent-bars
-  :hook ((lua-ts-mode lua-mode) . indent-bars-mode))
+  :hook ((lua-ts-mode lua-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -4406,6 +4375,7 @@ Enables inlay hints when eglot is managing the buffer."
 ;; -----------------------------------------------------------------------------
 
 (use-package apheleia
+  :after apheleia
   :config
   (setf (alist-get 'js-ts-mode apheleia-mode-alist) 'prettier)
   :ensure nil)
@@ -4450,7 +4420,7 @@ Enables inlay hints when eglot is managing the buffer."
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
-  :after transient
+  :after dape
   :config
   (add-to-list 'dape-configs
                '(node-script
@@ -4489,7 +4459,8 @@ Enables inlay hints when eglot is managing the buffer."
   :ensure nil)
 
 (use-package indent-bars
-  :hook (js-ts-mode . indent-bars-mode))
+  :hook (js-ts-mode . indent-bars-mode)
+  :ensure nil)
 
   )
 
@@ -4617,7 +4588,7 @@ Enables inlay hints when eglot is managing the buffer."
 (use-package add-node-modules-path
   :hook ((typescript-ts-mode . add-node-modules-path)
          (tsx-ts-mode        . add-node-modules-path))
-  :ensure t)
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Formatting via apheleia + prettier
@@ -4627,6 +4598,7 @@ Enables inlay hints when eglot is managing the buffer."
 ;; -----------------------------------------------------------------------------
 
 (use-package apheleia
+  :after apheleia
   :config
   (setf (alist-get 'typescript-ts-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'tsx-ts-mode        apheleia-mode-alist) 'prettier)
@@ -4651,7 +4623,7 @@ Enables inlay hints when eglot is managing the buffer."
               ("C-c t r"   . jest-test-rerun-test))
   :custom
   (jest-test-options '("--no-coverage"))
-  :ensure t)
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; TypeScript REPL via ts-comint
@@ -4673,7 +4645,7 @@ Enables inlay hints when eglot is managing the buffer."
 ;; -----------------------------------------------------------------------------
 
 (use-package dape
-  :after transient
+  :after dape
   :config
   (add-to-list 'dape-configs
                '(ts-node-script
@@ -4710,7 +4682,8 @@ Enables inlay hints when eglot is managing the buffer."
   :ensure t)
 
 (use-package indent-bars
-  :hook ((typescript-ts-mode tsx-ts-mode) . indent-bars-mode))
+  :hook ((typescript-ts-mode tsx-ts-mode) . indent-bars-mode)
+  :ensure nil)
 
   )
 
