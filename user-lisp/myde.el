@@ -711,6 +711,11 @@ entirely.  Intended for use inside a capture template via `%(...)':
   :bind (("C-c o a" . org-agenda))
   :custom
   (org-agenda-files (list myde-org-tasks-file))
+  ;; A missing agenda file otherwise makes `org-check-agenda-file' prompt via
+  ;; `read-char-exclusive'.  Dashboard's agenda widget runs under
+  ;; `inhibit-redisplay', so that prompt is invisible and startup looks hung;
+  ;; answering anything but R aborts the widget before it enables `dashboard-mode'.
+  (org-agenda-skip-unavailable-files t)
   (org-refile-targets '((org-agenda-files :maxlevel . 3)))
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)
