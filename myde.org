@@ -288,7 +288,7 @@ Bootstraps elpaca, enables its ~use-package~ support, then loads ~user-lisp/myde
 
 * Configuration
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle user-lisp/myde.el :mkdirp yes
+:header-args:emacs-lisp: :tangle init.el :mkdirp yes
 :END:
 
 Everything else.  Section order is load order and is known-working; sections that need a toolchain are wrapped in ~(when (executable-find ...) ...)~.
@@ -297,7 +297,7 @@ Everything else.  Section order is load order and is known-working; sections tha
 
 *** Header
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;; myde.el --- MyDE configuration -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Copyright (C) 2020-2026  Allen Gooch
@@ -321,20 +321,16 @@ Everything else.  Section order is load order and is known-working; sections tha
 
 *** core-base
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-base
 ;;;; ---------
 
-;; Startup configuration
-(setq warning-minimum-level :error)
-(setq recentf-max-saved-items 50)
 
 ;; Create missing directories automatically
 (defun myde-auto-create-missing-dirs ()
   (let ((target-dir (file-name-directory buffer-file-name)))
     (unless (file-exists-p target-dir)
       (make-directory target-dir t))))
-(add-to-list 'find-file-not-found-functions #'myde-auto-create-missing-dirs)
 
 ;; Delete trailing whitespace on save (shared utility)
 (defun myde-delete-trailing-whitespace-setup ()
@@ -368,6 +364,16 @@ interactive entry point."
     (goto-char (point-min))
     (while (search-forward "\r" nil t)
       (replace-match ""))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-base
+;;;; ---------
+
+;; Startup configuration
+(setq warning-minimum-level :error)
+(setq recentf-max-saved-items 50)
+(add-to-list 'find-file-not-found-functions #'myde-auto-create-missing-dirs)
 
 ;; XDG directory support — load early so all XDG paths are available immediately.
 (require 'xdg)
@@ -547,6 +553,34 @@ interactive entry point."
 
 *** core-ui
 
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
+;;;; core-ui
+;;;; --------
+
+
+;; Clear informational startup noise from the echo area after all hooks run.
+;; elpaca-after-init-hook fires once every queued package has been activated,
+;; so this erases whatever informational message was last written.
+(defun myde/clear-echo-area ()
+  "Clear the echo area / minibuffer after startup."
+  (message nil))
+
+;; Visual bell instead of audible bell
+(defun myde-flash-mode-line ()
+  (invert-face 'mode-line)
+  (run-with-timer 0.1 nil #'invert-face 'mode-line))
+
+(defun myde/frame-title ()
+  "Return a frame title string.
+In a project: '<project> - <relative/path/to/file>'.
+Outside a project: full path, or buffer name for non-file buffers."
+  (if-let ((proj (project-current))
+           (file buffer-file-name))
+      (concat (project-name proj) " - "
+              (file-relative-name file (project-root proj)))
+    (or buffer-file-name (buffer-name))))
+#+end_src
+
 #+begin_src emacs-lisp
 ;;;; core-ui
 ;;;; --------
@@ -560,30 +594,8 @@ interactive entry point."
 ;; Window divider and layout restoration
 (window-divider-mode)
 (winner-mode)
-
-;; Clear informational startup noise from the echo area after all hooks run.
-;; elpaca-after-init-hook fires once every queued package has been activated,
-;; so this erases whatever informational message was last written.
-(defun myde/clear-echo-area ()
-  "Clear the echo area / minibuffer after startup."
-  (message nil))
-
-;; Visual bell instead of audible bell
-(defun myde-flash-mode-line ()
-  (invert-face 'mode-line)
-  (run-with-timer 0.1 nil #'invert-face 'mode-line))
 (setq visible-bell nil
       ring-bell-function 'myde-flash-mode-line)
-
-(defun myde/frame-title ()
-  "Return a frame title string.
-In a project: '<project> - <relative/path/to/file>'.
-Outside a project: full path, or buffer name for non-file buffers."
-  (if-let ((proj (project-current))
-           (file buffer-file-name))
-      (concat (project-name proj) " - "
-              (file-relative-name file (project-root proj)))
-    (or buffer-file-name (buffer-name))))
 
 ;; Clear echo area after all startup hooks have run (removes last info message).
 (add-hook 'elpaca-after-init-hook #'myde/clear-echo-area)
@@ -713,20 +725,10 @@ Outside a project: full path, or buffer name for non-file buffers."
 
 *** core-ux
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-ux
 ;;;; --------
 
-;; Exit confirmation
-(setq confirm-kill-emacs 'y-or-n-p)
-
-;; Enable clickable links
-(goto-address-mode 1)
-
-;; Improve search display
-(setq isearch-lazy-count t
-      lazy-count-prefix-format nil
-      lazy-count-suffix-format "   (%s/%s)")
 
 ;; Smart keyboard quit that closes minibuffer
 ;; https://emacsredux.com/blog/2025/06/01/let-s-make-keyboard-quit-smarter/
@@ -742,6 +744,22 @@ minibuffer, even without explicitly focusing it."
           (minibuffer-keyboard-quit)
         (abort-recursive-edit))
     (keyboard-quit)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-ux
+;;;; --------
+
+;; Exit confirmation
+(setq confirm-kill-emacs 'y-or-n-p)
+
+;; Enable clickable links
+(goto-address-mode 1)
+
+;; Improve search display
+(setq isearch-lazy-count t
+      lazy-count-prefix-format nil
+      lazy-count-suffix-format "   (%s/%s)")
 
 ;; Swap option and command keys on macOS to match Linux keyboard layout
 (when (and (display-graphic-p) (string-equal system-type "darwin"))
@@ -840,7 +858,7 @@ minibuffer, even without explicitly focusing it."
 
 *** core-org
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-org
 ;;;; --------
 
@@ -940,6 +958,12 @@ entirely.  Intended for use inside a capture template via `%(...)':
     (if (string-empty-p val)
         ""
       (concat "  :PROJECT: " val "\n"))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-org
+;;;; --------
+
 
 ;; That's all Folks!
 
@@ -1081,7 +1105,7 @@ entirely.  Intended for use inside a capture template via `%(...)':
 
 *** core-terminals
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-terminals
 ;;;; --------------
 
@@ -1092,6 +1116,12 @@ entirely.  Intended for use inside a capture template via `%(...)':
          (root (project-root proj))
          (default-directory root))
     (vterm (format "*vterm<%s>*" (file-name-nondirectory (directory-file-name root))))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-terminals
+;;;; --------------
+
 
 (use-package emacs
   :config
@@ -1126,7 +1156,7 @@ entirely.  Intended for use inside a capture template via `%(...)':
 
 *** core-dashboard
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-dashboard
 ;;;; --------------
 
@@ -1153,6 +1183,12 @@ value that is not a live buffer."
            (progn (dashboard-insert-startupify-lists t)
                   (get-buffer dashboard-buffer-name)))
       (get-scratch-buffer-create)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-dashboard
+;;;; --------------
+
 
 (use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
   :config
@@ -1258,7 +1294,7 @@ value that is not a live buffer."
 
 *** core-notes
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-notes
 ;;;; ----------
 
@@ -1277,6 +1313,12 @@ for a title when invoked from a browser bookmarklet."
                (not (string-empty-p title)))
       (setq denote-use-title title))
     (denote-org-capture)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-notes
+;;;; ----------
+
 
 ;; -----------------------------------------------------------------------------
 ;; Denote note-taking
@@ -1336,7 +1378,7 @@ for a title when invoked from a browser bookmarklet."
 
 *** core-snippets
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-snippets
 ;;;; -------------
 
@@ -1347,6 +1389,12 @@ Safe to call before yasnippet has loaded."
   (with-eval-after-load 'yasnippet
     (when (file-directory-p dir)
       (yas--load-directory-1 dir mode))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-snippets
+;;;; -------------
+
 
 (use-package yasnippet  ;; https://github.com/joaotavora/yasnippet
   :hook (elpaca-after-init . yas-global-mode)
@@ -1366,7 +1414,7 @@ Safe to call before yasnippet has loaded."
 
 *** core-projects
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-projects
 ;;;; -------------
 
@@ -1406,6 +1454,22 @@ any existing entry for SERVER-KEY without clobbering other languages."
       (unless (null neo-window)
         (setq neo-window-width (window-width neo-window))))))
 
+;; Declare optional functions referenced by neotree to suppress native compiler warnings
+(eval-when-compile
+  (defvar nerd-icons-icon-for-file nil)
+  (defvar nerd-icons-icon-for-dir nil)
+  (defvar nerd-icons-octicon nil)
+  (declare-function nerd-icons-icon-for-file "nerd-icons" (file &rest _))
+  (declare-function nerd-icons-icon-for-dir "nerd-icons" (dir &rest _))
+  (declare-function nerd-icons-octicon "nerd-icons" (name &rest _))
+  (declare-function linum-mode "linum" (&optional _)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-projects
+;;;; -------------
+
+
 ;; -----------------------------------------------------------------------------
 ;; Project management
 ;; -----------------------------------------------------------------------------
@@ -1427,16 +1491,6 @@ any existing entry for SERVER-KEY without clobbering other languages."
   :hook (elpaca-after-init . editorconfig-mode)
   :diminish editorconfig-mode
   :ensure nil)
-
-;; Declare optional functions referenced by neotree to suppress native compiler warnings
-(eval-when-compile
-  (defvar nerd-icons-icon-for-file nil)
-  (defvar nerd-icons-icon-for-dir nil)
-  (defvar nerd-icons-octicon nil)
-  (declare-function nerd-icons-icon-for-file "nerd-icons" (file &rest _))
-  (declare-function nerd-icons-icon-for-dir "nerd-icons" (dir &rest _))
-  (declare-function nerd-icons-octicon "nerd-icons" (name &rest _))
-  (declare-function linum-mode "linum" (&optional _)))
 
 ;; -----------------------------------------------------------------------------
 ;; Project tree explorer
@@ -1608,7 +1662,7 @@ any existing entry for SERVER-KEY without clobbering other languages."
 
 *** core-spell
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; core-spell
 ;;;; ----------
 
@@ -1624,6 +1678,12 @@ any existing entry for SERVER-KEY without clobbering other languages."
               '((t font-lock-comment-face
                    font-lock-doc-face)))
   (jinx-mode))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; core-spell
+;;;; ----------
+
 
 (use-package jinx  ;; https://github.com/minad/jinx
   :hook
@@ -1667,7 +1727,7 @@ any existing entry for SERVER-KEY without clobbering other languages."
 
 *** ai-base
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; ai-base
 ;;;; --------
 
@@ -1739,9 +1799,10 @@ any existing entry for SERVER-KEY without clobbering other languages."
     z-ai/glm-5.1))
 #+end_src
 
+
 *** ai-gptel
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; ai-gptel
 ;;;; --------
 
@@ -1757,6 +1818,12 @@ Otherwise, derive the variable name from the current gptel-backend type."
                   (substring 6)
                   (upcase)
                   (concat "_API_KEY"))))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; ai-gptel
+;;;; --------
+
 
 ;; -----------------------------------------------------------------------------
 ;; GPtel main package
@@ -1863,6 +1930,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 
 
+
 ;; -----------------------------------------------------------------------------
 ;; Claude code IDE integration
 ;; -----------------------------------------------------------------------------
@@ -1879,13 +1947,19 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** ai-mcp
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; ai-mcp
 ;;;; --------
 
 (defun myde/mcp-server-startup-hook ()
   "Start the Emacs MCP server on Emacs startup."
   (mcp-server-start-unix))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; ai-mcp
+;;;; --------
+
 
 ;; -----------------------------------------------------------------------------
 ;; Emacs MCP server
@@ -1907,12 +1981,10 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** auth-1password
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; auth-1password
 ;;;; --------------
-;; Gate: op
 
-(when (executable-find "op")
 
 (defun myde-auth-source-1password-construct-secret-reference
     (_backend _type host &optional user _port)
@@ -1920,6 +1992,15 @@ Otherwise, derive the variable name from the current gptel-backend type."
   (if user
       (mapconcat #'identity (list auth-source-1password-vault host user "password") "/")
     (mapconcat #'identity (list auth-source-1password-vault host "password") "/")))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; auth-1password
+;;;; --------------
+;; Gate: op
+
+(when (executable-find "op")
+
 
 ;; -----------------------------------------------------------------------------
 ;; 1Password authentication
@@ -1977,7 +2058,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** data-hcl
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; data-hcl
 ;;;; --------
 
@@ -1988,6 +2069,12 @@ Otherwise, derive the variable name from the current gptel-backend type."
              (treesit-language-available-p 'hcl))
     (add-to-list 'major-mode-remap-alist
                  '(terraform-mode . terraform-ts-mode))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; data-hcl
+;;;; --------
+
 
 ;; HCL editing for .tf, .tfvars, .hcl, and .tofu files
 (use-package terraform-mode  ;; https://github.com/hcl-emacs/terraform-mode
@@ -2004,7 +2091,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** data-json
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; data-json
 ;;;; ---------
 
@@ -2015,6 +2102,12 @@ Otherwise, derive the variable name from the current gptel-backend type."
   "Enable eglot for JSON buffers, but not JSONL."
   (unless (derived-mode-p 'jsonl-mode)
     (eglot-ensure)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; data-json
+;;;; ---------
+
 
 ;; Built-in tree-sitter JSON mode; jsonl-mode is a derived mode defined in lib.el
 (use-package json-ts-mode  ;; built-in (Emacs 29+)
@@ -2043,7 +2136,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** data-pkl
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; data-pkl
 ;;;; --------
 
@@ -2052,6 +2145,12 @@ Otherwise, derive the variable name from the current gptel-backend type."
   (setq-local fill-column 100
               tab-width 2
               indent-tabs-mode nil))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; data-pkl
+;;;; --------
+
 
 ;; Pkl editing support
 (use-package pkl-mode  ;; https://github.com/sin-ack/pkl-mode
@@ -2069,7 +2168,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** data-toml
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; data-toml
 ;;;; ---------
 
@@ -2084,6 +2183,12 @@ Otherwise, derive the variable name from the current gptel-backend type."
   (setq-local fill-column 100
               tab-width 2
               indent-tabs-mode nil))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; data-toml
+;;;; ---------
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -2130,7 +2235,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** data-xml
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; data-xml
 ;;;; --------
 
@@ -2170,6 +2275,12 @@ Otherwise, derive the variable name from the current gptel-backend type."
   (if (treesit-ready-p 'xml)
       (xml-ts-mode)
     (nxml-mode)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; data-xml
+;;;; --------
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -2279,6 +2390,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 
 
+
 (use-package kubed  ;; https://github.com/eshelyaron/kubed
   :bind-keymap
   ("C-c k" . kubed-prefix-map)
@@ -2291,7 +2403,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** prog-base
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-base
 ;;;; ---------
 
@@ -2309,6 +2421,12 @@ Otherwise, derive the variable name from the current gptel-backend type."
     (list (string-trim
            (shell-command-to-string
             (concat mise-executable " exec -- which " exe))))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-base
+;;;; ---------
+
 
 ;; Configure display of line numbers and current line highlighting
 (add-hook 'prog-mode-hook #'myde-prog-mode-hook-function)
@@ -2352,7 +2470,7 @@ Otherwise, derive the variable name from the current gptel-backend type."
 
 *** prog-bash
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-bash
 ;;;; ---------
 
@@ -2398,6 +2516,12 @@ Opens the shell buffer if it does not already exist."
   (interactive)
   (save-buffer)
   (compile (concat "bash " (shell-quote-argument (buffer-file-name)))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-bash
+;;;; ---------
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -2549,6 +2673,7 @@ Opens the shell buffer if it does not already exist."
 
 
 
+
 (use-package fish-mode  ;; https://github.com/emacsmirror/fish-mode
   :custom
   (fish-indent-offset 2)
@@ -2571,12 +2696,10 @@ Opens the shell buffer if it does not already exist."
 
 *** prog-nushell
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-nushell
 ;;;; ------------
-;; Gate: nu
 
-(when (executable-find "nu")
 
 (defun myde-nushell-mode-setup ()
   "Set buffer-local settings for nushell-mode buffers."
@@ -2620,6 +2743,15 @@ Opens the REPL buffer if it does not already exist."
   (interactive)
   (save-buffer)
   (compile (concat "nu " (shell-quote-argument (buffer-file-name)))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-nushell
+;;;; ------------
+;; Gate: nu
+
+(when (executable-find "nu")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -2735,7 +2867,7 @@ Opens the REPL buffer if it does not already exist."
 
 *** prog-elisp
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-elisp
 ;;;; ----------
 
@@ -2748,6 +2880,12 @@ Opens the REPL buffer if it does not already exist."
                                       "(byte-compile-file "
                                       (prin1-to-string buffer-file-name)
                                       ")")))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-elisp
+;;;; ----------
+
 
 ;; -----------------------------------------------------------------------------
 ;; Emacs Lisp mode setup
@@ -2805,12 +2943,10 @@ Opens the REPL buffer if it does not already exist."
 
 *** prog-clisp
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-clisp
 ;;;; ----------
-;; Gate: sbcl
 
-(when (executable-find "sbcl")
 
 (defun myde-prog-clisp-setup ()
   "Setup Common Lisp development environment.
@@ -2879,6 +3015,15 @@ cl-lsp requires Roswell (CL tool manager) to be set up.
 LSP is optional; SLIME/SLY are superior for interactive CL development."
   (when (executable-find "ros")
     '("cl-lsp")))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-clisp
+;;;; ----------
+;; Gate: sbcl
+
+(when (executable-find "sbcl")
+
 
 ;; Tree-sitter grammar registration for Common Lisp
 (use-package treesit
@@ -3056,12 +3201,10 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
 
 *** prog-scheme
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-scheme
 ;;;; -----------
-;; Gate: guile
 
-(when (executable-find "guile")
 
 (defun myde-prog-scheme-setup ()
   "Setup Scheme development environment.
@@ -3117,8 +3260,6 @@ This allows schemat to be optional; formatting silently skips if binary is absen
        (executable-find "schemat")
        (bound-and-true-p eglot--managed-mode)))
 
-(declare-function apheleia-format-buffer "apheleia")
-
 (defun myde-prog-scheme-before-save-hook ()
   "Guarded schemat formatter for scheme buffers; skips if schemat absent."
   (when (myde-prog-scheme-format-buffer-maybe)
@@ -3127,6 +3268,17 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 (defun myde-prog-scheme-format-on-save-setup ()
   "Install buffer-local before-save formatting for scheme-mode."
   (add-hook 'before-save-hook #'myde-prog-scheme-before-save-hook nil t))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-scheme
+;;;; -----------
+;; Gate: guile
+
+(when (executable-find "guile")
+
+
+(declare-function apheleia-format-buffer "apheleia")
 
 ;; Tree-sitter grammar registration for Scheme
 (use-package treesit
@@ -3270,12 +3422,10 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 
 *** prog-clojure
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-clojure
 ;;;; ------------
-;; Gate: clojure
 
-(when (executable-find "clojure")
 
 (defun myde-prog-clojure-setup ()
   "Setup Clojure development environment.
@@ -3305,6 +3455,15 @@ Disables CIDER's auto-format (apheleia handles formatting via cljfmt).
 Users who prefer zprint can override `cider-format-code-options' via
 .dir-locals.el — see prog-clojure/cfg.el for a worked example."
   (setq cider-auto-mode nil))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-clojure
+;;;; ------------
+;; Gate: clojure
+
+(when (executable-find "clojure")
+
 
 (use-package treesit
   :ensure nil
@@ -3431,12 +3590,10 @@ Users who prefer zprint can override `cider-format-code-options' via
 
 *** prog-erlang
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-erlang
 ;;;; -----------
-;; Gate: erl
 
-(when (executable-find "erl")
 
 (defun myde-erlang-mode-setup ()
   "Set buffer-local settings for erlang-mode buffers."
@@ -3449,6 +3606,15 @@ Users who prefer zprint can override `cider-format-code-options' via
   "Run Common Test suite via rebar3."
   (interactive)
   (compile "rebar3 ct"))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-erlang
+;;;; -----------
+;; Gate: erl
+
+(when (executable-find "erl")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -3505,12 +3671,10 @@ Users who prefer zprint can override `cider-format-code-options' via
 
 *** prog-elixir
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-elixir
 ;;;; -----------
-;; Gate: elixir
 
-(when (executable-find "elixir")
 
 (defun myde-elixir-ts-ensure-grammars ()
   "Ensure Elixir and HEEx tree-sitter grammars are installed."
@@ -3549,6 +3713,15 @@ Key points:
 Alternative: Use Kernel.dbg/2 for simpler debugging without breakpoints.
 Set breakOnDbg: true in the dape configuration to enable automatic breaking."
   nil)
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-elixir
+;;;; -----------
+;; Gate: elixir
+
+(when (executable-find "elixir")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammars
@@ -3805,12 +3978,10 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 
 *** prog-cpp
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-cpp
 ;;;; --------
-;; Gate: clangd
 
-(when (executable-find "clangd")
 
 (defun myde-cpp-ts-mode-setup ()
   "Set buffer-local settings for c++-ts-mode buffers."
@@ -3846,6 +4017,15 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
                   (expand-file-name "build/" (or (when-let ((proj (project-current)))
                                                    (project-root proj))
                                                  default-directory))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-cpp
+;;;; --------
+;; Gate: clangd
+
+(when (executable-find "clangd")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammars
@@ -3951,12 +4131,10 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 
 *** prog-go
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-go
 ;;;; --------
-;; Gate: go
 
-(when (executable-find "go")
 
 (defvar myde-go-tab-width 2
   "Tab width for Go buffers.")
@@ -3982,6 +4160,15 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 (defun myde-go-format-on-save-setup ()
   "Install buffer-local before-save formatting for go-ts-mode."
   (add-hook 'before-save-hook #'myde-go-eglot-format-buffer nil t))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-go
+;;;; --------
+;; Gate: go
+
+(when (executable-find "go")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -4090,12 +4277,10 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 
 *** prog-rust
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-rust
 ;;;; ---------
-;; Gate: cargo
 
-(when (executable-find "cargo")
 
 (defun myde-rust-mode-setup ()
   "Set buffer-local settings for rustic-mode buffers."
@@ -4104,8 +4289,6 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
               fill-column 100
               compile-command "cargo test"))
 
-(declare-function dape-cwd "dape")
-
 (defun myde-rust-dape-debug-program ()
   "Resolve the debug binary path for the current Rust project.
 Used as the `:program' callback for dape Rust debug configurations."
@@ -4113,6 +4296,17 @@ Used as the `:program' callback for dape Rust debug configurations."
    (concat "target/debug/"
            (file-name-nondirectory (directory-file-name (dape-cwd))))
    (dape-cwd)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-rust
+;;;; ---------
+;; Gate: cargo
+
+(when (executable-find "cargo")
+
+
+(declare-function dape-cwd "dape")
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -4206,12 +4400,10 @@ Used as the `:program' callback for dape Rust debug configurations."
 
 *** prog-zig
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-zig
 ;;;; --------
-;; Gate: zig
 
-(when (executable-find "zig")
 
 (defun myde-zig-ts-or-plain-mode ()
   "Use `zig-ts-mode' if tree-sitter is available, otherwise fall back to `zig-mode'."
@@ -4235,8 +4427,6 @@ Used as the `:program' callback for dape Rust debug configurations."
   "Install buffer-local before-save formatting for zig-mode."
   (add-hook 'before-save-hook #'myde-zig-eglot-format-buffer nil t))
 
-(declare-function dape-cwd "dape")
-
 (defun myde-zig-dape-binary ()
   "Resolve the debug binary path for the current Zig project.
 Used as the `:program' callback for dape Zig debug configurations."
@@ -4244,6 +4434,17 @@ Used as the `:program' callback for dape Zig debug configurations."
    (concat "zig-out/bin/"
            (file-name-nondirectory (directory-file-name (dape-cwd))))
    (dape-cwd)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-zig
+;;;; --------
+;; Gate: zig
+
+(when (executable-find "zig")
+
+
+(declare-function dape-cwd "dape")
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -4332,12 +4533,10 @@ Used as the `:program' callback for dape Zig debug configurations."
 
 *** prog-python
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-python
 ;;;; -----------
-;; Gate: python3
 
-(when (executable-find "python3")
 
 (defun myde-python-ts-mode-setup ()
   "Set buffer-local settings for python-ts-mode buffers.
@@ -4350,6 +4549,15 @@ Runs after mise-mode has applied the project environment, so
                                            (executable-find "python")
                                            "python3")
               compile-command "python -m pytest"))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-python
+;;;; -----------
+;; Gate: python3
+
+(when (executable-find "python3")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -4461,12 +4669,10 @@ Runs after mise-mode has applied the project environment, so
 
 *** prog-ruby
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-ruby
 ;;;; ---------
-;; Gate: ruby
 
-(when (executable-find "ruby")
 
 (defun myde-ruby-ts-or-plain-mode ()
   "Use `ruby-ts-mode' if tree-sitter is available, otherwise fall back to `ruby-mode'."
@@ -4489,6 +4695,15 @@ Runs after mise-mode has applied the project environment, so
 (defun myde-ruby-format-on-save-setup ()
   "Install buffer-local before-save formatting for ruby buffers."
   (add-hook 'before-save-hook #'myde-ruby-eglot-format-buffer nil t))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-ruby
+;;;; ---------
+;; Gate: ruby
+
+(when (executable-find "ruby")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -4620,12 +4835,10 @@ Runs after mise-mode has applied the project environment, so
 
 *** prog-lua
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-lua
 ;;;; --------
-;; Gate: lua
 
-(when (executable-find "lua")
 
 (defun myde-lua-ts-or-plain-mode ()
   "Use `lua-ts-mode' if tree-sitter is available, otherwise fall back to `lua-mode'."
@@ -4648,6 +4861,15 @@ Runs after mise-mode has applied the project environment, so
 (defun myde-lua-format-on-save-setup ()
   "Install buffer-local before-save formatting for lua buffers."
   (add-hook 'before-save-hook #'myde-lua-eglot-format-buffer nil t))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-lua
+;;;; --------
+;; Gate: lua
+
+(when (executable-find "lua")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -4738,12 +4960,10 @@ Runs after mise-mode has applied the project environment, so
 
 *** prog-javascript
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-javascript
 ;;;; ---------------
-;; Gate: node
 
-(when (executable-find "node")
 
 (defun myde-js-ts-mode-setup ()
   "Set buffer-local settings for js-ts-mode buffers."
@@ -4765,6 +4985,15 @@ Runs after mise-mode has applied the project environment, so
 Enables inlay hints when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)
     (eglot-inlay-hints-mode 1)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-javascript
+;;;; ---------------
+;; Gate: node
+
+(when (executable-find "node")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammar
@@ -4941,12 +5170,10 @@ Enables inlay hints when eglot is managing the buffer."
 
 *** prog-typescript
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-typescript
 ;;;; ---------------
-;; Gate: node
 
-(when (executable-find "node")
 
 (defun myde-typescript-ts-mode-setup ()
   "Set buffer-local settings for typescript-ts-mode buffers."
@@ -4974,6 +5201,15 @@ Enables inlay hints when eglot is managing the buffer."
 Enables inlay hints when eglot is managing the buffer."
   (when (bound-and-true-p eglot--managed-mode)
     (eglot-inlay-hints-mode 1)))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-typescript
+;;;; ---------------
+;; Gate: node
+
+(when (executable-find "node")
+
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter grammars
@@ -5169,20 +5405,26 @@ Enables inlay hints when eglot is managing the buffer."
 
 *** text-base
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; text-base
 ;;;; ---------
 
 (defun myde-text-mode-hook-function ()
   "Configure display of line numbers on all text-mode buffers."
   (display-line-numbers-mode t))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; text-base
+;;;; ---------
+
 
 (add-hook 'text-mode-hook #'myde-text-mode-hook-function)
 #+end_src
 
 *** text-asciidoc
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; text-asciidoc
 ;;;; -------------
 
@@ -5228,6 +5470,12 @@ Requires asciidoctor-pdf (gem install asciidoctor-pdf)."
     (if (zerop (call-process "asciidoctor-pdf" nil nil nil "-o" out src))
         (message "Exported: %s" out)
       (message "asciidoctor-pdf failed; install with: gem install asciidoctor-pdf"))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; text-asciidoc
+;;;; -------------
+
 
 ;; -----------------------------------------------------------------------------
 ;; AsciiDoc major mode
@@ -5250,7 +5498,7 @@ Requires asciidoctor-pdf (gem install asciidoctor-pdf)."
 
 *** text-markdown
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; text-markdown
 ;;;; -------------
 
@@ -5305,6 +5553,12 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
                              "-f" "gfm" "-o" out src))
         (message "Exported: %s" out)
       (message "pandoc PDF failed; need pandoc + a TeX engine"))))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; text-markdown
+;;;; -------------
+
 
 ;; -----------------------------------------------------------------------------
 ;; Markdown mode
@@ -5392,7 +5646,7 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
 
 *** ebook-epub
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; ebook-epub
 ;;;; ----------
 
@@ -5408,6 +5662,12 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
   (local-set-key (kbd "h") #'org-remark-mark)
   (local-set-key (kbd "j") #'org-noter-sync-next-note)
   (local-set-key (kbd "k") #'org-noter-sync-prev-note))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; ebook-epub
+;;;; ----------
+
 
 (use-package nov  ;; https://depp.brause.cc/nov.el
   :after xdg
@@ -5434,6 +5694,7 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
 
 
 
+
 (use-package pdf-tools  ;; https://github.com/vedang/pdf-tools
   :init
   (setq pdf-view-display-size 'fit-width
@@ -5454,7 +5715,7 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
 
 *** Footer
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 (provide 'myde)
 ;;; myde.el ends here
 #+end_src
