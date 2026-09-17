@@ -107,13 +107,45 @@ prevent a clone.
 Inside a `use-package` form use `:hook (elpaca-after-init . fn)` — **never** `after-init`
 or `emacs-startup`. Under elpaca the form's body runs after those hooks have already
 fired, so the mode would stay silently off. Top-level `add-hook` calls in `myde.el` that
-must wait for packages use `elpaca-after-init-hook` as well. Dashboard is the exception
-that needs its README recipe (`dashboard-insert-startupify-lists` and
-`dashboard-initialize` on `elpaca-after-init-hook`), guarded so a daemon skips it.
+must wait for packages use `elpaca-after-init-hook` as well. Dashboard is the exception,
+and it needs a different entry point per session kind (see *Session model*).
 
 GC and `file-name-handler-alist` restoration stay on `emacs-startup-hook` in
 `early-init.el`, not `elpaca-after-init-hook`, so a failed elpaca bootstrap cannot leave
 a session with GC disabled and TRAMP broken.
+
+### Session model: one daemon, many client frames
+
+`~/Library/LaunchAgents/gnu.emacs.daemon.plist` starts `emacs --fg-daemon` at login
+(`RunAtLoad` + `KeepAlive`), and that daemon is meant to be the **only** Emacs process.
+GUI frames come from `emacsclient -c`; `~/Applications/Emacs Client.app` is a two-line
+AppleScript wrapper around it for the Dock. `$EDITOR` and `$VISUAL` are already
+`emacsclient`, so they reach the same process.
+
+**Never launch Emacs.app alongside the daemon.** Two processes on this config fight over
+three singletons: the `server` socket (the daemon wins, so the app silently skips
+`server-start` and `$EDITOR` opens files in a process with no visible frame), the
+`mcp-server` Unix socket under `$XDG_CACHE_HOME/emacs/`, and the XDG state files
+(`recentf.eld`, `places.eld`, `history`) which are last-writer-wins.
+
+Restart the daemon after a config change:
+
+```shell
+launchctl kickstart -k gui/$(id -u)/gnu.emacs.daemon
+```
+
+Verify through `emacsclient`; it always talks to the daemon. Anything that only exists in
+a window system frame has to be confirmed by creating one.
+
+Dashboard follows from this. A daemon must not render at startup — it has no frame to
+size against, and a prompt raised while drawing blocks before the server socket exists —
+so `myde-dashboard-initial-buffer` is installed as `initial-buffer-choice` and each
+`emacsclient -c` frame renders its own. `server.el` consults `initial-buffer-choice` only
+for a client carrying no file argument, which is the behaviour wanted. A direct `emacs`
+launch is the other branch and keeps dashboard's README recipe for elpaca users
+(`dashboard-insert-startupify-lists` and `dashboard-initialize` on
+`elpaca-after-init-hook`). An `initial-buffer-choice` function must return a live buffer;
+`startup.el` signals an error otherwise, hence the `*scratch*` fallback.
 
 ### Editing workflow
 

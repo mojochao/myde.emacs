@@ -806,17 +806,36 @@ entirely.  Intended for use inside a capture template via `%(...)':
 ;; Startup dashboard
 ;; -----------------------------------------------------------------------------
 
+(defun myde-dashboard-initial-buffer ()
+  "Return a freshly rendered dashboard buffer for a new client frame.
+This is the `initial-buffer-choice' function for a daemon session.  Rendering
+per frame rather than once at daemon startup is deliberate: the daemon has no
+frame to size the dashboard against, and `dashboard-vertically-center' needs
+one.  Falls back to `*scratch*' because `startup.el' errors on any return
+value that is not a live buffer."
+  (or (and (fboundp 'dashboard-insert-startupify-lists)
+           (progn (dashboard-insert-startupify-lists t)
+                  (get-buffer dashboard-buffer-name)))
+      (get-scratch-buffer-create)))
+
 (use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
   :config
   ;; Under elpaca this body runs after after-init-hook has already fired, so
-  ;; dashboard's own startup hooks would never run.  This is the recipe from
-  ;; dashboard's README for elpaca users, kept behind the same "no file
-  ;; argument" guard `dashboard-setup-startup-hook' uses.  A daemon has no
-  ;; frame to draw into, and rendering there can block startup on a prompt
-  ;; (e.g. org asking about a missing agenda file) before the server is up.
-  (when (and (not (daemonp)) (< (length command-line-args) 2))
-    (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
-    (add-hook 'elpaca-after-init-hook #'dashboard-initialize))
+  ;; dashboard's own startup hooks would never run.  Each session kind needs a
+  ;; different entry point.
+  (if (daemonp)
+      ;; A daemon must not render at startup: it has no frame, and a prompt
+      ;; raised while drawing (org asking about a missing agenda file, say)
+      ;; blocks before the server socket exists.  `server.el' consults
+      ;; `initial-buffer-choice' for every `emacsclient -c' frame that carries
+      ;; no file argument, so each frame draws its own dashboard instead.
+      (setq initial-buffer-choice #'myde-dashboard-initial-buffer)
+    ;; Direct `emacs' launch: the recipe from dashboard's README for elpaca
+    ;; users, behind the same "no file argument" guard
+    ;; `dashboard-setup-startup-hook' uses.
+    (when (< (length command-line-args) 2)
+      (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+      (add-hook 'elpaca-after-init-hook #'dashboard-initialize)))
   (dashboard-setup-startup-hook)
   (setq dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
   (setq dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")
