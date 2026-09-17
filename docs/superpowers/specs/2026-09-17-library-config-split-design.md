@@ -109,8 +109,8 @@ literate format exists to provide.
 | File | Contents | Approx. size |
 |---|---|---|
 | `early-init.el` | unchanged | 175 lines |
-| `init.el` | elpaca bootstrap, `(require 'myde)`, then all activation in load order | ~4,000 lines |
-| `user-lisp/myde.el` | definitions only, `(provide 'myde)` | ~900 lines |
+| `init.el` | elpaca bootstrap, `(require 'myde)`, then all activation in load order | 3,944 lines |
+| `user-lisp/myde.el` | definitions only, `(provide 'myde)` | 1,256 lines |
 
 `(require 'myde)` moves from the end of the bootstrap to immediately before
 the first activation block. It may be placed earlier; nothing in `myde.el`

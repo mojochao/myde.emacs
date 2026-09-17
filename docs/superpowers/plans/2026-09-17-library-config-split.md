@@ -659,7 +659,7 @@ make tangle
 wc -l init.el user-lisp/myde.el
 ```
 
-Expected: `init.el` around 4,000 lines, `user-lisp/myde.el` around 900. Both must exist.
+Expected: `init.el` around 3,950 lines, `user-lisp/myde.el` around 1,250. Both must exist.
 
 - [ ] **Step 2: Add the form-kind inventory script**
 
@@ -733,9 +733,18 @@ python3 scripts/myde-forms.py user-lisp/myde.el --defs-only
 ```
 
 Expected: a table of `defun`/`defvar`/`defcustom`/`defconst`/`define-*`/`provide`
-counts, exit status 0, and no `ERROR:` block. Expected counts: `57 defun`, `11 defvar`,
-`1` each of `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`,
-`eval-when-compile`, `provide`.
+counts, exit status 0, and no `ERROR:` block. Expected counts: `115 defun`,
+`12 defvar`, `1` each of `defcustom`, `defconst`, `define-derived-mode`,
+`define-minor-mode`, `eval-when-compile`, `provide`.
+
+**Why 115 and not the 57 the pre-split inventory reports.** `myde-forms.py` and the
+Task 0 inventory both count *top-level* forms only, and before the split roughly 58
+definitions sat nested inside a `(when (executable-find …))` gate, which those parsers
+count as a single `when`. Lifting them out of their gates makes them top-level and
+therefore visible. The invariant to check is conservation at any nesting depth: 115
+`defun` before, 115 after. Likewise `defvar` is 15 at any depth both before and after;
+`myde-forms.py` reports 12 because the other 3 live inside the `eval-when-compile`
+stub block.
 
 If it exits 1, the listed forms are activation code the splitter left behind. Fix
 `DEFS` or the splitter, restore, re-run Task 3.
@@ -760,19 +769,36 @@ grep '^;;;; [A-Za-z]' init.el | grep -v '^;;;; -' > $R/01-sections.txt
 diff $R/00-sections.txt $R/01-sections.txt
 ```
 
-Expected: the only differences are two added lines, `;;;; Use-package support` and
-`;;;; Configuration`, which the bootstrap block contributes to `init.el`. Any
-*removed* line, or any reordering, is a regression — the 52 section headers must appear
-in `init.el` in exactly the order `00-sections.txt` records.
+Expected exactly three additions and one removal, and nothing else:
 
-- [ ] **Step 6: `make check`**
+```
+0a1,3
+> ;;;; Elpaca bootstrap
+> ;;;; Use-package support
+> ;;;; Configuration
+14d16
+< ;;;; ai-base
+```
+
+The three additions are banners the `* Bootstrap` block contributes to `init.el`. The
+removal is correct and expected: `ai-base` is the one definition-only section, so it
+collapses to a single library-targeted block and contributes no header to `init.el`
+(see Task 3 step 3). Confirm `;;;; ai-base` is present in `user-lisp/myde.el`.
+
+Any *other* removed line, or any reordering among the remaining 51 section headers, is
+a regression.
+
+- [ ] **Step 6: Confirm `make check` fails before the commit**
 
 ```bash
 cd ~/devel/worktrees/myde-library-split
-make check
+make check; echo "exit=$?"
 ```
 
-Expected: `tangled output is up to date`.
+Expected: `ERROR: tangled output differs from committed files.` and `exit=2`. `check`
+compares the tangled files against what is committed, so it *must* fail here — the
+tangled output is not committed until step 8. Step 8 re-runs it. A pass at this point
+would mean the tangle produced no change, which is itself a failure.
 
 - [ ] **Step 7: Probe and compare against the baseline**
 
@@ -799,7 +825,10 @@ it; or the splitter mis-parsed a form and produced unbalanced parens, which show
 cd ~/devel/worktrees/myde-library-split
 git add scripts/myde-forms.py init.el user-lisp/myde.el
 git commit -m "Tangle the library/config split"
+make check
 ```
+
+Expected, now that the output is committed: `tangled output is up to date`.
 
 ---
 
