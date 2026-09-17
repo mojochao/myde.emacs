@@ -586,15 +586,22 @@ grep -c '^#+begin_src emacs-lisp' myde.org
 grep -c '^#+begin_src emacs-lisp :tangle user-lisp/myde.el' myde.org
 ```
 
-Expected exactly `98` and `43`.
+Expected exactly `97` and `43`.
 
 The arithmetic, so a wrong number is diagnosable: `* Configuration` holds 54 blocks —
 `Header`, `Footer`, and 52 section blocks — plus 1 each for `* Early Init` and
 `* Bootstrap`, plus the `Init footer` from Task 2, giving 57 before the split. 41 of the
-52 sections contain at least one definition and so become two blocks: 57 + 41 = 98. The
-library-targeted blocks are those 41 plus the 2 pinned ones = 43.
+52 sections contain at least one definition and so become two blocks. One of those 41,
+`ai-base`, is definition-*only* — its whole body is a banner plus a single `defvar
+myde-openrouter-models` — so it has no activation side and stays a single block:
+57 + 41 - 1 = 97. The library-targeted blocks are the 41 definition blocks plus the 2
+pinned ones = 43.
 
-A total below 98 means sections were merged or dropped; a library count below 43 means
+A definition-only section collapsing to one block is correct. Do not make the splitter
+emit an empty activation stub to force every section to two blocks; that is manufactured
+symmetry, not a fix.
+
+A total below 97 means sections were merged or dropped; a library count below 43 means
 the splitter classified definitions as activation.
 
 - [ ] **Step 4: Assert line conservation on the real file**
