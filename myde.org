@@ -284,16 +284,6 @@ Bootstraps elpaca, enables its ~use-package~ support, then loads ~user-lisp/myde
 ;;;; Configuration
 
 (require 'myde)
-
-;; A daemon starts its own server from startup.el after init; only GUI and
-;; TTY sessions need one here.
-(unless (daemonp)
-  (require 'server)
-  (unless (server-running-p) (server-start)))
-
-;; That's all Folks!
-(provide 'init)
-;;; init.el ends here
 #+end_src
 
 * Configuration
@@ -5467,4 +5457,19 @@ Requires pandoc and a TeX engine (e.g. brew install --cask basictex)."
 #+begin_src emacs-lisp
 (provide 'myde)
 ;;; myde.el ends here
+#+end_src
+
+*** Init footer
+
+#+begin_src emacs-lisp
+;; A daemon starts its own server from startup.el after init; only GUI and
+;; TTY sessions need one here.  This runs after the configuration above, as it
+;; did when it lived at the end of the bootstrap block.
+(unless (daemonp)
+  (require 'server)
+  (unless (server-running-p) (server-start)))
+
+;; That's all Folks!
+(provide 'init)
+;;; init.el ends here
 #+end_src
