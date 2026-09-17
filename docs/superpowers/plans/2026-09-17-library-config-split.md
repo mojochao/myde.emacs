@@ -75,7 +75,12 @@ Read all of this before Task 0. Each item is a live hazard confirmed against the
 13. **`myde.el` keeps `no-byte-compile: t`.** See the spec's *Compilation* section. Do
     not remove it as part of this work.
 
-14. **Emacs runs daemon-only on this machine.** `emacsclient` always reaches the login
+14. **The worktree's `elpaca` symlink shows as untracked, not ignored.** `.gitignore`
+    has `elpaca/` with a trailing slash, which does not match a symlink named `elpaca`.
+    Never use `git add -A` or `git add .` in the worktree — it would commit a symlink
+    pointing into the main repo. Always stage explicit paths.
+
+15. **Emacs runs daemon-only on this machine.** `emacsclient` always reaches the login
     daemon, never a GUI app. Restart it with
     `launchctl kickstart -k gui/$(id -u)/gnu.emacs.daemon`. Anything that needs a window
     system frame has to be checked by creating one with `emacsclient -c -n`.
@@ -182,12 +187,16 @@ Expected to include `135 use-package`, `57 defun`, `22 when`, `20 setq`, `11 def
 
 ```bash
 cd ~/devel/worktrees/myde-library-split
-grep '^;;;; [a-z]' user-lisp/myde.el | grep -v '^;;;; -' \
+grep '^;;;; [A-Za-z]' user-lisp/myde.el | grep -v '^;;;; -' \
   > ~/.local/state/myde-probe-reports/00-sections.txt
 wc -l < ~/.local/state/myde-probe-reports/00-sections.txt
 ```
 
 Expected: `52`. Task 4 diffs the tangled `init.el` against this file.
+
+The character class must be `[A-Za-z]`, not `[a-z]`. Every section header is lowercase
+except `;;;; Environment` at `user-lisp/myde.el:211`; a lowercase-only pattern silently
+returns 51 and drops a real section from the baseline.
 
 ---
 
@@ -740,7 +749,7 @@ Expected to include `135 use-package`, `20 setq` plus the bootstrap's own, `22 w
 ```bash
 cd ~/devel/worktrees/myde-library-split
 R=~/.local/state/myde-probe-reports
-grep '^;;;; [a-z]' init.el | grep -v '^;;;; -' > $R/01-sections.txt
+grep '^;;;; [A-Za-z]' init.el | grep -v '^;;;; -' > $R/01-sections.txt
 diff $R/00-sections.txt $R/01-sections.txt
 ```
 
@@ -916,7 +925,8 @@ the same two sentences as the AGENTS.md table rows in step 4.
 cd ~/devel/worktrees/myde-library-split
 make check
 make forms
-git add -A
+git add Makefile scripts/myde-forms.py .agents/AGENTS.md \
+        .agents/skills/myde/SKILL.md README.md
 git commit -m "Assert the definitions-only invariant; update docs for the split"
 ```
 
