@@ -1,7 +1,7 @@
 ---
 name: myde
 description: This skill should be used when editing myde.org, the literate source for the myde.emacs configuration — adding or changing use-package declarations, binary-presence gates, elpaca recipes, or startup hooks.
-version: 2.0.0
+version: 3.0.0
 ---
 
 # Myde Project Conventions
@@ -12,24 +12,44 @@ Apply these rules whenever changing configuration in the myde.emacs repository. 
 
 `myde.org` is the single source. `early-init.el`, `init.el`, and `user-lisp/myde.el` are tangled output; `make tangle` overwrites them, so never edit them directly.
 
-- `* Early Init` tangles to `early-init.el`, `* Bootstrap` to `init.el`, `* Configuration` to `user-lisp/myde.el`.
-- Under `* Configuration`, `**` headings are categories (Core base, Environment, Core, AI, Auth, Data formats, Containers, Languages, Text formats, Ebooks) in load order. Each `***` heading holds one `#+begin_src emacs-lisp` block for one section, starting with its `;;;; name` comment header.
+- `* Early Init` tangles to `early-init.el`. `* Bootstrap` and the activation blocks of
+  `* Configuration` tangle to `init.el`. The definition blocks of `* Configuration`
+  tangle to `user-lisp/myde.el`.
+- Under `* Configuration`, `**` headings are categories (Core base, Environment, Core, AI, Auth, Data formats, Containers, Languages, Text formats, Ebooks) in load order. Each `***` heading holds up to two `#+begin_src emacs-lisp` blocks for one section — definitions and activation — each starting with its `;;;; name` comment header.
 - Do not reorder sections. The order is load order and is known-working.
 
 ## Adding support for a tool
 
-Add a `***` heading and one source block under the matching `**` heading. If the tool needs a toolchain to be useful, wrap the **whole block body** in a gate:
+Add a `***` heading under the matching `**` heading, with a definitions block
+(`:tangle user-lisp/myde.el`) for any `defun`/`defvar` and an activation block for
+`use-package` forms. If the tool needs a toolchain to be useful, wrap the **whole
+activation block body** in a gate:
 
-```elisp
+```org
+*** prog-foo
+
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
 ;;;; prog-foo
 ;;;; --------
+
+(defun myde-prog-foo-setup ()
+  "Set buffer-local settings for Foo buffers."
+  (setq-local fill-column 100))
+#+end_src
+
+#+begin_src emacs-lisp
+;;;; prog-foo
+;;;; --------
+;; Gate: foo
 
 (when (executable-find "foo")
 
 (use-package foo-mode
-  :mode "\\.foo\\'")
+  :mode "\\.foo\\'"
+  :hook (foo-mode . myde-prog-foo-setup))
 
   )
+#+end_src
 ```
 
 - Editing modes that need no toolchain stay unconditional.
@@ -127,6 +147,8 @@ come before it:
 ## Quality checklist (before declaring done)
 
 - [ ] Change made in `myde.org`, tangled with `make tangle`, and `make check` passes.
+- [ ] Definitions are in the `:tangle user-lisp/myde.el` block, activation in the
+  inheriting block. `make forms` passes.
 - [ ] New block sits under the right `**` heading, in its own `***` heading, gated if it needs a toolchain.
 - [ ] Every built-in `use-package` form says `:ensure nil`; each third-party package is ensured by exactly one form.
 - [ ] Startup hooks use `elpaca-after-init`, not `after-init`/`emacs-startup`.

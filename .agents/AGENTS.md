@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 make link      # Symlink repo into ~/.config/emacs (installs config)
 make unlink    # Remove the symlink
 make tangle    # Regenerate early-init.el, init.el, user-lisp/myde.el from myde.org
+make forms     # Assert user-lisp/myde.el contains only definitions
 make check     # Tangle, then fail if the committed elisp differs from myde.org
 
 scripts/myde-probe.sh <init-directory> <report-file>   # Verify a config change
@@ -32,8 +33,8 @@ before it. The repo is symlinked to `~/.config/emacs` (`user-emacs-directory`).
 |------|------|
 | `myde.org` | **The only file edited by hand.** Three top-level subtrees, one per tangled file, each setting its target with a `:header-args:emacs-lisp: :tangle …` property. |
 | `early-init.el` | Tangled from `* Early Init`. Runs before `init.el` and before startup.el creates directories: GC and `file-name-handler-alist` suppression (restored on `emacs-startup-hook`), eln-cache redirection to `$XDG_CACHE_HOME/emacs/eln-cache`, frame defaults, `package-enable-at-startup nil`. |
-| `init.el` | Tangled from `* Bootstrap`. Installs and loads elpaca, enables `elpaca-use-package-mode`, sets `use-package-always-ensure t`, then `(require 'myde)`. |
-| `user-lisp/myde.el` | Tangled from `* Configuration`. All configuration in load order, one `;;;; section` per former module. Emacs 31 puts `user-lisp/` at `load-path` position 0. |
+| `init.el` | Tangled from `* Bootstrap` and from the activation blocks of `* Configuration`. Installs elpaca, `(require 'myde)`, then every `use-package` form, binary gate, and variable assignment in load order. |
+| `user-lisp/myde.el` | Tangled from the definition blocks of `* Configuration`. Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `make forms`. |
 
 Tangled outputs are committed, so a fresh clone works without tangling and startup never
 loads org. **Never edit the three `.el` files directly** — `make tangle` overwrites them.
@@ -41,13 +42,14 @@ loads org. **Never edit the three `.el` files directly** — `make tangle` overw
 ### Startup sequence
 
 1. `early-init.el`.
-2. `init.el` bootstraps elpaca. `use-package` forms in `myde.el` queue elpaca orders as the
-   file is read; the queue is processed after `after-init-hook`. One order is processed
+2. `init.el` bootstraps elpaca, then `(require 'myde)` loads every definition in
+   `user-lisp/myde.el`. `use-package` forms in `init.el` queue elpaca orders as the file is
+   read; the queue is processed after `after-init-hook`. One order is processed
    synchronously: `exec-path-from-shell` is `:ensure (:wait t)` so the binary gates that
    follow it see a complete `exec-path` during init.
-3. `myde.el` sections evaluate in file order: `core-base`, `Environment`, the remaining
-   `core-*` sections, then `ai-*`, `auth-*`, `data-*`, `containers-*`, `prog-*`, `text-*`,
-   `ebook-*`. This order is known-working; do not reorder for aesthetics.
+3. `init.el` activation blocks run in section order: `core-base`, `Environment`, the
+   remaining `core-*` sections, then `ai-*`, `auth-*`, `data-*`, `containers-*`, `prog-*`,
+   `text-*`, `ebook-*`. This order is known-working; do not reorder for aesthetics.
 4. `elpaca-after-init-hook` runs once every queued package is activated. Startup global
    modes hang off this hook (see *Startup hooks*).
 
@@ -83,6 +85,10 @@ still contain inner `:if (executable-find "<lsp-server>")` guards on LSP or debu
 form is *expanded*, before `:if`/`:when` is evaluated, so a keyword inside the form cannot
 prevent a clone.
 
+Gates live in `init.el` only. `myde.el` defines its functions unconditionally, so a
+`myde-prog-go-*` function exists whether or not `go` is installed. Nothing calls it
+unless the gate passed.
+
 ### Package management (elpaca)
 
 - `use-package-always-ensure t` is set in `init.el`. Third-party forms need no `:ensure`;
@@ -106,7 +112,7 @@ prevent a clone.
 
 Inside a `use-package` form use `:hook (elpaca-after-init . fn)` — **never** `after-init`
 or `emacs-startup`. Under elpaca the form's body runs after those hooks have already
-fired, so the mode would stay silently off. Top-level `add-hook` calls in `myde.el` that
+fired, so the mode would stay silently off. Top-level `add-hook` calls in `init.el` that
 must wait for packages use `elpaca-after-init-hook` as well. Dashboard is the exception,
 and it needs a different entry point per session kind (see *Session model*).
 
@@ -149,9 +155,10 @@ launch is the other branch and keeps dashboard's README recipe for elpaca users
 
 ### Editing workflow
 
-1. Edit `myde.org`. New configuration is a `#+begin_src emacs-lisp` block under its own
-   `***` heading beneath the right `**` category heading in `* Configuration`. Wrap it in
-   a binary gate if the tool needs a toolchain to be useful.
+1. Edit `myde.org`. A section's `***` heading holds up to two blocks: definitions,
+   carrying `:tangle user-lisp/myde.el`, and activation, inheriting `:tangle init.el`.
+   Put `defun`/`defvar` in the first and `use-package`/`setq`/`add-hook` in the second.
+   Wrap the activation block's body in a binary gate if the tool needs a toolchain.
 2. `make tangle`. Then `scripts/myde-probe.sh "$PWD" /tmp/after.txt` and diff its
    `declared:`/`mode:` lines against a report taken before the change.
 3. `make check` before committing. Commit `myde.org` together with the tangled files.
@@ -167,7 +174,7 @@ All state, data, and cache is stored outside `user-emacs-directory` via the buil
 | Cache (eln-cache, url) | `$XDG_CACHE_HOME/emacs/` |
 | Packages (elpaca) | `./elpaca/` (repo root) |
 
-XDG paths are set in the `core-base` section of `myde.el`. Exceptions:
+XDG paths are set in the `core-base` section of `init.el`. Exceptions:
 - `auto-save-list-file-prefix` must be set in `early-init.el` because Emacs creates the directory before init.el runs.
 - Native compilation cache (`eln-cache`) redirection must happen in `early-init.el` before any compilation occurs.
 

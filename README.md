@@ -18,11 +18,11 @@ At this point, you should be able to launch Emacs. The first start clones and bu
 
 MyDE is a literate configuration. `myde.org` is the only file edited by hand; it tangles into three committed elisp files:
 
-| File                | Tangled from      | Role                                                                                  |
-|---------------------|-------------------|---------------------------------------------------------------------------------------|
-| `early-init.el`     | `* Early Init`    | Runs before `init.el`: GC and file-handler suppression, eln-cache redirection, frame defaults |
-| `init.el`           | `* Bootstrap`     | Bootstraps elpaca, enables its `use-package` support, loads `user-lisp/myde.el`       |
-| `user-lisp/myde.el` | `* Configuration` | All configuration, in load order, one `;;;; section` per former module               |
+| File                | Tangled from                                                       | Role                                                                                  |
+|---------------------|---------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| `early-init.el`     | `* Early Init`                                                     | Runs before `init.el`: GC and file-handler suppression, eln-cache redirection, frame defaults |
+| `init.el`           | `* Bootstrap` and the activation blocks of `* Configuration`       | Installs elpaca, `(require 'myde)`, then every `use-package` form, binary gate, and variable assignment in load order |
+| `user-lisp/myde.el` | The definition blocks of `* Configuration`                          | Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `make forms` |
 
 The tangled files are committed, so a fresh clone works without tangling and startup never loads org.
 
