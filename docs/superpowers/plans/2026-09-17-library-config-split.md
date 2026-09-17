@@ -286,7 +286,8 @@ def split_block(body):
             defs += lead + form
         elif kind == "when" and GATE_OPEN.match(form[0]):
             inner = form[1:]
-            while inner and inner[-1].rstrip() in (")", ""):
+            # `.strip()', not `.rstrip()': the gate's closing line is "  )".
+            while inner and inner[-1].strip() in (")", ""):
                 inner.pop()
             g_defs, g_acts = [], []
             g_units, g_tail = parse_units(inner)
@@ -295,6 +296,7 @@ def split_block(body):
                     g_defs += l2 + f2
                 else:
                     g_acts += l2 + f2
+            g_acts += g_tail   # trailing comments inside the gate
             defs += lead + g_defs
             if strip_trailing_blanks(list(g_acts)):
                 acts += lead + [form[0], ""] + strip_trailing_blanks(g_acts) \
@@ -424,7 +426,9 @@ def code(p):
     for l in pathlib.Path(p).read_text().split("\n"):
         if l.startswith("#+begin_src"): inb = True; continue
         if l == "#+end_src": inb = False; continue
-        if inb and l.strip() and not l.lstrip().startswith(";"): out.append(l.strip())
+        # Comments are counted too.  Filtering them out would make a dropped
+        # banner invisible, which is exactly the failure mode being guarded.
+        if inb and l.strip(): out.append(l.strip())
     return collections.Counter(out)
 before = code("f.org.orig")
 after = code("f.org")
@@ -433,7 +437,8 @@ removed = before - after
 print("added  :", dict(added))
 print("removed:", dict(removed))
 assert not removed, f"LINES LOST: {dict(removed)}"
-assert set(added) <= {'(when (executable-find "go")', ')'}, f"UNEXPECTED: {dict(added)}"
+unexpected = {k: n for k, n in added.items() if not k.startswith(";;;;")}
+assert not unexpected, f"UNEXPECTED ADDITIONS: {unexpected}"
 print("OK: line conservation holds")
 EOF
 emacs -Q --batch --eval '(progn (require (quote org)) (org-babel-tangle-file "f.org"))' 2>&1 | tail -1
@@ -444,6 +449,12 @@ echo "--- user-lisp/myde.el ---"; cat user-lisp/myde.el
 Expected: `OK: line conservation holds`, `Tangled 4 code blocks`, and two files whose
 contents match the description in step 2. `user-lisp/myde.el` must contain no
 `use-package` and no `(when (executable-find`.
+
+The only permitted additions are `;;;;` lines, because each section's header is
+deliberately copied into both blocks. Anything else under `added` — and *any* entry
+under `removed` — is a splitter bug. Note that the gate's own `(when (executable-find
+…)` and `  )` lines are reused rather than synthesised, so they must balance out to
+zero, not appear as additions.
 
 - [ ] **Step 4: Commit the script**
 
@@ -588,22 +599,25 @@ def code(p):
     for l in pathlib.Path(p).read_text().split("\n"):
         if l.startswith("#+begin_src"): inb = True; continue
         if l == "#+end_src": inb = False; continue
-        if inb and l.strip() and not l.lstrip().startswith(";"): out.append(l.strip())
+        # Comments are counted too.  Filtering them out would make a dropped
+        # banner invisible, which is exactly the failure mode being guarded.
+        if inb and l.strip(): out.append(l.strip())
     return collections.Counter(out)
 before, after = code(pathlib.Path.home() / ".local/state/myde-probe-reports/myde.org.presplit"), code("myde.org")
 removed, added = before - after, after - before
 print("removed:", dict(removed))
 print("added  :", dict(added))
 assert not removed, f"LINES LOST: {dict(removed)}"
-unexpected = {k: n for k, n in added.items()
-              if k != ")" and not k.startswith("(when (executable-find")}
+unexpected = {k: n for k, n in added.items() if not k.startswith(";;;;")}
 assert not unexpected, f"UNEXPECTED ADDITIONS: {unexpected}"
-print("OK: no code line lost; additions are gate scaffolding only")
+print("OK: nothing lost; additions are duplicated section headers only")
 EOF
 ```
 
-Expected: `OK: no code line lost; additions are gate scaffolding only`. Any entry under
-`removed` is a splitter bug — fix `scripts/myde-split.py`, restore `myde.org` from
+Expected: `OK: nothing lost; additions are duplicated section headers only`.
+
+All 20 gates contain at least one activation form, so no gate disappears and the gate
+lines must balance to zero. Any entry under `removed` is a splitter bug — fix `scripts/myde-split.py`, restore `myde.org` from
 `~/.local/state/myde-probe-reports/myde.org.presplit`, and re-run.
 
 - [ ] **Step 5: Commit the org change only**
