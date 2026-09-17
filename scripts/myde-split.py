@@ -69,9 +69,13 @@ def strip_trailing_blanks(lines):
 
 def split_block(body):
     """Return (definition_lines, activation_lines) for one section block."""
-    # The `;;;;` section header and any `;; Gate:` note come first.
+    # The `;;;;` section header and any `;; Gate:` note come first.  Stop at
+    # the first other comment: that one is a lead-in for the unit that
+    # follows it and must travel with that unit via `parse_units`, not be
+    # duplicated into both sec_head and act_head.
     head, rest = [], list(body)
-    while rest and (not rest[0].strip() or rest[0].startswith(";")):
+    while rest and (not rest[0].strip() or rest[0].startswith(";;;;")
+                    or rest[0].startswith(";; Gate:")):
         head.append(rest.pop(0))
     sec_head = [l for l in head if not l.startswith(";; Gate:")]
     act_head = list(head)
