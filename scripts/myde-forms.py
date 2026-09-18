@@ -13,7 +13,8 @@ import sys
 # block, but this script reads the tangled file where it is a top-level form.
 DEFS = {
     "defun", "defmacro", "defvar", "defcustom", "defconst",
-    "define-derived-mode", "define-minor-mode", "eval-when-compile", "provide",
+    "define-derived-mode", "define-minor-mode", "defvar-keymap",
+    "declare-function", "eval-when-compile", "provide",
 }
 
 
