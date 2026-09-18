@@ -868,8 +868,12 @@ git checkout user-lisp/myde.el
 make forms
 ```
 
-Expected: pass, then an `ERROR: 1 non-definition forms` block with `exit=1`, then pass
-again after the checkout.
+Expected: pass, then an `ERROR: 1 non-definition forms` block naming the offending
+line, then pass again after the checkout.
+
+The exit status you see is make's, not the script's. `myde-forms.py` exits 1, but GNU
+Make reports 2 for a failed recipe, so `echo "exit=$?"` after `make forms` prints
+`exit=2`. What matters is the pass → fail → pass sequence and the `ERROR:` block.
 
 - [ ] **Step 3: Delete the splitter**
 
