@@ -27,7 +27,7 @@
 ;;; Every test builds its own temporary tree, so none depend on the
 ;;; contents of ~/devel/projects or ~/org.
 ;;;
-;;; Run with `make test'.
+;;; Run with `mise run test'.
 
 
 ;;; Code:
