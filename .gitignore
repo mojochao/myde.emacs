@@ -37,3 +37,6 @@ projects
 *.pdf
 *.epub
 *.tex
+
+# ...but the docsify shell is hand-written source, not an org export.
+!docs/index.html

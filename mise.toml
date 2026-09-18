@@ -72,6 +72,10 @@ run = "emacs -Q --batch -l {{config_root}}/tests/core-org.el -f ert-run-tests-ba
 description = "Boot this config as a throwaway daemon and report its observable state"
 run = "scripts/myde-probe.sh {{config_root}} {{arg(name='report')}}"
 
+[tasks.docs]
+description = "Serve docs/ as a live-reloading site on http://localhost:3000"
+run = "docsify serve {{config_root}}/docs"
+
 [tasks.install-xdg]
 description = "Register the org-protocol:// URI handler (Linux)"
 run = [

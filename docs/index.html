@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!-- Copyright (C) 2020-2026  Allen Gooch -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MyDE</title>
+  <meta name="description" content="My Development Environment — a literate Emacs configuration">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/core.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/addons/vue.min.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: 'MyDE',
+      repo: 'mojochao/myde.emacs',
+      loadSidebar: true,
+      subMaxLevel: 2,
+      auto2top: true,
+      search: {
+        depth: 3,
+        placeholder: 'Search',
+        noData: 'No matches',
+      },
+    }
+  </script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@5"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/search.min.js"></script>
+  <!-- docsify bundles Prism core only.  These three grammars cover the code
+       blocks this doc set actually contains; `lisp' registers the `elisp'
+       alias and `bash' registers `shell'. -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-lisp.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-toml.min.js"></script>
+</body>
+</html>
