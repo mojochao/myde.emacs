@@ -1132,6 +1132,16 @@ entirely.  Intended for use inside a capture template via `%(...)':
 (use-package eat  ;; https://codeberg.org/akib/emacs-eat
   :commands
   (eat)
+  :custom
+  ;; eat's eat-256color and eat-truecolor entries carry `pairs#65536', so tic
+  ;; compiles them in the extended 32-bit number format that ncurses before
+  ;; 6.1 cannot read.  Apple ships 6.0, so on macOS the default
+  ;; `eat-term-get-suitable-term-name' picks an entry `tput' inside eat calls
+  ;; \"unknown terminal\".  Linux here is current Fedora, whose ncurses reads
+  ;; them, so it keeps eat's own name and its truecolor.
+  (eat-term-name (if (string= system-type "darwin")
+                     "xterm-256color"
+                   #'eat-term-get-suitable-term-name))
   :ensure t)
 
 (use-package ghostel ;; https://github.com/dakra/ghostel
