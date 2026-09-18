@@ -7,6 +7,9 @@ tmp/
 # cache files
 eln-cache/
 
+# log files
+*.log
+
 # user customizations
 custom.el
 
@@ -22,3 +25,15 @@ elpaca/
 # Emacs artifacts
 agent/
 projects
+
+# JetBrains artifacts
+.idea/
+
+# Visual Studio Code artifacts
+.vscode/
+
+# Generate org exports
+*.html
+*.pdf
+*.epub
+*.tex

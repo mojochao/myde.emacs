@@ -2058,7 +2058,7 @@
   ;; (use-package apheleia
   ;;   :config
   ;;   (add-to-list 'apheleia-formatters
-  ;;     '(nice-lisp . ("sbcl" "--noinform" "--load" "format.lisp" "--eval" 
+  ;;     '(nice-lisp . ("sbcl" "--noinform" "--load" "format.lisp" "--eval"
   ;;                    "(nice-lisp:format-string (read-file-as-string 0))")))
   ;;   (add-to-list 'apheleia-mode-alist
   ;;     '(lisp-mode . nice-lisp)))
