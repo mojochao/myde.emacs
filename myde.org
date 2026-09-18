@@ -2288,8 +2288,15 @@ Otherwise, derive the variable name from the current gptel-backend type."
 (use-package mcp-server  ;; https://github.com/rhblind/emacs-mcp-server
   :demand t
   :init
+  ;; `force' keeps the socket path fixed at emacs-mcp-server.sock. The default
+  ;; `warn' falls back to emacs-mcp-server-N.sock when the path is taken -- e.g.
+  ;; a daemon that died without unlinking it -- which silently breaks the socat
+  ;; bridge registered with `claude mcp add', since that path is hardcoded.
+  ;; Cost: a second Emacs would steal the socket from the first, which the
+  ;; one-daemon session model already rules out.
   (setq mcp-server-socket-directory (expand-file-name "emacs/" (xdg-cache-home))
-        mcp-server-socket-name nil)
+        mcp-server-socket-name nil
+        mcp-server-socket-conflict-resolution 'force)
   :hook (elpaca-after-init . myde/mcp-server-startup-hook)
   ;; The tool modules live in tools/, which mcp-server-emacs-tools.el resolves
   ;; relative to itself; elpaca's default :files would leave them behind.

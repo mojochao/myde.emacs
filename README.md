@@ -238,6 +238,24 @@ Several sections require external tools on PATH (or at a known path). Install th
 | `prog-rust` | `codelldb` | `mise use -g codelldb`                                |
 | `prog-zig`  | `codelldb` | `mise use -g codelldb`                                |
 
+### Emacs MCP server (`ai-mcp`)
+
+The `ai-mcp` section runs an MCP server inside Emacs on a Unix socket at
+`$XDG_CACHE_HOME/emacs/emacs-mcp-server.sock`, exposing live Emacs state
+(`eval-elisp`, diagnostics, Org tools) to agents. It needs `socat`
+(`brew install socat`). Register the stdio bridge once:
+
+```shell
+claude mcp add emacs --scope user -- \
+  socat - UNIX-CONNECT:$HOME/.cache/emacs/emacs-mcp-server.sock
+```
+
+The server starts from `elpaca-after-init`, and
+`mcp-server-socket-conflict-resolution` is `force` so the socket path stays
+fixed — the bridge above hardcodes it. If the bridge reports
+`CONNECTION_CLOSED`, the Emacs side is down: check with `M-x mcp-server-status`
+and restart with `M-x mcp-server-start-unix`.
+
 ### LemMinX (XML language server)
 
 LemMinX is not available via Homebrew. It ships as a Java uber-JAR:
