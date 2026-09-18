@@ -787,7 +787,10 @@
                      (projects  . 5)
                      (bookmarks . 5)
                      (agenda    . 5)))
-  (dashboard-agenda-release-buffers t)
+  ;; Keep the agenda buffers alive.  Releasing them makes every `emacsclient -c'
+  ;; frame re-visit and re-parse each agenda file: 0.44 s per frame instead of
+  ;; 0.05 s once they are warm.
+  (dashboard-agenda-release-buffers nil)
   :ensure t)
 
 ;;;; core-complete
@@ -1000,7 +1003,7 @@
   :ensure nil)
 
 (use-package treesit-auto  ;; https://github.com/renzmann/treesit-auto
-  :hook (elpaca-after-init . global-treesit-auto-mode)
+  :hook (elpaca-after-init . myde-treesit-auto-setup)
   :config
   (setq treesit-auto-install t) ; install grammars automatically, if missing
   :diminish treesit-auto-mode

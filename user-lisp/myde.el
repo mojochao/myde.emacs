@@ -547,6 +547,28 @@ any existing entry for SERVER-KEY without clobbering other languages."
   (declare-function nerd-icons-octicon "nerd-icons" (name &rest _))
   (declare-function linum-mode "linum" (&optional _)))
 
+;; Tree-sitter setup
+
+(eval-when-compile
+  (declare-function global-treesit-auto-mode "treesit-auto" (&optional arg))
+  (declare-function treesit-auto--set-major-remap "treesit-auto" (&rest _))
+  (declare-function treesit-auto--build-major-mode-remap-alist "treesit-auto" ()))
+
+(defun myde-treesit-auto-setup ()
+  "Enable `treesit-auto' with `major-mode-remap-alist' built once, not per visit.
+`global-treesit-auto-mode' advises `set-auto-mode-0' to rebuild the remap alist
+from scratch, and rebuilding probes every grammar in `treesit-auto-langs'.
+Probing a grammar that is not installed costs ~20 ms, most of the 62 are not
+installed, and the advice fires three times per buffer visit: ~3.4 s to open any
+file, and ~21 s to draw a dashboard that visits the agenda files -- on every
+`emacsclient -c' frame.  Build the alist once here instead and drop the advice.
+The cost is that a grammar installed mid-session does not remap until a
+restart."
+  (require 'treesit-auto)
+  (global-treesit-auto-mode 1)
+  (advice-remove 'set-auto-mode-0 #'treesit-auto--set-major-remap)
+  (setq-default major-mode-remap-alist (treesit-auto--build-major-mode-remap-alist)))
+
 ;;;; core-spell
 ;;;; ----------
 
