@@ -109,40 +109,318 @@ minibuffer, even without explicitly focusing it."
 ;;;; core-org
 ;;;; --------
 
+;; Forward declarations.  These are defined by org and org-agenda, which load
+;; later; declaring them keeps the byte-compiler quiet without pulling org
+;; into this file, which would cost startup time for no benefit.
+;; `myde-org-refresh-agenda-files' assigns to `org-agenda-files'.
+(defvar org-agenda-files)
+(declare-function org-map-entries "org" (func &optional match scope &rest skip))
+(declare-function org-get-tags "org" (&optional pos-or-element local))
+(declare-function org-tags-view "org-agenda" (&optional todo-only match))
+
 ;; Org mode directories and files
 (defvar myde-org-directory "~/org/"
-  "Main org mode directory.")
+  "Root directory for all org documents.")
 
-(defvar myde-reading-notes "~/org/reading/"
-  "Directory for reading notes.")
+(defvar myde-org-inbox-file
+  (expand-file-name "inbox.org" myde-org-directory)
+  "Single capture sink for tasks, thoughts, and bookmarks.
+Entries are refiled out of here into project files.")
 
-(defvar myde-highlight-file "~/org/highlights.org"
-  "File for storing highlights.")
-
-(defvar myde-org-tasks-file
-  (expand-file-name "tasks.org" myde-org-directory)
-  "Path to the top-level tasks capture file.")
-
-(defvar myde-org-bookmarks-file
-  (expand-file-name "bookmarks.org" myde-org-directory)
-  "Path to the top-level bookmarks capture file.")
+(defvar myde-org-archive-directory
+  (file-name-as-directory (expand-file-name "archive" myde-org-directory))
+  "Directory holding org archive files.")
 
 (defvar myde-org-notes-directory
   (file-name-as-directory (expand-file-name "notes" myde-org-directory))
   "Directory for denote notes, under `myde-org-directory'.")
 
-(defcustom myde-projects-directory (expand-file-name "~/org/projects/")
-  "Root directory under which per-project `tasks.org' files are discovered."
+(defcustom myde-org-code-directory "~/devel/projects/"
+  "Root directory searched for per-project task files.
+Only used to build `org-agenda-files'.  Capture and visiting locate a
+project by searching upward from `default-directory', so a project
+outside this root still works — it just is not in the agenda."
   :type 'directory
   :group 'myde)
 
-(defun myde-find-org-agenda-files (&optional root-dir)
-  "Return list of `tasks.org' files under ROOT-DIR.
-ROOT-DIR defaults to `myde-projects-directory'.  Returns nil if the
-directory does not exist."
-  (let ((dir (or root-dir myde-projects-directory)))
-    (when (file-directory-p dir)
-      (directory-files-recursively dir "\\`tasks\\.org\\'"))))
+(defconst myde-org-tasks-file-name "tasks.org"
+  "Base name of the per-project task file.
+Doubles as the marker that identifies a project root: a directory
+containing this file is a project.")
+
+(defun myde-org-ensure-tree ()
+  "Create the org directory tree and inbox file when absent.
+Both are required before `org-agenda' runs.  A missing agenda directory
+is silently returned by `org-agenda-files' as though it were a file,
+producing a broken agenda; a missing agenda file triggers a blocking
+\"Non-existent agenda file … [R]emove from list or [A]bort?\" prompt.
+Existing files are left untouched."
+  (dolist (dir (list myde-org-directory
+                     myde-org-archive-directory))
+    (make-directory dir :parents))
+  (unless (file-exists-p myde-org-inbox-file)
+    (with-temp-file myde-org-inbox-file
+      (insert "#+title: Inbox\n"))))
+
+(defun myde-org-sanitize-tag (name)
+  "Return NAME with every character invalid in an org tag replaced by `_'.
+`org-tag-re' is \"[[:alnum:]_@#%]+\", which excludes `-' and `.'.  An
+invalid `#+filetags:' value fails silently and breaks tag search, so
+project names must be sanitized before use as tags."
+  (replace-regexp-in-string "[^[:alnum:]_@#%]" "_" name))
+
+(defun myde-org-project-root (&optional dir)
+  "Return the nearest directory at or above DIR holding a tasks file, or nil.
+DIR defaults to `default-directory'.  The tasks file named by
+`myde-org-tasks-file-name' is the project marker, so a project is
+whatever directory the user chose to put one in — no naming convention
+and no fixed root are required.  The search is `locate-dominating-file',
+which walks up to the filesystem root and stops."
+  (locate-dominating-file (or dir default-directory) myde-org-tasks-file-name))
+
+(defun myde-org-project-tasks-file (&optional dir)
+  "Return the nearest project tasks file at or above DIR, or nil."
+  (let ((root (myde-org-project-root dir)))
+    (when root
+      (expand-file-name myde-org-tasks-file-name root))))
+
+(defun myde-org-project-name (&optional dir)
+  "Return the name of the project owning the nearest tasks file, or nil.
+The name is the basename of the directory holding that file."
+  (let ((root (myde-org-project-root dir)))
+    (when root
+      (file-name-nondirectory (directory-file-name root)))))
+
+(defun myde-org-find-task-files ()
+  "Return every project tasks file under `myde-org-code-directory'.
+Directories whose names begin with `.', and any `node_modules', are
+pruned.  Pruning is not only an optimization — though it is a large one,
+cutting a scan of the real tree from roughly 16ms to under 1ms by not
+descending into `.git' internals — it also keeps archived projects
+parked in dot-directories such as `.ATTIC' out of the agenda."
+  (let ((root (expand-file-name myde-org-code-directory)))
+    (when (file-directory-p root)
+      (directory-files-recursively
+       root
+       (concat "\\`" (regexp-quote myde-org-tasks-file-name) "\\'")
+       nil
+       (lambda (dir)
+         (let ((name (file-name-nondirectory dir)))
+           (not (or (string-prefix-p "." name)
+                    (equal name "node_modules")))))))))
+
+(defun myde-org-agenda-files ()
+  "Return the agenda file list: the inbox plus every project tasks file."
+  (cons myde-org-inbox-file (myde-org-find-task-files)))
+
+(defun myde-org-refresh-agenda-files (&rest _)
+  "Rescan for project tasks files and reset `org-agenda-files'.
+Wired as `:before' advice on `org-agenda' so a tasks file created by
+hand — outside `myde-org-visit-project-tasks' — shows up without
+restarting Emacs.  Silently missing from the agenda is the failure mode
+this prevents; the pruned scan costs well under a millisecond."
+  (setq org-agenda-files (myde-org-agenda-files)))
+
+(defun myde-org-capture-target ()
+  "Return the file `org-capture' should file a project task into.
+The nearest tasks file at or above `default-directory', falling back to
+`myde-org-inbox-file' when there is none, so capture never fails and
+never creates a stray tasks file in an unrelated directory.  Used as the
+target for capture template \"T\"; org calls a target file given as a
+function symbol."
+  (or (myde-org-project-tasks-file) myde-org-inbox-file))
+
+(defun myde-org-project-tasks-template (name)
+  "Return initial contents for a tasks file belonging to project NAME.
+`#+category:' is load-bearing, not decoration: org derives a missing
+category from the file name, so without it every per-project tasks file
+appears in the agenda as \"tasks\", indistinguishable from every other
+project.  `#+filetags:' tags every entry in the file for tag search."
+  (let ((tag (myde-org-sanitize-tag name)))
+    (format (concat "#+title: %s tasks\n"
+                    "#+category: %s\n"
+                    "#+filetags: :%s:\n"
+                    "\n"
+                    "* Tasks\n")
+            name tag tag)))
+
+(defun myde-org-vc-root (&optional dir)
+  "Return the repository root at or above DIR, or nil.
+DIR defaults to `default-directory'.  Matches both a `.git' directory
+and a `.git' *file*, the latter being what git worktrees and submodules
+use to hold a gitdir pointer.
+
+`.git' is searched for directly rather than calling `vc-root-dir' so
+that no VC backend machinery is loaded for what is one filesystem walk."
+  (locate-dominating-file (or dir default-directory) ".git"))
+
+(defun myde-org-create-project-tasks (dir)
+  "Create an initial tasks file in DIR, then visit it.
+Returns the visiting buffer.
+
+Interactively, prompts for DIR seeded with the enclosing repository root
+when there is one, falling back to `default-directory'.  The seed is a
+default, not a constraint: any directory may be chosen, so a project
+need not be under version control.
+
+An existing tasks file is never overwritten — it is visited as-is."
+  (interactive
+   (list (read-directory-name
+          "Create tasks file in: "
+          (or (myde-org-vc-root) default-directory))))
+  (let* ((dir (file-name-as-directory (expand-file-name dir)))
+         (file (expand-file-name myde-org-tasks-file-name dir))
+         (name (file-name-nondirectory (directory-file-name dir)))
+         (existed (file-exists-p file)))
+    (unless existed
+      (make-directory dir :parents)
+      (with-temp-file file
+        (insert (myde-org-project-tasks-template name)))
+      (myde-org-refresh-agenda-files))
+    (prog1 (find-file file)
+      (message (if existed "Tasks file already exists: %s" "Created %s")
+               (abbreviate-file-name file)))))
+
+(defun myde-org-visit-project-tasks ()
+  "Visit the nearest project tasks file, searching upward.
+When no tasks file exists above `default-directory', delegates to
+`myde-org-create-project-tasks' so the directory is chosen explicitly
+rather than guessed — `default-directory' may be deep inside a tree."
+  (interactive)
+  (let ((file (myde-org-project-tasks-file)))
+    (if file
+        (find-file file)
+      (call-interactively #'myde-org-create-project-tasks))))
+
+;; -----------------------------------------------------------------------------
+;; Tag cloud and tag search
+;; -----------------------------------------------------------------------------
+
+(defun myde-org-tag-counts (&optional files)
+  "Return a list of (TAG ENTRY-COUNT FILE-COUNT) across FILES.
+FILES defaults to `org-agenda-files'; unreadable entries are skipped so
+a stale agenda list never signals.  Sorted by descending entry count,
+then alphabetically.
+
+Counting uses `org-get-tags', which includes tags inherited from
+`#+filetags:'.  That matches what `org-tags-view' returns for the same
+tag, so a displayed count never disagrees with the search it launches.
+
+Tags are stripped of text properties: org returns inherited tags
+propertized, which breaks both display and `equal' comparison.
+
+The tally is a straightforward scan per invocation — fine for a personal
+corpus of a few dozen files.  If it ever gets slow, cache on file
+modification time."
+  (let ((pairs '()))
+    (dolist (file (seq-filter #'file-readable-p
+                              (or files (and (boundp 'org-agenda-files)
+                                             org-agenda-files))))
+      (dolist (tags (org-map-entries #'org-get-tags nil (list file)))
+        (dolist (tag tags)
+          (push (cons (substring-no-properties tag) file) pairs))))
+    (let ((tags (delete-dups (mapcar #'car pairs))))
+      (sort
+       (mapcar (lambda (tag)
+                 (let ((hits (seq-filter (lambda (p) (equal (car p) tag)) pairs)))
+                   (list tag
+                         (length hits)
+                         (length (delete-dups (mapcar #'cdr hits))))))
+               tags)
+       (lambda (a b)
+         (if (= (nth 1 a) (nth 1 b))
+             (string< (car a) (car b))
+           (> (nth 1 a) (nth 1 b))))))))
+
+(defun myde-org-tags-match-string (tags &optional match-any)
+  "Return an org tag match string for TAGS.
+Joined with `+' so all must match, or with `|' when MATCH-ANY is
+non-nil."
+  (string-join tags (if match-any "|" "+")))
+
+(defun myde-org-search-tags (tags &optional match-any)
+  "Show an agenda of entries tagged with TAGS.
+Interactively, reads one or more tags with completion over every tag in
+use, requiring a match so a typo cannot silently return nothing.  Tags
+must all be present; with a prefix argument any one of them suffices."
+  (interactive
+   (progn
+     (myde-org-refresh-agenda-files)
+     (let ((candidates (mapcar #'car (myde-org-tag-counts))))
+       (unless candidates
+         (user-error "No org tags in use yet"))
+       (list (completing-read-multiple
+              (if current-prefix-arg "Tags (any of): " "Tags (all of): ")
+              candidates nil t)
+             current-prefix-arg))))
+  (unless tags
+    (user-error "No tags given"))
+  (org-tags-view nil (myde-org-tags-match-string tags match-any)))
+
+(defvar-keymap myde-org-tag-cloud-mode-map
+  :doc "Keymap for `myde-org-tag-cloud-mode'."
+  "RET" #'myde-org-tag-cloud-search-at-point
+  "s"   #'myde-org-search-tags
+  "g"   #'myde-org-tag-cloud-refresh)
+
+(define-derived-mode myde-org-tag-cloud-mode tabulated-list-mode "Org-Tags"
+  "Major mode listing org tags by how often they are used."
+  (setq tabulated-list-format
+        [("Count" 7 myde-org-tag-cloud--count-lessp)
+         ("Tag"  32 t)
+         ("Files" 5 nil)]
+        tabulated-list-sort-key '("Count" . t)
+        tabulated-list-padding 1)
+  (tabulated-list-init-header))
+
+(defun myde-org-tag-cloud--count-lessp (a b)
+  "Compare tabulated-list rows A and B by their numeric Count column.
+`tabulated-list-mode' sorts as strings by default, which would order 10
+before 9."
+  (< (string-to-number (aref (cadr a) 0))
+     (string-to-number (aref (cadr b) 0))))
+
+(defun myde-org-tag-cloud-search-at-point ()
+  "Show an agenda for the tag on the current line."
+  (interactive)
+  (let ((tag (tabulated-list-get-id)))
+    (unless tag
+      (user-error "No tag on this line"))
+    (myde-org-search-tags (list tag))))
+
+(defun myde-org-tag-cloud-refresh ()
+  "Rescan agenda files and redraw the tag cloud."
+  (interactive)
+  (myde-org-refresh-agenda-files)
+  (let ((counts (myde-org-tag-counts)))
+    (setq tabulated-list-entries
+          (mapcar (lambda (row)
+                    (list (car row)
+                          (vector (number-to-string (nth 1 row))
+                                  (car row)
+                                  (number-to-string (nth 2 row)))))
+                  counts))
+    (setq mode-line-process
+          (format " [%d tag%s]" (length counts)
+                  (if (= 1 (length counts)) "" "s")))
+    (tabulated-list-print :remember-pos)
+    (when (null counts)
+      (let ((inhibit-read-only t))
+        (save-excursion
+          (goto-char (point-max))
+          (insert "\nNo tags in use yet.  Capture a tagged thought with "
+                  "C-c o c h, or add\n#+filetags: to a project's tasks.org.\n"))))))
+
+(defun myde-org-tag-cloud ()
+  "Show every org tag in use, ordered by how often it appears.
+RET searches the tag on the current line, `s' searches a combination of
+tags, and `g' rescans."
+  (interactive)
+  (let ((buffer (get-buffer-create "*Org Tags*")))
+    (with-current-buffer buffer
+      (myde-org-tag-cloud-mode)
+      (myde-org-tag-cloud-refresh))
+    (pop-to-buffer buffer)))
 
 (defun myde-org-mode-disable-flycheck ()
   "Disable `flycheck-mode' in org buffers.
@@ -151,60 +429,6 @@ number-or-marker-p' on propertized strings from newer org versions.
 Flycheck is unnecessary in org buffers — use `M-x org-lint' on demand."
   (when (bound-and-true-p flycheck-mode)
     (flycheck-mode -1)))
-
-(defvar myde-org-project-history nil
-  "Minibuffer history for `myde-org-capture-project-line' prompts.")
-
-(defun myde-org-known-projects ()
-  "Return a sorted, de-duplicated list of known project names.
-Candidates come from subdirectories of `myde-projects-directory' and
-from previously entered values in `myde-org-project-history'."
-  (let* ((subdirs (when (file-directory-p myde-projects-directory)
-                    (mapcar #'file-name-nondirectory
-                            (seq-filter
-                             #'file-directory-p
-                             (directory-files
-                              myde-projects-directory t
-                              directory-files-no-dot-files-regexp)))))
-         (all (append subdirs myde-org-project-history)))
-    (sort (delete-dups all) #'string<)))
-
-(defun myde-org-capture-scheduled-line ()
-  "Return a `SCHEDULED: <ts>' planning line for a capture template.
-Prompts y/n; if declined returns the empty string so the planning line
-is omitted entirely.  Intended for use inside an org-capture template
-body via `%(...)', placed between the headline and the `:PROPERTIES:'
-drawer per org convention."
-  (if (y-or-n-p "Schedule this task? ")
-      (format "  SCHEDULED: <%s>\n"
-              (org-read-date nil nil nil "Scheduled date: "))
-    ""))
-
-(defun myde-org-capture-deadline-line ()
-  "Return a `DEADLINE: <ts>' planning line for a capture template.
-Same conventions as `myde-org-capture-scheduled-line'."
-  (if (y-or-n-p "Set a deadline? ")
-      (format "  DEADLINE: <%s>\n"
-              (org-read-date nil nil nil "Deadline: "))
-    ""))
-
-(defun myde-org-capture-project-line ()
-  "Return a `:PROJECT: <name>' line for an org-capture PROPERTIES drawer.
-Prompts with completion over `myde-org-known-projects'.  Returns the
-empty string when the user enters no value, so the property is omitted
-entirely.  Intended for use inside a capture template via `%(...)':
-
-  :PROPERTIES:
-  :CREATED: %U
-%(myde-org-capture-project-line)  :END:"
-  (let ((val (string-trim
-              (completing-read "Project (RET to skip): "
-                               (myde-org-known-projects)
-                               nil nil nil
-                               'myde-org-project-history))))
-    (if (string-empty-p val)
-        ""
-      (concat "  :PROJECT: " val "\n"))))
 
 ;;;; core-terminals
 ;;;; --------------

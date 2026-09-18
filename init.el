@@ -505,18 +505,29 @@
 ;;;; core-org
 ;;;; --------
 
-
-;; That's all Folks!
-
 ;; I use org to manage my thoughts and actions.
 (use-package org  ;; https://orgmode.org
   :hook
   (org-mode . visual-line-mode)
   (org-mode . myde-delete-trailing-whitespace-setup)
   (org-mode . myde-org-mode-disable-flycheck)
+  :bind (("C-c o p" . myde-org-visit-project-tasks)
+         ("C-c o P" . myde-org-create-project-tasks)
+         ("C-c o t" . myde-org-tag-cloud)
+         ("C-c o T" . myde-org-search-tags))
   :custom
   (org-directory myde-org-directory)
   (org-return-follows-link t)
+  (org-todo-keywords
+   '((sequence "TODO(t)" "NEXT(n)" "WAIT(w@/!)"
+               "|" "DONE(d!)" "CANCELLED(c@)")))
+  (org-archive-location
+   (concat myde-org-archive-directory "%s_archive::"))
+  (org-id-locations-file
+   (expand-file-name "emacs/org-id-locations" (xdg-state-home)))
+  (org-id-link-to-org-use-id 'create-if-interactive)
+  :config
+  (myde-org-ensure-tree)
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -561,23 +572,50 @@
   :custom
   (org-capture-templates
    `(("t" "Task" entry
-      (file+headline ,myde-org-tasks-file "Inbox")
+      (file+headline ,myde-org-inbox-file "Inbox")
       ,(string-join
         '("* TODO %?"
-          "%(myde-org-capture-scheduled-line)%(myde-org-capture-deadline-line)  :PROPERTIES:"
+          "  :PROPERTIES:"
           "  :CREATED: %U"
-          "%(myde-org-capture-project-line)  :END:"
+          "  :END:"
           "  %a")
         "\n")
       :empty-lines 1)
 
-     ("b" "Bookmark (org-protocol)" entry
-      (file+headline ,myde-org-bookmarks-file "Inbox")
+     ;; The file target is a bare symbol on purpose: org calls a capture
+     ;; target file given as a function.  Do not comma-splice it.
+     ("T" "Task in current project" entry
+      (file+headline myde-org-capture-target "Tasks")
       ,(string-join
-        '("* [[%:link][%:description]]   :bookmark:"
+        '("* TODO %?"
           "  :PROPERTIES:"
           "  :CREATED: %U"
-          "%(myde-org-capture-project-line)  :END:"
+          "  :END:"
+          "  %a")
+        "\n")
+      :empty-lines 1)
+
+     ("h" "Thought" entry
+      (file+headline ,myde-org-inbox-file "Inbox")
+      ,(string-join
+        '("* %^{Thought} %^G"
+          "  :PROPERTIES:"
+          "  :CREATED: %U"
+          "  :END:"
+          "  %?")
+        "\n")
+      :empty-lines 1)
+
+     ;; %^G directly abuts :bookmark: with no space: org's %^G handler
+     ;; omits its leading colon when the preceding char is already a
+     ;; colon, giving one well-formed group `:bookmark:foo:bar:'.
+     ("b" "Bookmark, tagged (org-protocol)" entry
+      (file+headline ,myde-org-inbox-file "Inbox")
+      ,(string-join
+        '("* [[%:link][%:description]]   :bookmark:%^G"
+          "  :PROPERTIES:"
+          "  :CREATED: %U"
+          "  :END:"
           "  %i")
         "\n")
       :empty-lines 1)))
@@ -599,15 +637,30 @@
   :after org
   :bind (("C-c o a" . org-agenda))
   :custom
-  (org-agenda-files (list myde-org-tasks-file))
-  ;; A missing agenda file otherwise makes `org-check-agenda-file' prompt via
-  ;; `read-char-exclusive'.  Dashboard's agenda widget runs under
-  ;; `inhibit-redisplay', so that prompt is invisible and startup looks hung;
-  ;; answering anything but R aborts the widget before it enables `dashboard-mode'.
+  ;; Discovered rather than declared: project tasks files live inside the
+  ;; project directories, so there is no single directory for org to expand.
+  ;; The advice below rescans before each agenda build.
+  (org-agenda-files (myde-org-agenda-files))
+  ;; Belt and braces.  `myde-org-ensure-tree' creates the inbox and discovery
+  ;; only returns files that exist, but a tasks.org removed between the scan
+  ;; and the agenda build would otherwise trigger org's blocking
+  ;; [R]emove/[A]bort prompt -- invisible under dashboard's `inhibit-redisplay'.
   (org-agenda-skip-unavailable-files t)
+  (org-agenda-custom-commands
+   `(("d" "Day"
+      ((agenda "" ((org-agenda-span 1)
+                   (org-deadline-warning-days 14)))
+       (todo "NEXT" ((org-agenda-overriding-header "Next actions")))
+       (todo "TODO|NEXT"
+             ((org-agenda-files (list ,myde-org-inbox-file))
+              (org-agenda-overriding-header "Inbox — needs refiling")))))))
   (org-refile-targets '((org-agenda-files :maxlevel . 3)))
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)
+  :config
+  ;; Rescan before every agenda build so a tasks.org created by hand is
+  ;; picked up without a restart.  The pruned scan is sub-millisecond.
+  (advice-add 'org-agenda :before #'myde-org-refresh-agenda-files)
   :ensure nil)
 
 ;;;; core-help
@@ -798,7 +851,12 @@
    ("C-c o n l" . denote-link)
    ("C-c o n b" . denote-backlinks)
    ("C-c o n f" . denote-open-or-create)
-   ("C-c o n s" . denote-search))
+   ;; `denote-grep', not `denote-search'.  The standalone denote-search
+   ;; package was absorbed into core denote, which renamed the command.
+   ;; `:bind' generates an autoload for whatever command it names, so the
+   ;; stale name looked bound but failed on use: "Autoloading file
+   ;; denote.elc failed to define function denote-search".
+   ("C-c o n s" . denote-grep))
   :custom
   (denote-directory myde-denote-directory)
   (denote-infer-keywords t)
@@ -819,9 +877,17 @@
 ;; Appends `n' (plain denote note) and `N' (note from web via org-protocol)
 ;; to the org-capture templates list defined by core-org.  Lives here so
 ;; core-org does not take a hard dependency on denote.
+;;
+;; `:after' must NOT include denote.  Every denote entry point is an
+;; autoload, so denote never loads on its own — gating on it meant `n' and
+;; `N' were absent from `C-c o c' until the user happened to run a denote
+;; command first.  Gating on org alone is correct and sufficient: a capture
+;; template is inert data, and `denote-org-capture' is autoloaded, so
+;; selecting `n' loads denote on demand.  `org-capture' itself requires org,
+;; so this `:config' runs before the template menu is built.
 
 (use-package org-capture
-  :after (org denote)
+  :after org
   :config
   (add-to-list 'org-capture-templates
                '("n" "Note (denote)" plain
