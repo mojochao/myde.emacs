@@ -200,9 +200,11 @@ three singletons: the `server` socket (the daemon wins, so the app silently skip
 `mcp-server` socket under `$XDG_CACHE_HOME/emacs/`, and the XDG state files, which are
 last-writer-wins.
 
-Because a daemon has no frame to render against at startup, the dashboard is installed as
-`initial-buffer-choice` and each client frame draws its own. A direct `emacs` launch keeps
-dashboard's usual startup-hook path.
+The dashboard is not a startup screen here. `initial-buffer-choice` is not usable under
+elpaca — `elpaca-log-initial-queues` overwrites it whenever an order is unbuilt or has
+failed, so frames intermittently opened on `*scratch*` anyway. Dashboard is `:defer t`
+and opened on demand with `M-x dashboard-open`; an `emacsclient -c` frame gets
+`*scratch*` and costs nothing.
 
 On macOS, restart the daemon after a config change with:
 
