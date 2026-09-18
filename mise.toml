@@ -4,6 +4,12 @@
 # separate pkl tool is needed to evaluate hk.pkl.
 hk = "2.0.1"
 
+# docsify-cli serves docs/ as a static site with livereload.  Pinned for the
+# same reason as hk: a docs preview that renders differently per machine is
+# worse than no preview.  The npm backend needs node, which mise resolves from
+# the system when the repo does not pin one.
+"npm:docsify-cli" = "5.0.0"
+
 [env]
 # Emacs init directory; `mise run link' points this at the repo.
 emacs_dir = "{{env.HOME}}/.config/emacs"
