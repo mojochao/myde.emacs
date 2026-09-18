@@ -4,7 +4,9 @@ Design for a personal project management and personal information management
 (PIM) system in `core-org`: task scheduling, note taking, and tagged thought
 capture, linked to code projects under `~/devel/projects/`.
 
-Status: **approved, not yet implemented**. Date: 2026-08-05.
+Status: **implemented**. Revised 2026-08-10 to colocate project tasks in a
+`tasks.org` inside each project directory, located by upward marker search,
+replacing the original one-file-per-project layout under `~/org/projects/`.
 
 ## Verified starting state
 
@@ -14,25 +16,27 @@ and by batch-evaluating against Emacs 30.2, not assumed:
 | Fact                                 | Value                                                                          |
 |--------------------------------------|--------------------------------------------------------------------------------|
 | Emacs / org version                  | 30.2 / 9.7.11 (built-in)                                                       |
-| `org-agenda-files` (live)            | `("~/org/tasks.org")` — the file does not exist                                |
+| `org-agenda-files` (live, pre-change) | `("~/org/tasks.org")` — the file did not exist                                 |
 | `~/org/` contents                    | empty — greenfield, zero migration cost                                        |
 | `org-tag-re`                         | `[[:alnum:]_@#%]+` — excludes `-` and `.`; applies to tags only, not filenames |
-| `~/devel/projects/`                  | 9 directories; 7 git repos, 2 with no VC                                       |
-| `org-agenda-files` directory entries | expanded natively, non-recursively                                             |
+| `~/devel/projects/`                  | 6 git repos plus a `.ATTIC/` archive directory                                  |
+| missing agenda file                  | blocks startup on `[R]emove from list or [A]bort?`                             |
+| missing agenda directory             | silently returned as though it were a file                                     |
+| org category with no `#+category:`   | derived from file name, so every `tasks.org` reports `"tasks"`                  |
 
-`core-org/lib.el` currently contains two half-built, mutually exclusive designs:
-a central `tasks.org` keyed by a `:PROJECT:` property, *and* recursive
-per-project `tasks.org` discovery via `myde-find-org-agenda-files`. Neither is
-wired into `org-agenda-files`. This design picks per-project files and deletes
-the rest.
+Before this work the `core-org` section contained two half-built, mutually exclusive
+designs: a central `tasks.org` keyed by a `:PROJECT:` property, *and* recursive
+per-project `tasks.org` discovery via `myde-find-org-agenda-files`. Neither was
+wired into `org-agenda-files`. The final design is closer to the second of those
+than to the intermediate `~/org/projects/` layout that replaced them both.
 
 ## Scope
 
 A personal system with a single consumer. It covers:
 
-- **Project management** — every project lives in a direct subdirectory of
-  `~/devel/projects/`. Repos elsewhere, including `~/devel/repos/`, are not
-  projects in this system.
+- **Project management** — a project is any directory containing a `tasks.org`,
+  at any depth and under any name. `~/devel/projects/` is searched to build the
+  agenda; a project outside it still works for capture, just not in the agenda.
 - **Task scheduling** — agenda, `SCHEDULED`/`DEADLINE`, a next-actions view.
 - **Information management** — durable tagged notes via denote, plus a capture
   path for unfiled thoughts.
@@ -41,155 +45,242 @@ A personal system with a single consumer. It covers:
 
 ## Storage layout
 
+Project tasks live **inside the project directory**, in a `tasks.org`. That file
+is also the project marker: a project is any directory containing one, at any
+depth, under any name.
+
 ```
 ~/org/                          # its own private git repo
-├── inbox.org                   # single capture sink: tasks, thoughts, bookmarks
-├── projects/
-│   ├── scitech-idp.org         # one flat file per project
-│   └── hybrid-eks-poc.org
+├── inbox.org                   # capture sink: thoughts, bookmarks, orphan tasks
 ├── notes/                      # denote — existing, unchanged
 └── archive/                    # <file>.org_archive
+
+~/devel/projects/
+├── scitech-idp/
+│   ├── tasks.org               # project tasks, colocated with the code
+│   └── ...
+├── multi-tenancy/
+│   └── repos/…                 # no tasks.org yet — not a project until it has one
+└── .ATTIC/                     # archived work; excluded from discovery
+    └── chainguard-eval/
 ```
 
-Every file in `projects/` corresponds one-to-one with a directory under
-`myde-org-code-directory`. There is no catch-all file for non-project items;
-anything that is not project work is either a tagged thought in `inbox.org` or a
-denote note.
+There is no catch-all file for non-project items. Anything that is not project
+work is a tagged thought in `inbox.org` or a denote note.
 
 Denote with tags is the reference layer of the PIM. It already exists in
 `core-notes` and is not modified by this design.
 
+### Why colocated, and the cost
+
+Colocating puts a project's tasks where its code is: the file travels with the
+directory, and `~/org/` stays small. The cost is that `tasks.org` appears in
+`git status` for the 6 project directories that are shared git repos, and is one
+`git add -A` away from being committed where teammates would see it.
+
+The mitigation is a single global gitignore entry rather than a `.gitignore`
+edit in every repo. `core.excludesFile` is already configured to `~/.gitignore`,
+so one line in that file covers every current and future repo:
+
+```
+tasks.org
+```
+
+An earlier revision of this design put project files in `~/org/projects/`
+instead, to avoid exactly this. That was reversed deliberately: colocation was
+preferred, and the global-gitignore mitigation is one line.
+
 ### Variables
 
-Declared in `core-org/lib.el`, replacing the deleted ones listed under
+Declared in the `core-org` definitions block, replacing the deleted ones listed under
 *Net change*:
 
-| Variable                      | Value                                                        |
-|-------------------------------|--------------------------------------------------------------|
-| `myde-org-directory`          | `~/org/` — unchanged                                         |
-| `myde-org-inbox-file`         | `inbox.org` under `myde-org-directory`                       |
-| `myde-org-projects-directory` | `projects/` under `myde-org-directory`                       |
-| `myde-org-archive-directory`  | `archive/` under `myde-org-directory`                        |
-| `myde-org-notes-directory`    | `notes/` — unchanged, consumed by `core-notes`               |
-| `myde-org-code-directory`     | `~/devel/projects/` — `defcustom`, root of all code projects |
+| Variable                     | Value                                                          |
+|------------------------------|----------------------------------------------------------------|
+| `myde-org-directory`         | `~/org/` — unchanged                                           |
+| `myde-org-inbox-file`        | `inbox.org` under `myde-org-directory`                         |
+| `myde-org-archive-directory` | `archive/` under `myde-org-directory`                           |
+| `myde-org-notes-directory`   | `notes/` — unchanged, consumed by `core-notes`                 |
+| `myde-org-code-directory`    | `~/devel/projects/` — `defcustom`, searched to build the agenda |
+| `myde-org-tasks-file-name`   | `tasks.org` — `defconst`, the project marker                    |
 
-### Why org files live outside the code repos
-
-Org files are **not** stored inside project directories, and are not gitignored
-there either.
-
-- Gitignored files are not backed up with the repo, which removes the only
-  advantage colocation offers. Deleting and re-cloning a repo would destroy the
-  task history.
-- It requires a `.gitignore` entry in every repo, forever. Two of the nine
-  project directories are not git repos at all.
-- Agenda discovery stops being free: a flat `~/org/projects/` directory is
-  expanded natively by org, whereas colocated files require a recursive scan.
-
-`~/org/` as a single tree is one backup unit, one grep scope, one agenda scope.
-As the sole consumer, a private git repo at `~/org/` covers versioning and sync.
+`myde-org-code-directory` bounds **agenda discovery only**. Capture and visiting
+search upward from `default-directory`, so a project outside that root still
+works — it just does not appear in the agenda.
 
 ## Project identity
 
-Because every project is a direct subdirectory of `myde-org-code-directory`,
-identity is a path-prefix derivation rather than a VC lookup:
+A project is any directory containing a `tasks.org`. Identity is the nearest such
+directory at or above `default-directory`, found with built-in
+`locate-dominating-file`:
 
 ```elisp
-(defun myde-org-project-name ()
-  "Return the project directory name containing `default-directory', or nil."
-  (let ((root (file-name-as-directory (expand-file-name myde-org-code-directory)))
-        (here (file-name-as-directory (expand-file-name default-directory))))
-    (when (string-prefix-p root here)
-      (car (split-string (substring here (length root)) "/" t)))))
+(defun myde-org-project-root (&optional dir)
+  (locate-dominating-file (or dir default-directory) myde-org-tasks-file-name))
 ```
 
-Verified against all relevant cases:
+That is the whole implementation. `locate-dominating-file` walks upward and stops
+at the filesystem root, which satisfies the requirement to search "up to `$HOME`
+or even `/`" without a configurable bound: if no `tasks.org` exists anywhere
+above, it returns nil and capture falls back to the inbox.
 
-| Directory                                       | Result           |
-|-------------------------------------------------|------------------|
-| `~/devel/projects/scitech-idp/` (git)           | `scitech-idp`    |
-| `~/devel/projects/hybrid-eks-poc/` (no VC)      | `hybrid-eks-poc` |
-| `~/devel/projects/scitech-idp2/` (no VC)        | `scitech-idp2`   |
-| `~/devel/projects/scitech-idp/docs/deep/x/`     | `scitech-idp`    |
-| `~/devel/projects/multi-tenancy/repos/`         | `multi-tenancy`  |
-| `~/devel/projects/` (root itself)               | nil              |
-| `~/devel/repos/github.com/mojochao/myde.emacs/` | nil              |
-| `~/`                                            | nil              |
+Verified against the real tree:
 
-This was chosen over `(project-name (project-current))` for two verified
-reasons:
+| Directory                                       | Project        | Capture target                          |
+|-------------------------------------------------|----------------|-----------------------------------------|
+| `~/devel/projects/scitech-idp/`                 | `scitech-idp`  | `~/devel/projects/scitech-idp/tasks.org` |
+| `~/devel/projects/scitech-idp/docs/`            | `scitech-idp`  | `~/devel/projects/scitech-idp/tasks.org` |
+| `~/devel/projects/multi-tenancy/`               | nil            | `~/org/inbox.org`                       |
+| `~/devel/repos/github.com/mojochao/myde.emacs/` | nil            | `~/org/inbox.org`                       |
 
-1. `project-current` returns nil in the two project directories that are not
-   under version control, which would force a disambiguation prompt in normal
-   use.
-2. In `multi-tenancy/repos/`, `project-current` descends to an inner repository
-   and reports the wrong project. Path-prefix derivation correctly reports the
-   containing project.
+This replaces two earlier approaches, both now removed:
 
-It is also fewer lines, because no fallback prompt is needed for the in-project
-case. A `completing-read` fallback over existing project org files remains for
-the case where point is outside `myde-org-code-directory` entirely.
+- **Path-prefix derivation** from a fixed root. It required project directories
+  to be direct children of `myde-org-code-directory` and to be named after their
+  org file. Marker-file search imposes neither constraint.
+- **`(project-name (project-current))`**. It returns nil for directories not
+  under version control, and in a project containing nested repositories it
+  descends to the inner repository and reports the wrong project.
 
-### Filenames and tags
+Nesting now resolves correctly for free: a task captured in
+`multi-tenancy/repos/foo/` files into `multi-tenancy/tasks.org` if that is the
+nearest marker, and into `repos/foo/tasks.org` if that directory has its own.
 
-The org filename preserves the directory name exactly — `scitech-idp` becomes
-`~/org/projects/scitech-idp.org`. The `org-tag-re` restriction applies to tags,
-not filenames, so no sanitization is needed here, and both directions of the
-mapping are lossless convention:
+### Tags
 
-- forward: `<dirname>` → `~/org/projects/<dirname>.org`
-- reverse: `<basename>.org` → `~/devel/projects/<basename>/`
-
-Sanitization applies only to `#+category:` and `#+filetags:`:
+The project name is the basename of the directory holding the tasks file.
+Sanitization applies to `#+category:` and `#+filetags:`:
 
 ```elisp
 (replace-regexp-in-string "[^[:alnum:]_@#%]" "_" name)
 ```
 
-So `scitech-idp` yields the tag `scitech_idp`. This is a correctness
-requirement, not cosmetic: `org-tag-re` is `[[:alnum:]_@#%]+`, and an invalid
-`#+filetags:` value fails silently, making tag search return nothing.
+So `scitech-idp` yields the tag `scitech_idp`. This is a correctness requirement,
+not cosmetic: `org-tag-re` is `[[:alnum:]_@#%]+`, which excludes `-` and `.`, and
+an invalid `#+filetags:` value fails silently, making tag search return nothing.
 
-## Project file template
+## Creating a tasks file
 
-Generated on first visit:
+Two commands, one for each intent:
+
+| Key       | Command                         | Behaviour                                                                  |
+|-----------|---------------------------------|----------------------------------------------------------------------------|
+| `C-c o p` | `myde-org-visit-project-tasks`  | Visit the nearest tasks file. With none above point, delegates to the below |
+| `C-c o P` | `myde-org-create-project-tasks` | Always prompts for the directory, seeded with the enclosing repo root       |
+
+The prompt is seeded with `myde-org-vc-root` — an upward search for `.git` —
+falling back to `default-directory`. The seed is a default, not a constraint: any
+directory can be typed, so a project need not be under version control.
+
+`.git` is searched for directly rather than via `vc-root-dir`, so no VC backend
+machinery loads for what is one filesystem walk. The search matches both a `.git`
+directory and a `.git` *file*, the latter being what git worktrees and submodules
+use to hold a gitdir pointer. Verified against both forms.
+
+An existing tasks file is never overwritten; it is visited as-is and the command
+says so. Creation refreshes `org-agenda-files` immediately.
+
+## Project tasks template
+
+Written when `C-c o p` creates a new tasks file:
 
 ```org
-#+title: scitech-idp
+#+title: scitech-idp tasks
 #+category: scitech_idp
 #+filetags: :scitech_idp:
 
-Code: [[file:~/devel/projects/scitech-idp/][~/devel/projects/scitech-idp/]]
-
 * Tasks
-
-* Notes
 ```
 
-- `#+category:` puts the project name in the agenda's left column with no code.
-- `#+filetags:` auto-tags every entry in the file, so `C-c o a m scitech_idp`
-  returns everything for that project.
-- The `Code:` link is convenience only, since the reverse mapping is already
-  conventional. `org-return-follows-link` is enabled in `core-org/cfg.el`, so
-  `RET` opens dired there. This replaces a dedicated jump command with zero
-  lines of code.
+**`#+category:` is load-bearing here, not decoration.** Org derives a missing
+category from the file name. Because every project's file is now named
+`tasks.org`, omitting the category makes every project show up in the agenda as
+`tasks` — indistinguishable from every other one. Verified: a `tasks.org` with no
+`#+category:` reports category `"tasks"`; with one, it reports the project name.
+
+This matters more than in the previous design, where the file was named after the
+project and the default category was already useful.
+
+`#+filetags:` tags every entry in the file, so `C-c o a m scitech_idp` returns
+everything for that project.
 
 ## Agenda scope
 
+Project tasks files live inside project directories, so there is no single
+directory for org to expand. They are discovered:
+
 ```elisp
-(org-agenda-files (list myde-org-inbox-file myde-org-projects-directory))
+(defun myde-org-find-task-files ()
+  (directory-files-recursively
+   (expand-file-name myde-org-code-directory)
+   "\\`tasks\\.org\\'" nil
+   (lambda (dir)
+     (let ((name (file-name-nondirectory dir)))
+       (not (or (string-prefix-p "." name) (equal name "node_modules")))))))
 ```
 
-The Emacs 30.2 `org-agenda-files` docstring states: *"If an entry is a
-directory, all files in that directory that are matched by
-`org-agenda-file-regexp` will be part of the file list."*
+`org-agenda-files` is then the inbox plus that list.
 
-A new project file therefore appears in the agenda immediately — no restart, no
-cache invalidation, no custom discovery function. This deletes
-`myde-find-org-agenda-files`.
+Pruning does two jobs. Measured on the real tree:
 
-Expansion is non-recursive, which is why the layout is one flat file per project
-rather than one directory per project.
+| Strategy                                  | Time     |
+|-------------------------------------------|----------|
+| recursive, no pruning                     | 15.85 ms |
+| recursive, prune dot-dirs + node_modules  | 0.68 ms  |
+| glob `*/tasks.org` (depth 1 only)         | 0.33 ms  |
+
+The unpruned scan spends its time inside `.git` internals. At 0.68 ms the pruned
+scan is effectively free — worth noting in a config whose whole init is ~1.16 ms
+— and unlike the depth-1 glob it handles projects at any depth. Pruning
+dot-directories also excludes archived work parked in `.ATTIC/`, which should not
+clutter the agenda.
+
+Because the list is computed rather than declared, a `tasks.org` created by hand
+would otherwise be silently absent until restart. `myde-org-refresh-agenda-files`
+is wired as `:before` advice on `org-agenda` to rescan on every agenda build.
+Silent absence is the failure mode being prevented; 0.68 ms is the price.
+
+## Tag surfacing and search
+
+Tags are only useful if you can see which ones exist and search combinations of
+them. Two commands, built on `tabulated-list-mode` and
+`completing-read-multiple` — both built in, no new package.
+
+| Key | Command | Behaviour |
+|-----|---------|-----------|
+| `C-c o t` | `myde-org-tag-cloud` | Every tag in use, ordered by frequency, with entry and file counts |
+| `C-c o T` | `myde-org-search-tags` | Read tags with completion; ANDed, or ORed with a prefix argument |
+
+`tabulated-list-mode` was chosen over a font-size-weighted cloud: it gives column
+sorting and `RET` handling for free, scales past a handful of tags, and renders
+identically in a terminal, where `:height` faces are ignored. The `Count` column
+uses a numeric sort predicate, since the mode sorts as strings by default and
+would otherwise place 10 before 9.
+
+### Counts must not lie
+
+The count shown against a tag has to equal what pressing `RET` on it returns,
+or the view is actively misleading. Two facts were verified rather than assumed:
+
+- `org-agenda-use-tag-inheritance` defaults to `(todo search agenda)`, which
+  does **not** include `tags` — so `org-tags-view` looked like it might ignore
+  inherited tags.
+- It does not matter. A file with `#+filetags: :proj:` yields the same three
+  matching entries from `org-tags-view` whether or not `tags` is in that list,
+  because filetags land on entries directly.
+
+So counting with `org-get-tags`, which includes filetags, agrees with the search.
+No change to `org-agenda-use-tag-inheritance` was needed.
+
+Tags are stripped with `substring-no-properties` before use: org returns
+inherited tags propertized, which breaks both display and `equal` comparison.
+
+### Scope
+
+Both commands cover org tags only. Denote keywords are a separate namespace with
+its own search (`C-c o n s`, `denote-grep`), and folding them in would make `RET`
+mean two different things depending on the row. Add a unified view if switching
+between the two proves annoying in practice.
 
 ## TODO keywords
 
@@ -224,7 +315,7 @@ todo search cover every other query.
 | Key      | Template                | Target                                        |
 |----------|-------------------------|-----------------------------------------------|
 | `t`      | Task                    | `inbox.org`                                   |
-| `T`      | Task in current project | `projects/<current>.org` under `Tasks`        |
+| `T`      | Task in current project | nearest `tasks.org` under `Tasks`, else `inbox.org` |
 | `h`      | Thought (tagged)        | `inbox.org`                                   |
 | `b`      | Bookmark, tagged (org-protocol) | `inbox.org`                           |
 | `n`, `N` | Denote note             | `notes/` — unchanged, remains in `core-notes` |
@@ -245,7 +336,7 @@ and tags are prompted first, then point lands in the body for elaboration.
 
 Capture targets accept a function for the file — *"A file can also be given as a
 variable or as a function called with no argument"* — so template `T` uses
-`(file+headline myde-org-project-capture-file "Tasks")`.
+`(file+headline myde-org-capture-target "Tasks")`.
 
 ### Removed capture prompts
 
@@ -258,7 +349,7 @@ identifies the project.
 ## Web capture
 
 Browser capture uses built-in `org-protocol`, which is already required in
-`core-org/cfg.el`. Two paths, differing in weight:
+the `core-org` activation block. Two paths, differing in weight:
 
 | Path | Trigger | Result |
 |------|---------|--------|
@@ -334,18 +425,39 @@ That doc also still refers to `bookmarks.org`, which this design replaces with
 
 ## Code
 
-Roughly 40 lines in `core-org/lib.el`. This is the only hand-written logic in
-the design.
+Roughly 60 lines in the `core-org` definitions block. This is the only hand-written
+logic in the
+design; everything else is built-in org variable configuration.
 
-| Function                        | Responsibility                                                                                                                                                                           |
-|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `myde-org-sanitize-tag`         | Replace every character outside `[[:alnum:]_@#%]` with `_`                                                                                                                               |
-| `myde-org-project-name`         | Path-prefix derivation shown above; nil when outside `myde-org-code-directory`                                                                                                           |
-| `myde-org-project-file`         | Interactive, `C-c o p`. Open the current project's org file, creating it from the template if absent. Falls back to `completing-read` over existing project files when outside a project |
-| `myde-org-project-capture-file` | Target resolver for capture template `T`                                                                                                                                                 |
+| Function                          | Responsibility                                                                                    |
+|-----------------------------------|---------------------------------------------------------------------------------------------------|
+| `myde-org-sanitize-tag`           | Replace every character outside `[[:alnum:]_@#%]` with `_`                                        |
+| `myde-org-project-root`           | `locate-dominating-file` upward search for `tasks.org`; nil when none                             |
+| `myde-org-project-tasks-file`     | Path of the nearest `tasks.org`, or nil                                                           |
+| `myde-org-project-name`           | Basename of the directory holding the nearest `tasks.org`, or nil                                 |
+| `myde-org-find-task-files`        | Pruned recursive scan under `myde-org-code-directory`                                             |
+| `myde-org-agenda-files`           | Inbox plus every discovered tasks file                                                            |
+| `myde-org-refresh-agenda-files`   | Rescan and reset `org-agenda-files`; `:before` advice on `org-agenda`                             |
+| `myde-org-capture-target`         | Target resolver for capture template `T`; nearest tasks file, else inbox                          |
+| `myde-org-project-tasks-template` | Initial contents for a new tasks file, including the load-bearing `#+category:`                   |
+| `myde-org-vc-root`                | `.git` upward search; matches the `.git` *file* form used by worktrees and submodules             |
+| `myde-org-create-project-tasks`   | Interactive, `C-c o P`. Create a tasks file in a chosen directory, seeded with the repo root      |
+| `myde-org-visit-project-tasks`    | Interactive, `C-c o p`. Visit the nearest tasks file, delegating creation when there is none      |
+| `myde-org-ensure-tree`            | Create `~/org/` and `archive/` and the inbox file                                                 |
+| `myde-org-tag-counts`             | Tally of (tag, entry count, file count) across agenda files, most frequent first                  |
+| `myde-org-tags-match-string`      | Join tags with `+` (all) or `\|` (any) into an org match string                                    |
+| `myde-org-search-tags`            | Interactive, `C-c o T`. Read tags with `completing-read-multiple`, show the matching agenda        |
+| `myde-org-tag-cloud`              | Interactive, `C-c o t`. Frequency-ordered tag list in `tabulated-list-mode`                       |
+| `myde-org-mode-disable-flycheck`  | Existing; unchanged                                                                               |
 
-Per the convention in `AGENTS.md`, all named definitions live in `lib.el`;
-`cfg.el` holds only `use-package` declarations, hooks, and keybindings.
+Per the convention in `AGENTS.md`, every section of `myde.org` holds up to two
+source blocks: named definitions tangle to `user-lisp/myde.el`, while
+`use-package` declarations, hooks, keybindings and the advice wiring tangle to
+`init.el`. `make forms` enforces the division.
+
+The definitions block carries a `(defvar org-agenda-files)` forward declaration so the
+byte-compiler does not report an assignment to a free variable without pulling
+org-agenda into the file.
 
 ## Housekeeping
 
@@ -357,18 +469,18 @@ Per the convention in `AGENTS.md`, all named definitions live in `lib.el`;
 
 ## Net change
 
-Deleted from `core-org/lib.el`: `myde-reading-notes`, `myde-highlight-file`,
+Deleted from the `core-org` definitions block: `myde-reading-notes`, `myde-highlight-file`,
 `myde-find-org-agenda-files`, `myde-projects-directory`,
 `myde-org-known-projects`, `myde-org-project-history`,
 `myde-org-capture-project-line`, `myde-org-capture-scheduled-line`,
 `myde-org-capture-deadline-line`, `myde-org-tasks-file`,
 `myde-org-bookmarks-file`.
 
-Roughly 70 lines removed, 40 added. **No new packages.** Two files modified:
-`modules/core-org/lib.el` and `modules/core-org/cfg.el`.
+Roughly 70 lines removed, 40 added. **No new packages.** One file edited by hand,
+`myde.org`, in the two blocks of its `core-org` section.
 
-`myde-org-notes-directory` is retained unchanged because `core-notes/lib.el`
-consumes it.
+`myde-org-notes-directory` is retained unchanged because the `core-notes`
+definitions block consumes it.
 
 ## Out of scope
 
@@ -397,12 +509,16 @@ Each exclusion below names the condition that would justify adding it:
 
 ## Verification
 
-The non-trivial logic is name derivation and tag sanitization. Implementation
-must leave behind one runnable check covering the eight directory cases in the
-table above, plus:
+`tests/core-org.el`, run by `make test`. Every test builds its own temporary
+tree, so none depend on the contents of `~/devel/projects` or `~/org`. Seven
+checks covering the logic that fails silently:
 
-- `myde-org-sanitize-tag` converts `-` and `.` to `_`, and its output matches
-  `org-tag-re`
-- the generated template's `#+filetags:` value is a valid org tag
-- a directory outside `myde-org-code-directory` returns nil rather than
-  signalling
+| Test | Guards against |
+|------|----------------|
+| `sanitize-tag/produces-valid-org-tags` | invalid `#+filetags:` making tag search return nothing |
+| `ensure-tree/creates-dirs-and-inbox` | missing agenda dir treated as a file; missing agenda file blocking startup |
+| `project-root/finds-nearest-tasks-file` | nearest-wins shadowing, upward walk, nil rather than error |
+| `project-name/is-the-root-directory-name` | wrong project name from a nested subdirectory |
+| `capture-target/falls-back-to-inbox` | capture failing, or creating a stray tasks file, outside any project |
+| `find-task-files/prunes-dot-dirs-and-node-modules` | `.git` internals and archived `.ATTIC/` work entering the agenda |
+| `project-tasks-template/sets-category-and-valid-filetags` | every project appearing in the agenda as `tasks` |

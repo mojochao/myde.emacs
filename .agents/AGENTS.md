@@ -5,16 +5,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```shell
-make link      # Symlink repo into ~/.config/emacs (installs config)
-make unlink    # Remove the symlink
-make tangle    # Regenerate early-init.el, init.el, user-lisp/myde.el from myde.org
-make forms     # Assert user-lisp/myde.el contains only definitions
-make check     # Tangle, then fail if the committed elisp differs from myde.org
+make link             # Symlink repo into ~/.config/emacs (installs config)
+make unlink           # Remove the symlink
+make tangle           # Regenerate early-init.el, init.el, user-lisp/myde.el from myde.org
+make forms            # Assert user-lisp/myde.el contains only definitions
+make check            # Tangle, then fail if the committed elisp differs from myde.org
+make test             # Run the ERT checks under tests/ in batch mode
+make install-xdg      # Register the org-protocol:// URI handler (Linux)
+make install-macos    # Register the org-protocol:// URI handler (macOS)
 
 scripts/myde-probe.sh <init-directory> <report-file>   # Verify a config change
 ```
 
-There is no build or lint step beyond `make check`. The probe is the test harness: it
+There is no build or lint step. Two things stand in for one, and they check different
+kinds of failure.
+
+`make test` runs ERT over `tests/`, covering logic that fails *silently* rather than
+loudly — an invalid `#+filetags:` value that makes tag search return nothing, a missing
+`#+category:` that makes every project's tasks file show up in the agenda as "tasks", an
+unpruned directory scan that walks `.git` internals. The tests load
+`user-lisp/myde.el` directly, which works only because that file is definitions with no
+side effects; keep it that way (`make forms`) and the library stays testable in batch.
+
+The probe covers the other kind: it
 boots a config directory as an isolated throwaway daemon (unique socket, `PATH` stripped
 to `/usr/bin:/bin`, private `XDG_STATE_HOME`) and writes a report of the declared
 `use-package` forms, the global modes enabled at startup, init time, and startup errors.
@@ -226,6 +239,10 @@ XDG paths are set in the `core-base` section of `init.el`. Exceptions:
 - `:init` blocks set variables *before* package activation; `:config` blocks run side effects after.
 - Multiple `use-package` blocks for the same package accumulate — idiomatic here, subject to the one-ensuring-form rule above.
 - Language sections share keybinding prefixes: `C-c e` (eglot/LSP), `C-c t` (tests), `C-c i` (REPL), `C-c d` (dape/debug).
+- Org lives under `C-c o`: `a` agenda, `c` capture, `p` visit the current project's
+  `tasks.org` (creating one if there is none above point), `P` always prompt to create
+  one, `t` tag cloud, `T` multi-tag search, `n …` denote. A project is any directory
+  containing a `tasks.org`; there is no fixed root and no naming convention.
 - `myde-eglot-add-workspace-config` (in the `core-projects` section) upserts LSP workspace config without clobbering other sections' settings. Never assign `eglot-workspace-configuration` directly.
 - `myde-register-snippets` (in the `core-snippets` section) registers a flat snippet directory for a major mode and is safe to call before yasnippet loads. Snippets live under `snippets/<language>/`; assets under `etc/`.
 - **Never use lambdas as hook functions.** Define a named function (e.g. `myde-foo-mode-setup`) in the same section and reference it by name.

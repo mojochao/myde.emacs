@@ -1,5 +1,20 @@
 # Org Workflow Implementation Plan
 
+> **Executed and partly superseded.** All eight tasks were completed on
+> 2026-08-05. On 2026-08-10 the storage model changed: project tasks now live in
+> a `tasks.org` inside each project directory, located by upward marker search,
+> replacing the one-file-per-project layout under `~/org/projects/` that Tasks
+> 2–5 below describe. Tasks 1, 6, 7 and 8 remain accurate.
+>
+> **This file is kept as a record of how the work was done.** For current
+> behaviour see [org-workflow-design.md](org-workflow-design.md), which is the
+> living document.
+>
+> Its file paths are also historical: the `modules/<category>-<name>/{lib,cfg}.el`
+> tree it describes was replaced on 2026-09-17 by a single literate `myde.org`.
+> Read every `modules/core-org/lib.el` below as the `core-org` definitions block
+> and every `modules/core-org/cfg.el` as its activation block.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement the personal project management and PIM system specified in
@@ -225,8 +240,16 @@ Expected: FAIL — `myde-org-ensure-tree` is void.
 
 In `modules/core-org/lib.el`, replace everything from `(defvar
 myde-org-directory` through the closing paren of `myde-find-org-agenda-files`
-with this. Note `myde-org-notes-directory` keeps its exact current value —
-`core-notes/lib.el` consumes it.
+with the block below.
+
+Two things must survive this step:
+
+1. `myde-org-notes-directory` keeps its exact current value —
+   `core-notes/lib.el` consumes it.
+2. `myde-org-tasks-file` and `myde-org-bookmarks-file` must be **retained as
+   obsolete stubs**, because `cfg.el` still references them at three sites
+   (lines 92, 103, 130) until Task 5. Deleting them here breaks the config
+   mid-plan, violating the sequencing constraint above. Task 6 removes them.
 
 ```elisp
 ;; Org mode directories and files
@@ -257,6 +280,16 @@ natively and non-recursively, which is why the layout is flat.")
 Each subdirectory maps to `<name>.org' in `myde-org-projects-directory'."
   :type 'directory
   :group 'myde)
+
+;; Superseded by `myde-org-inbox-file'; retained only until cfg.el stops
+;; referencing them, then deleted.  Do not use in new code.
+(defvar myde-org-tasks-file
+  (expand-file-name "tasks.org" myde-org-directory)
+  "Obsolete.  Superseded by `myde-org-inbox-file'.")
+
+(defvar myde-org-bookmarks-file
+  (expand-file-name "bookmarks.org" myde-org-directory)
+  "Obsolete.  Superseded by `myde-org-inbox-file'.")
 
 (defun myde-org-ensure-tree ()
   "Create the org directory tree and inbox file when absent.

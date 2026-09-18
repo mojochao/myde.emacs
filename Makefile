@@ -75,6 +75,43 @@ uninstall-xdg: ## Remove XDG desktop files
 	rm -f $(XDG_APPS_DIR)/org-protocol.desktop
 	update-desktop-database $(XDG_APPS_DIR)
 
+##@ macOS integration targets
+
+# User applications directory; LaunchServices registers bundles placed here.
+MACOS_APPS_DIR ?= $(HOME)/Applications
+
+# Generated org-protocol:// URI handler bundle.
+ORG_PROTOCOL_APP ?= $(MACOS_APPS_DIR)/OrgProtocol.app
+
+.PHONY: install-macos
+install-macos: ## Register org-protocol:// URI handler (macOS)
+	@command -v emacsclient >/dev/null || { echo 'emacsclient not found in PATH'; exit 1; }
+	@echo 'building $(ORG_PROTOCOL_APP)'
+	rm -rf $(ORG_PROTOCOL_APP)
+	mkdir -p $(MACOS_APPS_DIR)
+	osacompile -o $(ORG_PROTOCOL_APP) \
+	  -e 'on open location this_URL' \
+	  -e 'do shell script "$(shell command -v emacsclient) " & quoted form of this_URL' \
+	  -e 'end open location'
+	plutil -insert CFBundleURLTypes -json \
+	  '[{"CFBundleURLName":"org-protocol","CFBundleURLSchemes":["org-protocol"]}]' \
+	  $(ORG_PROTOCOL_APP)/Contents/Info.plist
+	codesign --force --sign - $(ORG_PROTOCOL_APP)
+	@echo 'registering scheme with LaunchServices'
+	open -a $(ORG_PROTOCOL_APP)
+
+.PHONY: uninstall-macos
+uninstall-macos: ## Remove org-protocol:// URI handler (macOS)
+	@echo 'removing $(ORG_PROTOCOL_APP)'
+	rm -rf $(ORG_PROTOCOL_APP)
+
+##@ Test targets
+
+.PHONY: test
+test: ## Run ERT tests in batch mode
+	emacs -Q --batch -l $(ROOT_DIR)/tests/core-org.el \
+	  -f ert-run-tests-batch-and-exit
+
 ##@ Literate config targets
 
 .PHONY: tangle

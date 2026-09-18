@@ -574,7 +574,7 @@ interactive entry point."
   "Return a frame title string.
 In a project: '<project> - <relative/path/to/file>'.
 Outside a project: full path, or buffer name for non-file buffers."
-  (if-let ((proj (project-current))
+  (if-let* ((proj (project-current))
            (file buffer-file-name))
       (concat (project-name proj) " - "
               (file-relative-name file (project-root proj)))
@@ -4314,7 +4314,7 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 (defun myde-cpp-dape-binary ()
   "Prompt for the C++ debug binary, defaulting to the project build/ directory."
   (read-file-name "Binary: "
-                  (expand-file-name "build/" (or (when-let ((proj (project-current)))
+                  (expand-file-name "build/" (or (when-let* ((proj (project-current)))
                                                    (project-root proj))
                                                  default-directory))))
 #+end_src
