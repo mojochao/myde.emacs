@@ -108,6 +108,49 @@ unless the gate passed.
 - MELPA recipes that clone from a dead host need a mirror recipe: `paredit` uses
   `(:host github :repo "emacsmirror/paredit")` because `paredit.org` no longer resolves.
 
+#### A package that will not install may be a half-finished clone
+
+elpaca clones with `--filter=tree:0 --no-checkout`, then completes the checkout by
+fetching trees and blobs back on demand. When a git host flakes during that second
+phase, the source directory is left holding `.git` and no working tree. elpaca never
+recovers on its own: the directory exists, so it will not re-clone, and the order fails
+on every start. Codeberg-hosted packages are the usual victims — this has hit `geiser`,
+`eat`, and `visual-fill-column`.
+
+Find them by looking for source directories with no elisp, searching **recursively**:
+
+```shell
+for d in elpaca/sources/*/; do
+  [ "$(find "$d" -name '*.el' -not -path '*/.git/*' | wc -l)" = 0 ] && echo "$d"
+done
+```
+
+A shallow `*.el` check false-positives on `geiser` and `treemacs`, which nest their
+elisp in subdirectories. Ignore a missing `elpaca/builds/<name>` on its own: most such
+cases are repo-vs-package name mismatches (`emacs-async` → `async`, `otp` → `erlang`),
+not failures.
+
+Repair one by completing the checkout and rebuilding. Check the branch name first —
+some repos use `main`, some `master`:
+
+```shell
+git -C elpaca/sources/<pkg> checkout "$(git -C elpaca/sources/<pkg> symbolic-ref --short HEAD)"
+```
+
+```elisp
+(elpaca-rebuild '<pkg>)
+(elpaca-process-queues)   ;; an already-initialised session will not drain the queue on its own
+```
+
+`elpaca-rebuild` alone only queues the order. In a running Emacs the queue sits idle
+until `elpaca-process-queues` is called, which looks identical to the original failure.
+An order stuck at `failed` with a healthy source directory is often just stale status —
+the same rebuild clears it.
+
+Useful accessors when inspecting state: `(elpaca-get 'pkg)` returns the order struct,
+read with `elpaca<-status`, `elpaca<-builtp`, `elpaca<-build-dir`. There is no
+`elpaca<-log`, and `elpaca--queued` is a function, not a variable.
+
 ### Startup hooks
 
 Inside a `use-package` form use `:hook (elpaca-after-init . fn)` — **never** `after-init`
