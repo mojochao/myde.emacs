@@ -3,6 +3,10 @@
 **Date:** 2026-09-17
 **Status:** Draft. Design decisions 1-3 settled with the user; pending review.
 
+> **Build commands here are historical.** The `Makefile` this design assumes
+> was replaced on 2026-09-18 by mise tasks and hk hooks; read every
+> `make <target>` below as `mise run <target>`.
+
 ## Problem
 
 `user-lisp/myde.el` is 4,930 lines holding two unrelated kinds of code: the

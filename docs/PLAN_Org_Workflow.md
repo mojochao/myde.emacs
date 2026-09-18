@@ -14,6 +14,10 @@
 > tree it describes was replaced on 2026-09-17 by a single literate `myde.org`.
 > Read every `modules/core-org/lib.el` below as the `core-org` definitions block
 > and every `modules/core-org/cfg.el` as its activation block.
+>
+> **Build commands here are historical.** The `Makefile` was replaced on
+> 2026-09-18 by mise tasks and hk hooks, so read every `make <target>` below
+> as `mise run <target>`, and the `Makefile` edits as edits to `mise.toml`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

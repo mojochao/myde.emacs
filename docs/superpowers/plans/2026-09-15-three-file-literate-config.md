@@ -2,6 +2,10 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Build commands here are historical.** The `Makefile` was replaced on
+> 2026-09-18 by mise tasks and hk hooks, so read every `make <target>` below
+> as `mise run <target>`, and the `Makefile` edits as edits to `mise.toml`.
+
 **Goal:** Replace 53 module directories and 24 `defcustom` toggles with three elisp files tangled from a single `myde.org`, enabling modules by binary presence and managing packages with elpaca.
 
 **Architecture:** Three sequential phases, each leaving a working config and each verified by a probe harness that captures the observable state of a running Emacs: the set of declared `use-package` forms, the global modes turned on at startup, init time, and startup errors. Phase 1 flattens the tree and replaces toggles with `executable-find` gates in one pass, phase 2 swaps `package.el` for elpaca, phase 3 makes the source literate. All work happens in a git worktree so the live config at `~/.config/emacs` (a symlink into this repo) stays functional throughout.

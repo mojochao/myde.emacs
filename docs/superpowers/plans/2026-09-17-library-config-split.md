@@ -2,6 +2,10 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Build commands here are historical.** The `Makefile` was replaced on
+> 2026-09-18 by mise tasks and hk hooks, so read every `make <target>` below
+> as `mise run <target>`, and the `Makefile` edits as edits to `mise.toml`.
+
 **Goal:** Split `user-lisp/myde.el` so it holds only definitions, moving every `use-package` form, binary gate, and variable assignment into `init.el`, with both files still tangled from one `myde.org`.
 
 **Architecture:** One mechanical pass, driven by a throwaway Python script that rewrites `myde.org` in place. Each `***` section keeps one heading and gains a second source block: definitions tangle to `user-lisp/myde.el`, everything else inherits the subtree's new `:tangle init.el`. The script is verified by line conservation — every input line must land in exactly one output block — before it is allowed near the real file. Verification is the existing probe harness, comparing declared packages and startup modes against a baseline.

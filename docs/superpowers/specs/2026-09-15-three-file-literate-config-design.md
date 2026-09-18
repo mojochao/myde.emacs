@@ -3,6 +3,10 @@
 **Date:** 2026-09-15
 **Status:** Approved. Revised 2026-09-15 after adversarial review; pending implementation.
 
+> **Build commands here are historical.** The `Makefile` this design assumes
+> was replaced on 2026-09-18 by mise tasks and hk hooks; read every
+> `make <target>` below as `mise run <target>`.
+
 ## Problem
 
 The current config is 8,191 lines of Emacs Lisp across 53 modules in
