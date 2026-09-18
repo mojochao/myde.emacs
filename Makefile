@@ -83,8 +83,13 @@ tangle: ## Tangle myde.org into early-init.el, init.el, and user-lisp/myde.el
 	emacs -Q --batch --eval "(progn (require 'org) \
 	  (org-babel-tangle-file \"$(ROOT_DIR)/myde.org\"))"
 
+.PHONY: forms
+forms: ## Assert user-lisp/myde.el contains only definitions
+	@python3 scripts/myde-forms.py user-lisp/myde.el --defs-only >/dev/null
+	@echo "user-lisp/myde.el contains only definitions"
+
 .PHONY: check
-check: tangle ## Verify committed elisp matches myde.org
+check: tangle forms ## Verify committed elisp matches myde.org
 	@echo 'checking tangled output is up to date'
 	@git diff --exit-code -- early-init.el init.el user-lisp/myde.el \
 	  || { echo 'ERROR: tangled output differs from committed files.'; \
