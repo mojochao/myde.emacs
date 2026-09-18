@@ -269,6 +269,20 @@ Bootstraps elpaca, enables its ~use-package~ support, then loads ~user-lisp/myde
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
+;;;; Built-in compat
+
+;; Emacs 31.1 ships a compat.el stub whose autoload pushes
+;; (compat 31 1 9999) onto `package--builtin-versions', so the built-in
+;; outranks any external compat for a dependency on the current or an older
+;; Emacs -- upstream's documented way of not installing compat at all.  Elpaca
+;; exempts compat from its built-in ignore list defensively, so it clones a
+;; copy anyway; core libraries that require compat during init (python.el,
+;; window-tool-bar.el, erc-compat.el) then load the built-in first and elpaca
+;; warns "compat loaded before Elpaca activation".  Re-adding it drops the
+;; redundant order.  Ceiling: a package needing a compat newer than this Emacs
+;; ships -- remove this line if one ever appears.
+(add-to-list 'elpaca-ignored-dependencies 'compat)
+
 ;;;; Use-package support
 
 ;; Every use-package form is :ensure t unless it says :ensure nil.  Built-in
