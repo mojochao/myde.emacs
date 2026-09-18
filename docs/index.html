@@ -6,8 +6,20 @@
   <title>MyDE</title>
   <meta name="description" content="My Development Environment — a literate Emacs configuration">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/core.min.css">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/addons/vue.min.css">
+  <!-- Every CDN asset is pinned to an exact version and carries an SRI hash.
+       A floating tag such as `docsify@5' would let any future 5.x publish, or
+       a compromised CDN, run arbitrary script in a reader's browser; with
+       `integrity' the browser refuses to execute bytes that do not match.
+       Regenerate a hash after a version bump with:
+         curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/themes/core.min.css"
+        integrity="sha384-u1ltA0BWEetQbGokjUjglT9sN702RQwy8JESh3Ha4GNlyzMU57usk6duY0/BOTMj"
+        crossorigin="anonymous">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/themes/addons/vue.min.css"
+        integrity="sha384-Juf4pwILpOysilbsFQxO8a3Ct3yDvSPolGmartfG+QQRLj6m7c1mYWV38WDI1N93"
+        crossorigin="anonymous">
 </head>
 <body>
   <div id="app"></div>
@@ -25,13 +37,23 @@
       },
     }
   </script>
-  <script src="//cdn.jsdelivr.net/npm/docsify@5"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/docsify.min.js"
+          integrity="sha384-w6yZXzkazsxmservgGooUY9zjEHzIFHubRNZMLJ3enj/JD+Z8BvAGBqdrjfnLNhu"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/plugins/search.min.js"
+          integrity="sha384-wZGyhbW44GtFpUJG1z6siOX84RFRDAht5UTeOlV/LlRP6T2GXj3LrLwcUHTyzfby"
+          crossorigin="anonymous"></script>
   <!-- docsify bundles Prism core only.  These three grammars cover the code
        blocks this doc set actually contains; `lisp' registers the `elisp'
        alias and `bash' registers `shell'. -->
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-lisp.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-toml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-lisp.min.js"
+          integrity="sha384-zA/YrVCkPoaF3OoC82PV8+nG/SucEOf0CNguQOfSnLyzVM+bVkJwB0U+i8+XG9zE"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"
+          integrity="sha384-9WmlN8ABpoFSSHvBGGjhvB3E/D8UkNB9HpLJjBQFC2VSQsM1odiQDv4NbEo+7l15"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-toml.min.js"
+          integrity="sha384-Uh6n44GRSQeQSMIIfAjlbqojWR7F5KALTHNsspuLDrNCsXpDPRdZbJ5A42AP/cA4"
+          crossorigin="anonymous"></script>
 </body>
 </html>
