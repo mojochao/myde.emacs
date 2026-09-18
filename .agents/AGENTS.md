@@ -135,6 +135,18 @@ unless the gate passed.
 - MELPA recipes that clone from a dead host need a mirror recipe: `paredit` uses
   `(:host github :repo "emacsmirror/paredit")` because `paredit.org` no longer resolves.
 
+#### A package with no `Package-Requires` will never byte-compile
+
+`elpaca-build-compile` assembles the byte-compilation `load-path` from the order's
+declared dependencies alone — `elpaca-dependencies`, read out of `Package-Requires`
+or a `-pkg.el`. A package that declares nothing gets only its own build directory,
+so any `require` of another package fails, the compile errors, and no `.elc` is
+written. Emacs then loads the `.el`, and a source file with no `lexical-binding`
+cookie warns on every startup. `elpaca-rebuild` uses the same load-path and cannot
+help. `ob-zig` is the case here: it requires `zig-mode` and declares nothing. The
+options are to live with the warning, pin a fork that adds the header, or drop the
+package.
+
 #### A package that will not install may be a half-finished clone
 
 elpaca clones with `--filter=tree:0 --no-checkout`, then completes the checkout by

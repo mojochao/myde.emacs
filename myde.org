@@ -4846,9 +4846,22 @@ Used as the `:program' callback for dape Zig debug configurations."
 ;; Org Babel
 ;; -----------------------------------------------------------------------------
 
+;; ob-zig declares no Package-Requires, so elpaca byte-compiles it with only its
+;; own build directory on `load-path', its `(require 'zig-mode)' fails, and no
+;; .elc is produced.  Emacs loads the source, which carries no lexical-binding
+;; cookie, and warns once per startup.  `elpaca-rebuild' uses the same load-path
+;; and cannot fix it; only an upstream header or a fork can.
 (use-package ob-zig  ;; https://github.com/jolby/ob-zig.el
-  :after org
+  :defer t
   :ensure (:host github :repo "jolby/ob-zig.el"))
+
+(use-package org
+  :defer t
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages '((zig . t))))
+  :ensure nil)
 
 (use-package indent-bars
   :hook ((zig-ts-mode zig-mode) . indent-bars-mode)
