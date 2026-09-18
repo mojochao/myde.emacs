@@ -194,9 +194,11 @@ a session with GC disabled and TRAMP broken.
 
 `~/Library/LaunchAgents/gnu.emacs.daemon.plist` starts `emacs --fg-daemon` at login
 (`RunAtLoad` + `KeepAlive`), and that daemon is meant to be the **only** Emacs process.
-GUI frames come from `emacsclient -c`; `~/Applications/Emacs Client.app` is a two-line
-AppleScript wrapper around it for the Dock. `$EDITOR` and `$VISUAL` are already
-`emacsclient`, so they reach the same process.
+GUI frames come from `emacsclient -c`; `~/Applications/Emacsclient.app` is a two-line
+shell-script bundle wrapping `emacsclient -c -n -a ""` for the Dock — it carries Emacs'
+own `Emacs.icns`, so the Dock tile looks like Emacs but never starts a second process.
+The Dock's persistent-apps entry must point at it, not at `/Applications/Emacs.app`.
+`$EDITOR` and `$VISUAL` are already `emacsclient`, so they reach the same process.
 
 **Never launch Emacs.app alongside the daemon.** Two processes on this config fight over
 three singletons: the `server` socket (the daemon wins, so the app silently skips
