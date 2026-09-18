@@ -4,28 +4,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-```shell
-make link             # Symlink repo into ~/.config/emacs (installs config)
-make unlink           # Remove the symlink
-make tangle           # Regenerate early-init.el, init.el, user-lisp/myde.el from myde.org
-make forms            # Assert user-lisp/myde.el contains only definitions
-make check            # Tangle, then fail if the committed elisp differs from myde.org
-make test             # Run the ERT checks under tests/ in batch mode
-make install-xdg      # Register the org-protocol:// URI handler (Linux)
-make install-macos    # Register the org-protocol:// URI handler (macOS)
+Tasks live in `mise.toml`; `mise tasks` lists them all.
 
-scripts/myde-probe.sh <init-directory> <report-file>   # Verify a config change
+```shell
+mise run init             # Set up this repo on a new machine (link + hk install)
+mise run link             # Symlink repo into ~/.config/emacs
+mise run unlink           # Remove the symlink
+mise run tangle           # Regenerate early-init.el, init.el, user-lisp/myde.el from myde.org
+mise run forms            # Assert user-lisp/myde.el contains only definitions
+mise run check            # Tangle, then fail if the committed elisp differs from myde.org
+mise run test             # Run the ERT checks under tests/ in batch mode
+mise run probe <report>   # Boot this config as a throwaway daemon and report its state
+mise run install-xdg      # Register the org-protocol:// URI handler (Linux)
+mise run install-macos    # Register the org-protocol:// URI handler (macOS)
 ```
+
+On a fresh clone run `mise trust` first — mise refuses to read an untrusted
+config, and trust is machine-local state, so it is needed on each machine.
+
+Git hooks are hk's, defined in `hk.pkl` and installed by `mise run init`.
+`hk install` uses git's config-based hooks (2.54+), so `.git/hooks` stays
+empty. **pre-commit re-tangles rather than rejecting**: it runs `mise run
+tangle` as a fix step and stages the three tangled files, so `myde.org` and its
+output cannot drift apart in a commit. It then runs `forms` and `test`.
+pre-push verifies without rewriting anything, as a backstop for
+`--no-verify`. `hk check` and `hk fix` run the same steps by hand.
 
 There is no build or lint step. Two things stand in for one, and they check different
 kinds of failure.
 
-`make test` runs ERT over `tests/`, covering logic that fails *silently* rather than
+`mise run test` runs ERT over `tests/`, covering logic that fails *silently* rather than
 loudly — an invalid `#+filetags:` value that makes tag search return nothing, a missing
 `#+category:` that makes every project's tasks file show up in the agenda as "tasks", an
 unpruned directory scan that walks `.git` internals. The tests load
 `user-lisp/myde.el` directly, which works only because that file is definitions with no
-side effects; keep it that way (`make forms`) and the library stays testable in batch.
+side effects; keep it that way (`mise run forms`) and the library stays testable in batch.
 
 The probe covers the other kind: it
 boots a config directory as an isolated throwaway daemon (unique socket, `PATH` stripped
@@ -47,10 +60,10 @@ before it. The repo is symlinked to `~/.config/emacs` (`user-emacs-directory`).
 | `myde.org` | **The only file edited by hand.** Three top-level subtrees, one per tangled file, each setting its target with a `:header-args:emacs-lisp: :tangle …` property. |
 | `early-init.el` | Tangled from `* Early Init`. Runs before `init.el` and before startup.el creates directories: GC and `file-name-handler-alist` suppression (restored on `emacs-startup-hook`), eln-cache redirection to `$XDG_CACHE_HOME/emacs/eln-cache`, frame defaults, `package-enable-at-startup nil`. |
 | `init.el` | Tangled from `* Bootstrap` and from the activation blocks of `* Configuration`. Installs elpaca, `(require 'myde)`, then every `use-package` form, binary gate, and variable assignment in load order. |
-| `user-lisp/myde.el` | Tangled from the definition blocks of `* Configuration`. Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `make forms`. |
+| `user-lisp/myde.el` | Tangled from the definition blocks of `* Configuration`. Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `mise run forms`. |
 
 Tangled outputs are committed, so a fresh clone works without tangling and startup never
-loads org. **Never edit the three `.el` files directly** — `make tangle` overwrites them.
+loads org. **Never edit the three `.el` files directly** — `mise run tangle` overwrites them.
 
 ### Startup sequence
 
@@ -215,9 +228,10 @@ launch is the other branch and keeps dashboard's README recipe for elpaca users
    carrying `:tangle user-lisp/myde.el`, and activation, inheriting `:tangle init.el`.
    Put `defun`/`defvar` in the first and `use-package`/`setq`/`add-hook` in the second.
    Wrap the activation block's body in a binary gate if the tool needs a toolchain.
-2. `make tangle`. Then `scripts/myde-probe.sh "$PWD" /tmp/after.txt` and diff its
+2. `mise run tangle`. Then `mise run probe <report>` and diff its
    `declared:`/`mode:` lines against a report taken before the change.
-3. `make check` before committing. Commit `myde.org` together with the tangled files.
+3. Commit. The pre-commit hook tangles and stages the elisp for you; run `mise run
+   check` first if you want to see the result before it is staged.
 
 ### XDG compliance
 

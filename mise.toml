@@ -1,0 +1,113 @@
+[tools]
+# hk runs the git hooks defined in hk.pkl.  Pinned so every machine this config
+# is installed on gets the same hook behaviour; hk bundles its own pkl, so no
+# separate pkl tool is needed to evaluate hk.pkl.
+hk = "2.0.1"
+
+[env]
+# Emacs init directory; `mise run link' points this at the repo.
+emacs_dir = "{{env.HOME}}/.config/emacs"
+# XDG applications directory, for the Linux org-protocol:// handler.
+xdg_apps_dir = "{{env.HOME}}/.local/share/applications"
+# User applications directory; macOS LaunchServices registers bundles here.
+macos_apps_dir = "{{env.HOME}}/Applications"
+
+[tasks.init]
+description = "Set up this repo on a new machine"
+run = ["mise run link", "hk install"]
+
+[tasks.link]
+description = "Symlink MyDE into the emacs init directory"
+run = [
+  "echo \"linking config to $emacs_dir\"",
+  "ln -fs {{config_root}} $emacs_dir",
+]
+
+[tasks.unlink]
+description = "Remove the emacs init directory symlink"
+run = [
+  "echo \"unlinking config in $emacs_dir\"",
+  "unlink $emacs_dir",
+]
+
+[tasks.tangle]
+description = "Tangle myde.org into early-init.el, init.el, and user-lisp/myde.el"
+run = [
+  "echo 'tangling myde.org'",
+  "emacs -Q --batch --eval \"(progn (require 'org) (org-babel-tangle-file \\\"{{config_root}}/myde.org\\\"))\"",
+]
+
+[tasks.forms]
+description = "Assert user-lisp/myde.el contains only definitions"
+run = [
+  "python3 scripts/myde-forms.py user-lisp/myde.el --defs-only >/dev/null",
+  "echo 'user-lisp/myde.el contains only definitions'",
+]
+
+# `run' is a list so the steps are sequential.  `depends' may run in parallel,
+# and `forms' reads the file `tangle' writes, so ordering here is load-bearing.
+[tasks.check]
+description = "Verify the committed elisp matches myde.org"
+run = [
+  "mise run tangle",
+  "mise run forms",
+  "echo 'checking tangled output is up to date'",
+  """git diff --exit-code -- early-init.el init.el user-lisp/myde.el \
+    || { echo 'ERROR: tangled output differs from committed files.'; \
+         echo 'Run `mise run tangle` and commit the result.'; exit 1; }""",
+  "echo 'tangled output is up to date'",
+]
+
+[tasks.test]
+description = "Run the ERT checks under tests/ in batch mode"
+run = "emacs -Q --batch -l {{config_root}}/tests/core-org.el -f ert-run-tests-batch-and-exit"
+
+[tasks.probe]
+description = "Boot this config as a throwaway daemon and report its observable state"
+run = "scripts/myde-probe.sh {{config_root}} {{arg(name='report')}}"
+
+[tasks.install-xdg]
+description = "Register the org-protocol:// URI handler (Linux)"
+run = [
+  "echo \"installing XDG desktop files to $xdg_apps_dir\"",
+  "install -Dm644 {{config_root}}/etc/org-protocol.desktop $xdg_apps_dir/org-protocol.desktop",
+  "update-desktop-database $xdg_apps_dir",
+]
+
+[tasks.uninstall-xdg]
+description = "Remove the org-protocol:// URI handler (Linux)"
+run = [
+  "echo \"removing XDG desktop files from $xdg_apps_dir\"",
+  "rm -f $xdg_apps_dir/org-protocol.desktop",
+  "update-desktop-database $xdg_apps_dir",
+]
+
+# osacompile builds a tiny AppleScript bundle whose `open location' handler
+# forwards the URI to emacsclient.  LaunchServices picks up the org-protocol
+# scheme from CFBundleURLTypes once the bundle is opened, and ad-hoc signing
+# keeps Gatekeeper quiet about a locally generated app.
+[tasks.install-macos]
+description = "Register the org-protocol:// URI handler (macOS)"
+run = [
+  "command -v emacsclient >/dev/null || { echo 'emacsclient not found in PATH'; exit 1; }",
+  "echo \"building $macos_apps_dir/OrgProtocol.app\"",
+  "rm -rf $macos_apps_dir/OrgProtocol.app",
+  "mkdir -p $macos_apps_dir",
+  """osacompile -o $macos_apps_dir/OrgProtocol.app \
+    -e 'on open location this_URL' \
+    -e "do shell script \\"$(command -v emacsclient) \\" & quoted form of this_URL" \
+    -e 'end open location'""",
+  """plutil -insert CFBundleURLTypes -json \
+    '[{"CFBundleURLName":"org-protocol","CFBundleURLSchemes":["org-protocol"]}]' \
+    $macos_apps_dir/OrgProtocol.app/Contents/Info.plist""",
+  "codesign --force --sign - $macos_apps_dir/OrgProtocol.app",
+  "echo 'registering scheme with LaunchServices'",
+  "open -a $macos_apps_dir/OrgProtocol.app",
+]
+
+[tasks.uninstall-macos]
+description = "Remove the org-protocol:// URI handler (macOS)"
+run = [
+  "echo \"removing $macos_apps_dir/OrgProtocol.app\"",
+  "rm -rf $macos_apps_dir/OrgProtocol.app",
+]

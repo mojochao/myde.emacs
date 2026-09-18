@@ -385,11 +385,11 @@ The browser emits an `org-protocol://` URI, which the OS must route to
 touches the system outside `~/org/`.
 
 **Linux** — already covered by the existing `etc/org-protocol.desktop` and
-`make install-xdg`.
+`mise run install-xdg`.
 
-**macOS** — not covered today. `make install-xdg` installs a freedesktop
+**macOS** — `mise run install-xdg` installs a freedesktop
 `.desktop` file, which macOS ignores. Registration requires an application
-bundle declaring `CFBundleURLTypes`, so a new `make install-macos` target builds
+bundle declaring `CFBundleURLTypes`, so the `mise run install-macos` task builds
 the smallest such bundle using only tools already present on macOS:
 
 1. `osacompile` compiles a two-line AppleScript `on open location` handler into
@@ -453,7 +453,7 @@ design; everything else is built-in org variable configuration.
 Per the convention in `AGENTS.md`, every section of `myde.org` holds up to two
 source blocks: named definitions tangle to `user-lisp/myde.el`, while
 `use-package` declarations, hooks, keybindings and the advice wiring tangle to
-`init.el`. `make forms` enforces the division.
+`init.el`. `mise run forms` enforces the division.
 
 The definitions block carries a `(defvar org-agenda-files)` forward declaration so the
 byte-compiler does not report an assignment to a free variable without pulling
@@ -509,7 +509,7 @@ Each exclusion below names the condition that would justify adding it:
 
 ## Verification
 
-`tests/core-org.el`, run by `make test`. Every test builds its own temporary
+`tests/core-org.el`, run by `mise run test`. Every test builds its own temporary
 tree, so none depend on the contents of `~/devel/projects` or `~/org`. Seven
 checks covering the logic that fails silently:
 

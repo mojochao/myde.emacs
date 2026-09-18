@@ -9,7 +9,7 @@ Run the following commands to install MyDE configuration into your local emacs c
 ```shell
 git clone https://github.com/mojochao/myde.emacs
 cd myde.emacs
-make link
+mise run init
 ```
 
 At this point, you should be able to launch Emacs. The first start clones and builds every package with [elpaca](https://github.com/progfolio/elpaca) into `./elpaca/`, which takes a few minutes; later starts only activate what is already built.
@@ -22,13 +22,13 @@ MyDE is a literate configuration. `myde.org` is the only file edited by hand; it
 |---------------------|---------------------------------------------------------------------|---------------------------------------------------------------------------------------|
 | `early-init.el`     | `* Early Init`                                                     | Runs before `init.el`: GC and file-handler suppression, eln-cache redirection, frame defaults |
 | `init.el`           | `* Bootstrap` and the activation blocks of `* Configuration`       | Installs elpaca, `(require 'myde)`, then every `use-package` form, binary gate, and variable assignment in load order |
-| `user-lisp/myde.el` | The definition blocks of `* Configuration`                          | Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `make forms` |
+| `user-lisp/myde.el` | The definition blocks of `* Configuration`                          | Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `mise run forms` |
 
 The tangled files are committed, so a fresh clone works without tangling and startup never loads org.
 
 ```shell
-make tangle    # regenerate the three elisp files from myde.org
-make check     # tangle, then fail if the committed files differ from myde.org
+mise run tangle   # regenerate the three elisp files from myde.org
+mise run check    # tangle, then fail if the committed files differ from myde.org
 ```
 
 ### Sections

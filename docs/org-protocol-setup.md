@@ -19,7 +19,7 @@ The browser sends an `org-protocol://` URI. The OS must know to route it to
 The desktop file is included in this repo. Install it with:
 
 ```sh
-make install-xdg
+mise run install-xdg
 ```
 
 Verify registration:
@@ -38,7 +38,7 @@ A running Emacs (with `emacsclient` server started) should open the capture buff
 Run:
 
 ```sh
-make install-macos
+mise run install-macos
 ```
 
 This builds a minimal `~/Applications/OrgProtocol.app` whose only job is to
@@ -63,7 +63,7 @@ codesign -v ~/Applications/OrgProtocol.app && echo "signature valid"
 open "org-protocol://capture?template=b&url=https%3A%2F%2Fexample.com&title=Example"
 ```
 
-Remove it with `make uninstall-macos`.
+Remove it with `mise run uninstall-macos`.
 
 ---
 

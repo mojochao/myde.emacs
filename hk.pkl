@@ -1,0 +1,72 @@
+amends "package://github.com/jdx/hk/releases/download/v2.0.1/hk@2.0.1#/Config.pkl"
+
+// No `Builtins' import: there is nothing here a stock linter covers.  The whole
+// risk in this repo is drift between myde.org and the three elisp files tangled
+// from it, which only this project's own tasks can detect.
+
+// Regenerating the tangled elisp is a *fix*, not a check.  Drift is by
+// definition "the output does not match the source", so the repair is to
+// re-tangle rather than to reject the commit and make the user do it.
+//
+// `stage' is restricted to the three tangled files on purpose.  hk would
+// otherwise stage everything the step touched, and myde.org must keep whatever
+// staging the user chose -- a partially staged myde.org has to stay that way.
+local tangleStep = new Step {
+    glob = "myde.org"
+    fix = "mise run tangle"
+    stage = List("early-init.el", "init.el", "user-lisp/myde.el")
+}
+
+// Verification for the hooks that must not rewrite the working tree on the
+// user's behalf.  `mise run check' tangles, asserts the definitions-only
+// invariant, and then fails if the result differs from what is committed.
+local verifySteps = new Mapping<String, Step> {
+    ["config"] = new Step {
+        glob = List("myde.org", "early-init.el", "init.el", "user-lisp/myde.el")
+        check = "mise run check"
+    }
+    ["tests"] = new Step {
+        glob = List("myde.org", "user-lisp/myde.el", "tests/**/*.el")
+        check = "mise run test"
+    }
+}
+
+hooks {
+    // `hk check' and `hk fix', run by hand.
+    ["check"] { steps = verifySteps }
+    ["fix"] {
+        fix = true
+        steps { ["tangle"] = tangleStep }
+    }
+
+    // `stash = "git"' matters here: with unstaged changes stashed, the working
+    // tree equals the index, so the tangle runs against the myde.org actually
+    // being committed rather than against unstaged edits.
+    //
+    // `forms' and `tests' depend on `tangle' because both read
+    // user-lisp/myde.el, which `tangle' rewrites.  Without the dependency hk
+    // is free to run them in parallel and they would read the previous tangle.
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps {
+            ["tangle"] = tangleStep
+            ["forms"] = new Step {
+                depends = "tangle"
+                glob = List("myde.org", "user-lisp/myde.el")
+                check = "mise run forms"
+            }
+            ["tests"] = new Step {
+                depends = "tangle"
+                glob = List("myde.org", "user-lisp/myde.el", "tests/**/*.el")
+                check = "mise run test"
+            }
+        }
+    }
+
+    // Backstop for anything that reached a commit without the pre-commit hook,
+    // `git commit --no-verify' most obviously.  Verifies rather than fixes: by
+    // push time the history is written, so a repair would have to be a new
+    // commit and that is the user's call, not the hook's.
+    ["pre-push"] { steps = verifySteps }
+}

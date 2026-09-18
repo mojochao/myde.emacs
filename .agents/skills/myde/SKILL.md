@@ -10,7 +10,7 @@ Apply these rules whenever changing configuration in the myde.emacs repository. 
 
 ## Edit myde.org only
 
-`myde.org` is the single source. `early-init.el`, `init.el`, and `user-lisp/myde.el` are tangled output; `make tangle` overwrites them, so never edit them directly.
+`myde.org` is the single source. `early-init.el`, `init.el`, and `user-lisp/myde.el` are tangled output; `mise run tangle` overwrites them, so never edit them directly.
 
 - `* Early Init` tangles to `early-init.el`. `* Bootstrap` and the activation blocks of
   `* Configuration` tangle to `init.el`. The definition blocks of `* Configuration`
@@ -140,15 +140,16 @@ come before it:
 
 ## Verifying a change
 
-1. `make tangle`.
+1. `mise run tangle`.
 2. `scripts/myde-probe.sh "$PWD" /tmp/after.txt`, then diff its `declared:` and `mode:` lines against a report taken before the change. A declared package that vanished or a mode that turned `off` is a regression. `init-file-had-error: t` means init aborted — read `*Messages*` in the probe daemon or start one by hand.
-3. `make check` before committing; commit `myde.org` with the tangled files.
+3. Commit. hk's pre-commit hook re-tangles and stages the elisp, so `myde.org` and
+   its output cannot be committed out of sync.
 
 ## Quality checklist (before declaring done)
 
-- [ ] Change made in `myde.org`, tangled with `make tangle`, and `make check` passes.
+- [ ] Change made in `myde.org`, tangled with `mise run tangle`, and `mise run check` passes.
 - [ ] Definitions are in the `:tangle user-lisp/myde.el` block, activation in the
-  inheriting block. `make forms` passes.
+  inheriting block. `mise run forms` passes.
 - [ ] New block sits under the right `**` heading, in its own `***` heading, gated if it needs a toolchain.
 - [ ] Every built-in `use-package` form says `:ensure nil`; each third-party package is ensured by exactly one form.
 - [ ] Startup hooks use `elpaca-after-init`, not `after-init`/`emacs-startup`.
