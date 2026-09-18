@@ -548,12 +548,12 @@
 ;; Org Babel
 ;; -----------------------------------------------------------------------------
 
+;; emacs-lisp is already the default value of `org-babel-load-languages',
+;; so registering it again would only duplicate the alist entry.
 (use-package org
+  :defer t
   :config
   (setq org-confirm-babel-evaluate nil)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   (append org-babel-load-languages '((emacs-lisp . t))))
   :ensure nil)
 
 (use-package ob-async  ;; https://github.com/astahlman/ob-async
@@ -1752,6 +1752,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -1778,6 +1779,7 @@
 
 ;; ob-shell supports fish as a shell variant via :shebang #!/usr/bin/env fish
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -2132,6 +2134,7 @@
 
 ;; ob-lisp uses sly-eval when SLY is loaded (preferred over the SLIME default)
 (use-package org
+  :defer t
   :config
   (setq org-babel-lisp-eval-fn #'sly-eval)
   (org-babel-do-load-languages
@@ -2281,6 +2284,7 @@
 
 ;; ob-scheme uses Geiser automatically when it is loaded
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -2410,6 +2414,7 @@
 
 ;; ob-clojure uses CIDER automatically when it is loaded
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -2836,6 +2841,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -3252,6 +3258,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -3386,6 +3393,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -3479,6 +3487,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -3658,6 +3667,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages

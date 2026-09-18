@@ -1231,12 +1231,12 @@ Flycheck is unnecessary in org buffers — use `M-x org-lint' on demand."
 ;; Org Babel
 ;; -----------------------------------------------------------------------------
 
+;; emacs-lisp is already the default value of `org-babel-load-languages',
+;; so registering it again would only duplicate the alist entry.
 (use-package org
+  :defer t
   :config
   (setq org-confirm-babel-evaluate nil)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   (append org-babel-load-languages '((emacs-lisp . t))))
   :ensure nil)
 
 (use-package ob-async  ;; https://github.com/astahlman/ob-async
@@ -2965,6 +2965,7 @@ Opens the shell buffer if it does not already exist."
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -2995,6 +2996,7 @@ Opens the shell buffer if it does not already exist."
 
 ;; ob-shell supports fish as a shell variant via :shebang #!/usr/bin/env fish
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -3499,6 +3501,7 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
 
 ;; ob-lisp uses sly-eval when SLY is loaded (preferred over the SLIME default)
 (use-package org
+  :defer t
   :config
   (setq org-babel-lisp-eval-fn #'sly-eval)
   (org-babel-do-load-languages
@@ -3721,6 +3724,7 @@ This allows schemat to be optional; formatting silently skips if binary is absen
 
 ;; ob-scheme uses Geiser automatically when it is loaded
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -3889,6 +3893,7 @@ Users who prefer zprint can override `cider-format-code-options' via
 
 ;; ob-clojure uses CIDER automatically when it is loaded
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -4430,6 +4435,7 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -4968,6 +4974,7 @@ Runs after mise-mode has applied the project environment, so
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -5134,6 +5141,7 @@ Runs after mise-mode has applied the project environment, so
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -5259,6 +5267,7 @@ Runs after mise-mode has applied the project environment, so
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -5469,6 +5478,7 @@ Enables inlay hints when eglot is managing the buffer."
 ;; -----------------------------------------------------------------------------
 
 (use-package org
+  :defer t
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
