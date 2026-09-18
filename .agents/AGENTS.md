@@ -55,12 +55,12 @@ before it. The repo is symlinked to `~/.config/emacs` (`user-emacs-directory`).
 
 ### Files
 
-| File | Role |
-|------|------|
-| `myde.org` | **The only file edited by hand.** Three top-level subtrees, one per tangled file, each setting its target with a `:header-args:emacs-lisp: :tangle …` property. |
-| `early-init.el` | Tangled from `* Early Init`. Runs before `init.el` and before startup.el creates directories: GC and `file-name-handler-alist` suppression (restored on `emacs-startup-hook`), eln-cache redirection to `$XDG_CACHE_HOME/emacs/eln-cache`, frame defaults, `package-enable-at-startup nil`. |
-| `init.el` | Tangled from `* Bootstrap` and from the activation blocks of `* Configuration`. Installs elpaca, `(require 'myde)`, then every `use-package` form, binary gate, and variable assignment in load order. |
-| `user-lisp/myde.el` | Tangled from the definition blocks of `* Configuration`. Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `mise run forms`. |
+| File                | Role                                                                                                                                                                                                                                                                                        |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `myde.org`          | **The only file edited by hand.** Three top-level subtrees, one per tangled file, each setting its target with a `:header-args:emacs-lisp: :tangle …` property.                                                                                                                             |
+| `early-init.el`     | Tangled from `* Early Init`. Runs before `init.el` and before startup.el creates directories: GC and `file-name-handler-alist` suppression (restored on `emacs-startup-hook`), eln-cache redirection to `$XDG_CACHE_HOME/emacs/eln-cache`, frame defaults, `package-enable-at-startup nil`. |
+| `init.el`           | Tangled from `* Bootstrap` and from the activation blocks of `* Configuration`. Installs elpaca, `(require 'myde)`, then every `use-package` form, binary gate, and variable assignment in load order.                                                                                      |
+| `user-lisp/myde.el` | Tangled from the definition blocks of `* Configuration`. Definitions only — `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects, asserted by `mise run forms`.                                                                          |
 
 Tangled outputs are committed, so a fresh clone works without tangling and startup never
 loads org. **Never edit the three `.el` files directly** — `mise run tangle` overwrites them.
@@ -89,18 +89,18 @@ There are no module toggles, no override list, and no `custom.el` entries for mo
 A section that needs a toolchain is wrapped in `(when (executable-find "<binary>") …)`.
 Installing the binary enables the section on the next start; removing it disables it.
 
-| Binary | Section | Binary | Section |
-|--------|---------|--------|---------|
-| `go` | `prog-go` | `clangd` | `prog-cpp` |
-| `cargo` | `prog-rust` | `fish` | `prog-fish` |
-| `zig` | `prog-zig` | `nu` | `prog-nushell` |
-| `lua` | `prog-lua` | `sbcl` | `prog-clisp` |
-| `ruby` | `prog-ruby` | `guile` | `prog-scheme` |
-| `python3` | `prog-python` | `clojure` | `prog-clojure` |
-| `node` | `prog-javascript`, `prog-typescript` | `erl` | `prog-erlang` |
-| `elixir` | `prog-elixir` | `pdftoppm` | `ebook-pdf` |
-| `op` | `auth-1password` | `kubectl` | `containers-kubernetes` |
-| `claude` | `ai-claude` | | |
+| Binary    | Section                              | Binary     | Section                 |
+|-----------|--------------------------------------|------------|-------------------------|
+| `go`      | `prog-go`                            | `clangd`   | `prog-cpp`              |
+| `cargo`   | `prog-rust`                          | `fish`     | `prog-fish`             |
+| `zig`     | `prog-zig`                           | `nu`       | `prog-nushell`          |
+| `lua`     | `prog-lua`                           | `sbcl`     | `prog-clisp`            |
+| `ruby`    | `prog-ruby`                          | `guile`    | `prog-scheme`           |
+| `python3` | `prog-python`                        | `clojure`  | `prog-clojure`          |
+| `node`    | `prog-javascript`, `prog-typescript` | `erl`      | `prog-erlang`           |
+| `elixir`  | `prog-elixir`                        | `pdftoppm` | `ebook-pdf`             |
+| `op`      | `auth-1password`                     | `kubectl`  | `containers-kubernetes` |
+| `claude`  | `ai-claude`                          |            |                         |
 
 Everything else — `core-*`, `ai-base`, `ai-gptel`, `ai-agents`, `ai-mcp`, `data-*`,
 `prog-base`, `prog-bash`, `prog-elisp`, `text-*`, `ebook-epub` — is unconditional: editing
@@ -216,7 +216,7 @@ Dashboard follows from this. A daemon must not render at startup — it has no f
 size against, and a prompt raised while drawing blocks before the server socket exists —
 so `myde-dashboard-initial-buffer` is installed as `initial-buffer-choice` and each
 `emacsclient -c` frame renders its own. `server.el` consults `initial-buffer-choice` only
-for a client carrying no file argument, which is the behaviour wanted. A direct `emacs`
+for a client carrying no file argument, which is the behavior wanted. A direct `emacs`
 launch is the other branch and keeps dashboard's README recipe for elpaca users
 (`dashboard-insert-startupify-lists` and `dashboard-initialize` on
 `elpaca-after-init-hook`). An `initial-buffer-choice` function must return a live buffer;
@@ -237,12 +237,12 @@ launch is the other branch and keeps dashboard's README recipe for elpaca users
 
 All state, data, and cache is stored outside `user-emacs-directory` via the built-in `xdg.el` library:
 
-| Kind | Path |
-|------|------|
+| Kind                                                    | Path                     |
+|---------------------------------------------------------|--------------------------|
 | State (recentf, places, history, tramp, auto-save-list) | `$XDG_STATE_HOME/emacs/` |
-| Data (transient, tree-sitter) | `$XDG_DATA_HOME/emacs/` |
-| Cache (eln-cache, url) | `$XDG_CACHE_HOME/emacs/` |
-| Packages (elpaca) | `./elpaca/` (repo root) |
+| Data (transient, tree-sitter)                           | `$XDG_DATA_HOME/emacs/`  |
+| Cache (eln-cache, url)                                  | `$XDG_CACHE_HOME/emacs/` |
+| Packages (elpaca)                                       | `./elpaca/` (repo root)  |
 
 XDG paths are set in the `core-base` section of `init.el`. Exceptions:
 - `auto-save-list-file-prefix` must be set in `early-init.el` because Emacs creates the directory before init.el runs.
