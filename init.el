@@ -734,6 +734,10 @@
   :ensure t)
 
 (use-package ghostel ;; https://github.com/dakra/ghostel
+  :custom
+  ;; Keep the native module outside elpaca's tree, as the defcustom advises:
+  ;; a rebuild of the package would otherwise delete a module Emacs has loaded.
+  (ghostel-module-directory (expand-file-name "emacs/ghostel/" (xdg-data-home)))
   :ensure t)
 
 (use-package vterm ;; https://github.com/akermu/emacs-libvterm
