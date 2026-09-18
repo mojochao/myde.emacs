@@ -452,22 +452,6 @@ Flycheck is unnecessary in org buffers — use `M-x org-lint' on demand."
   (expand-file-name "etc/myde-banner.txt" user-emacs-directory)
   "Path to the dashboard banner text fallback file.")
 
-;; -----------------------------------------------------------------------------
-;; Startup dashboard
-;; -----------------------------------------------------------------------------
-
-(defun myde-dashboard-initial-buffer ()
-  "Return a freshly rendered dashboard buffer for a new client frame.
-This is the `initial-buffer-choice' function for a daemon session.  Rendering
-per frame rather than once at daemon startup is deliberate: the daemon has no
-frame to size the dashboard against, and `dashboard-vertically-center' needs
-one.  Falls back to `*scratch*' because `startup.el' errors on any return
-value that is not a live buffer."
-  (or (and (fboundp 'dashboard-insert-startupify-lists)
-           (progn (dashboard-insert-startupify-lists t)
-                  (get-buffer dashboard-buffer-name)))
-      (get-scratch-buffer-create)))
-
 ;;;; core-notes
 ;;;; ----------
 

@@ -183,8 +183,7 @@ read with `elpaca<-status`, `elpaca<-builtp`, `elpaca<-build-dir`. There is no
 Inside a `use-package` form use `:hook (elpaca-after-init . fn)` — **never** `after-init`
 or `emacs-startup`. Under elpaca the form's body runs after those hooks have already
 fired, so the mode would stay silently off. Top-level `add-hook` calls in `init.el` that
-must wait for packages use `elpaca-after-init-hook` as well. Dashboard is the exception,
-and it needs a different entry point per session kind (see *Session model*).
+must wait for packages use `elpaca-after-init-hook` as well. There is no exception.
 
 GC and `file-name-handler-alist` restoration stay on `emacs-startup-hook` in
 `early-init.el`, not `elpaca-after-init-hook`, so a failed elpaca bootstrap cannot leave
@@ -215,15 +214,17 @@ launchctl kickstart -k gui/$(id -u)/gnu.emacs.daemon
 Verify through `emacsclient`; it always talks to the daemon. Anything that only exists in
 a window system frame has to be confirmed by creating one.
 
-Dashboard follows from this. A daemon must not render at startup — it has no frame to
-size against, and a prompt raised while drawing blocks before the server socket exists —
-so `myde-dashboard-initial-buffer` is installed as `initial-buffer-choice` and each
-`emacsclient -c` frame renders its own. `server.el` consults `initial-buffer-choice` only
-for a client carrying no file argument, which is the behavior wanted. A direct `emacs`
-launch is the other branch and keeps dashboard's README recipe for elpaca users
-(`dashboard-insert-startupify-lists` and `dashboard-initialize` on
-`elpaca-after-init-hook`). An `initial-buffer-choice` function must return a live buffer;
-`startup.el` signals an error otherwise, hence the `*scratch*` fallback.
+Dashboard follows from this, by not being a startup screen at all. It is `:defer t` and
+opened on demand with `M-x dashboard-open`; a client frame gets `*scratch*`.
+
+`initial-buffer-choice` is not usable here. `elpaca-log-initial-queues` overwrites it
+with elpaca's own function whenever any order is unbuilt or has failed, capturing the
+previous value and restoring that capture on `elpaca-after-init-hook`. Dashboard's
+`:config` runs during the same queue processing, so when the capture happens first the
+restored value is `nil` and frames silently open on `*scratch*` — intermittently, only
+on the starts where elpaca had work to do. Setting it also made `command-line-1` call
+the function during frameless daemon startup, the render the daemon is supposed to
+avoid, and charged every `emacsclient -c` frame for a full dashboard draw.
 
 ### Editing workflow
 
@@ -293,9 +294,10 @@ Key macOS-specific concerns:
   should have no `use-package` form at all — `(use-package foo :defer t :ensure nil)` is
   a no-op and should be deleted.
 - **Prefer a deferring keyword** (`:mode`, `:hook`, `:commands`, `:bind`) over eager
-  loading. Global modes (theme, modeline, completion, dashboard) legitimately stay eager.
-- **Do not add `:commands` to startup-screen packages.** `:commands` implies `:defer t`,
-  which prevents the package from loading at startup — exactly when it is needed.
+  loading. Global modes (theme, modeline, completion) legitimately stay eager.
+- **A package that must draw at startup cannot be deferred.** `:commands` implies
+  `:defer t`, so the package is not loaded at the moment it is needed. Dashboard was
+  the one such package; it is now `:defer t` and opened on demand (see *Session model*).
 - **Always verify hook target functions exist** in the installed package before using
   `:hook (event . fn)`. The function must be exported (autoloaded or `require`d). A
   non-existent hook target produces `custom-initialize-reset: Invalid function: <fn>`

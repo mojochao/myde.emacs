@@ -756,25 +756,16 @@
 ;;;; --------------
 
 
+;; On demand only, via `M-x dashboard-open'.  It is not a startup screen here:
+;; `initial-buffer-choice' cannot be relied on under elpaca, which swaps in its
+;; own value in `elpaca-log-initial-queues' whenever an order is unbuilt or
+;; failed and restores what it captured -- nil, when it captured before this
+;; :config ran -- on `elpaca-after-init-hook'.  Installing it also made
+;; `command-line-1' draw the dashboard in the frameless daemon at startup, and
+;; made every `emacsclient -c' frame pay for a render.
 (use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
+  :defer t
   :config
-  ;; Under elpaca this body runs after after-init-hook has already fired, so
-  ;; dashboard's own startup hooks would never run.  Each session kind needs a
-  ;; different entry point.
-  (if (daemonp)
-      ;; A daemon must not render at startup: it has no frame, and a prompt
-      ;; raised while drawing (org asking about a missing agenda file, say)
-      ;; blocks before the server socket exists.  `server.el' consults
-      ;; `initial-buffer-choice' for every `emacsclient -c' frame that carries
-      ;; no file argument, so each frame draws its own dashboard instead.
-      (setq initial-buffer-choice #'myde-dashboard-initial-buffer)
-    ;; Direct `emacs' launch: the recipe from dashboard's README for elpaca
-    ;; users, behind the same "no file argument" guard
-    ;; `dashboard-setup-startup-hook' uses.
-    (when (< (length command-line-args) 2)
-      (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
-      (add-hook 'elpaca-after-init-hook #'dashboard-initialize)))
-  (dashboard-setup-startup-hook)
   (setq dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
   (setq dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")
   (setq dashboard-display-icons-p t)
@@ -787,9 +778,9 @@
                      (projects  . 5)
                      (bookmarks . 5)
                      (agenda    . 5)))
-  ;; Keep the agenda buffers alive.  Releasing them makes every `emacsclient -c'
-  ;; frame re-visit and re-parse each agenda file: 0.44 s per frame instead of
-  ;; 0.05 s once they are warm.
+  ;; Keep the agenda buffers alive.  Releasing them makes each `dashboard-open'
+  ;; re-visit and re-parse every agenda file: 0.44 s instead of 0.05 s once they
+  ;; are warm.
   (dashboard-agenda-release-buffers nil)
   :ensure t)
 
