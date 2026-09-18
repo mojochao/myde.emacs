@@ -423,7 +423,9 @@
       lazy-count-suffix-format "   (%s/%s)")
 
 ;; Swap option and command keys on macOS to match Linux keyboard layout
-(when (and (display-graphic-p) (string-equal system-type "darwin"))
+;; No display-graphic-p guard: under the daemon, init runs with only a tty
+;; frame, so the guard never fired and client frames kept the NS defaults.
+(when (string-equal system-type "darwin")
   (setq mac-command-modifier 'meta
         mac-option-modifier 'super))
 
