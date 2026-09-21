@@ -235,7 +235,10 @@ Bootstraps elpaca, enables its ~use-package~ support, then loads ~user-lisp/myde
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1 :inherit ignore
+                              ;; :depth nil, not upstream's 1: a shallow clone has no
+                              ;; ancestor in common with fetched updates, so elpaca's
+                              ;; own `git merge --ff-only' refuses to self-update.
+                              :ref nil :depth nil :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca-activate)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
