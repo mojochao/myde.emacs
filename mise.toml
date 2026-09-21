@@ -66,7 +66,10 @@ run = [
 
 [tasks.test]
 description = "Run the ERT checks under tests/ in batch mode"
-run = "emacs -Q --batch -l {{config_root}}/tests/core-org.el -f ert-run-tests-batch-and-exit"
+# Loads every file under tests/ rather than naming them: an unnamed test file
+# is a silently skipped test file, and hk's `tests' step already globs
+# tests/**/*.el.
+run = '''emacs -Q --batch --eval "(mapc #'load (file-expand-wildcards \"{{config_root}}/tests/*.el\"))" -f ert-run-tests-batch-and-exit'''
 
 [tasks.probe]
 description = "Boot this config as a throwaway daemon and report its observable state"

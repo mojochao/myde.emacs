@@ -31,6 +31,18 @@ output cannot drift apart in a commit. It then runs `forms` and `test`.
 pre-push verifies without rewriting anything, as a backstop for
 `--no-verify`. `hk check` and `hk fix` run the same steps by hand.
 
+Two more layers tangle before the commit ever happens. In Emacs,
+`myde-tangle-source-on-save` is on the global `after-save-hook` and re-tangles
+whenever `myde.org` is saved, so the elisp on disk never lags the buffer you
+just edited. For Claude Code, `.claude/settings.json` runs
+`scripts/claude-tangle-hook.sh`: `tangle` on PostToolUse after an agent edits
+`myde.org`, and `guard` on PreToolUse to **deny** edits to `early-init.el`,
+`init.el`, and `user-lisp/myde.el`. The deny matters more than the tangle -- an
+agent that edits generated elisp writes a change the next tangle silently
+discards, and the loss only surfaces at pre-push. The script identifies the
+repo by finding `myde.org` where the file's root should be, so it is a no-op
+elsewhere and the `~/.config/emacs` symlink resolves like the clone.
+
 There is no build or lint step. Two things stand in for one, and they check different
 kinds of failure.
 

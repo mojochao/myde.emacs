@@ -22,6 +22,22 @@
 ;;;; ---------
 
 
+;; This configuration is tangled from myde.org, so the elisp Emacs loads is
+;; generated, never edited.  `myde-tangle-source-on-save' keeps the two in
+;; step at edit time; hk's pre-commit tangle step is the backstop for edits
+;; made outside Emacs.
+(defconst myde-source-file
+  (file-truename (expand-file-name "myde.org" user-emacs-directory))
+  "True name of the literate source this configuration is tangled from.")
+
+(defun myde-tangle-source-on-save ()
+  "Tangle `myde-source-file' when it is the file just saved.
+Compares true names so the ~/.config/emacs symlink and the repo path
+both match."
+  (when (and buffer-file-name
+             (equal (file-truename buffer-file-name) myde-source-file))
+    (org-babel-tangle)))
+
 ;; Create missing directories automatically
 (defun myde-auto-create-missing-dirs ()
   (let ((target-dir (file-name-directory buffer-file-name)))

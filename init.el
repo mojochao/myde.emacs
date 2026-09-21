@@ -104,6 +104,9 @@
 (setq recentf-max-saved-items 50)
 (add-to-list 'find-file-not-found-functions #'myde-auto-create-missing-dirs)
 
+;; Regenerate the tangled elisp whenever myde.org is saved.
+(add-hook 'after-save-hook #'myde-tangle-source-on-save)
+
 ;; XDG directory support — load early so all XDG paths are available immediately.
 (require 'xdg)
 
