@@ -713,6 +713,7 @@
   (which-key-max-display-columns 1)
   (which-key-max-description-length nil)
   (which-key-show-docstrings t)
+  (which-key-side-window-max-height 0.35)
   :config
   ;; ponytail: advises a private which-key function; recheck the
   ;; `which-key--pad-column' signature when Emacs is upgraded.
