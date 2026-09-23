@@ -1308,15 +1308,17 @@
 (use-package mcp-server  ;; https://github.com/rhblind/emacs-mcp-server
   :demand t
   :init
-  ;; `force' keeps the socket path fixed at emacs-mcp-server.sock. The default
-  ;; `warn' falls back to emacs-mcp-server-N.sock when the path is taken -- e.g.
-  ;; a daemon that died without unlinking it -- which silently breaks the socat
-  ;; bridge registered with `claude mcp add', since that path is hardcoded.
-  ;; Cost: a second Emacs would steal the socket from the first, which the
-  ;; one-daemon session model already rules out.
+  ;; `error' keeps the socket path fixed at emacs-mcp-server.sock, which the
+  ;; socat bridge registered with `claude mcp add' hardcodes. A socket left by a
+  ;; dead daemon has no listener, so mcp-server reclaims it as stale before the
+  ;; conflict setting is consulted. The setting only matters when a live Emacs
+  ;; holds the path -- Emacs.app launched by mistake, or the probe, which shares
+  ;; $XDG_CACHE_HOME. `force' made that Emacs unlink the daemon's socket, leaving
+  ;; the daemon listening on a path no client could reach; `warn' strands a
+  ;; stray emacs-mcp-server-N.sock. `error' leaves the owner's socket alone.
   (setq mcp-server-socket-directory (expand-file-name "emacs/" (xdg-cache-home))
         mcp-server-socket-name nil
-        mcp-server-socket-conflict-resolution 'force)
+        mcp-server-socket-conflict-resolution 'error)
   :hook (elpaca-after-init . myde/mcp-server-startup-hook)
   ;; The tool modules live in tools/, which mcp-server-emacs-tools.el resolves
   ;; relative to itself; elpaca's default :files would leave them behind.

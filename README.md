@@ -252,11 +252,19 @@ claude mcp add emacs --scope user -- \
   socat - UNIX-CONNECT:$HOME/.cache/emacs/emacs-mcp-server.sock
 ```
 
-The server starts from `elpaca-after-init`, and
-`mcp-server-socket-conflict-resolution` is `force` so the socket path stays
-fixed — the bridge above hardcodes it. If the bridge reports
-`CONNECTION_CLOSED`, the Emacs side is down: check with `M-x mcp-server-status`
-and restart with `M-x mcp-server-start-unix`.
+The server starts from `elpaca-after-init` on a fixed socket path, because the
+bridge above hardcodes it. A socket left behind by a dead daemon is reclaimed
+as stale. `mcp-server-socket-conflict-resolution` is `error`, so a second Emacs
+on this config (Emacs.app launched by mistake, or `mise run probe`) leaves a
+live daemon's socket alone and starts without an MCP server.
+
+If the bridge reports `CONNECTION_CLOSED`, restart the server in the daemon:
+
+```shell
+emacsclient --eval '(progn (ignore-errors (mcp-server-stop)) (mcp-server-start-unix))'
+```
+
+Then reconnect with `/mcp`.
 
 ### LemMinX (XML language server)
 

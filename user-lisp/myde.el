@@ -675,8 +675,11 @@ Otherwise, derive the variable name from the current gptel-backend type."
 ;;;; --------
 
 (defun myde/mcp-server-startup-hook ()
-  "Start the Emacs MCP server on Emacs startup."
-  (mcp-server-start-unix))
+  "Start the Emacs MCP server unless another Emacs already serves its socket.
+The error is caught so the rest of `elpaca-after-init-hook' still runs."
+  (condition-case err
+      (mcp-server-start-unix)
+    (error (message "MCP server not started: %s" (error-message-string err)))))
 
 ;;;; auth-1password
 ;;;; --------------
