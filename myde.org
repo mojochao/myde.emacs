@@ -1219,6 +1219,31 @@ number-or-marker-p' on propertized strings from newer org versions.
 Flycheck is unnecessary in org buffers — use `M-x org-lint' on demand."
   (when (bound-and-true-p flycheck-mode)
     (flycheck-mode -1)))
+
+(defun myde-org-font-lock-extend-to-block ()
+  "Widen the font-lock region to the whole Org block it starts inside.
+Org fontifies a block only from its #+begin_ line, so a jit-lock chunk
+that starts below that line is left plain -- which is what opening a
+file at a saved place deep inside a long block does.  Blocks cannot
+span headings, so the backward search stops at one.  For
+`font-lock-extend-region-functions'; returns non-nil if it widened."
+  (save-excursion
+    (goto-char font-lock-beg)
+    (let ((case-fold-search t))
+      (when (and (re-search-backward
+                  "^\\(?:\\*+ \\|[ \t]*#\\+\\(begin\\|end\\)_\\)" nil t)
+                 (match-beginning 1)
+                 (string-equal-ignore-case (match-string 1) "begin"))
+        (let ((beg (point)))
+          (when (re-search-forward "^[ \t]*#\\+end_" nil t)
+            (setq font-lock-beg beg
+                  font-lock-end (max font-lock-end (line-end-position)))
+            t))))))
+
+(defun myde-org-font-lock-whole-blocks ()
+  "Fontify each Org block whole, even from a chunk that starts inside it."
+  (add-hook 'font-lock-extend-region-functions
+            #'myde-org-font-lock-extend-to-block 'append 'local))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1231,6 +1256,7 @@ Flycheck is unnecessary in org buffers — use `M-x org-lint' on demand."
   (org-mode . visual-line-mode)
   (org-mode . myde-delete-trailing-whitespace-setup)
   (org-mode . myde-org-mode-disable-flycheck)
+  (org-mode . myde-org-font-lock-whole-blocks)
   :bind (("C-c o p" . myde-org-visit-project-tasks)
          ("C-c o P" . myde-org-create-project-tasks)
          ("C-c o t" . myde-org-tag-cloud)

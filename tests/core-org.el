@@ -280,4 +280,21 @@ displayed count never disagrees with the search it launches."
           (kill-buffer b)))
       (delete-directory tmp :recursive))))
 
+(ert-deftest myde-org-font-lock-extend-to-block/fontifies-from-mid-block ()
+  ;; Org starts a block only at its #+begin_ line, so a jit-lock chunk that
+  ;; starts below it -- opening a file at a saved place deep in a long
+  ;; block -- was left with no faces at all.
+  (with-temp-buffer
+    (insert "* Heading\n\n#+begin_src emacs-lisp\n"
+            (mapconcat (lambda (i) (format "(setq myde-test-%d t)" i))
+                       (number-sequence 1 200) "\n")
+            "\n#+end_src\n")
+    (org-mode)
+    (myde-org-font-lock-whole-blocks)
+    (goto-char (point-min))
+    (search-forward "myde-test-100")
+    (let ((mid (line-beginning-position)))
+      (font-lock-ensure mid (+ mid 200))
+      (should (memq 'org-block (ensure-list (get-text-property mid 'face)))))))
+
 ;;; core-org.el ends here

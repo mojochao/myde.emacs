@@ -532,6 +532,7 @@
   (org-mode . visual-line-mode)
   (org-mode . myde-delete-trailing-whitespace-setup)
   (org-mode . myde-org-mode-disable-flycheck)
+  (org-mode . myde-org-font-lock-whole-blocks)
   :bind (("C-c o p" . myde-org-visit-project-tasks)
          ("C-c o P" . myde-org-create-project-tasks)
          ("C-c o t" . myde-org-tag-cloud)
