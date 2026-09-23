@@ -1387,6 +1387,45 @@ Flycheck is unnecessary in org buffers — use `M-x org-lint' on demand."
 
 *** core-help
 
+#+begin_src emacs-lisp :tangle user-lisp/myde.el
+;;;; core-help
+;;;; ---------
+
+(defun myde-help--which-key-docstring-start (cell)
+  "Return where the docstring begins in which-key CELL's description, or nil.
+CELL is a (KEY SEPARATOR DESCRIPTION) list.  The docstring is found by
+its `which-key-docstring-face' rather than by the first space, because a
+replacement label may itself contain spaces."
+  (let ((desc (nth 2 cell)))
+    (when (stringp desc)
+      (text-property-any 0 (length desc) 'face 'which-key-docstring-face desc))))
+
+(defun myde-help-which-key-align-docstrings (args)
+  "Pad command names in a which-key column so their docstrings line up.
+ARGS is the argument list of `which-key--pad-column': a column of
+\(KEY SEPARATOR DESCRIPTION) cells, then the available width.  With
+`which-key-show-docstrings' set to t, which-key appends each docstring
+to its command name after a single space, so the docstrings start at
+ragged columns.  Used as `:filter-args' advice on that function."
+  (let* ((cells (car args))
+         (width (apply #'max 0
+                       (mapcar (lambda (cell)
+                                 (let ((start (myde-help--which-key-docstring-start cell)))
+                                   (if start (string-width (nth 2 cell) 0 start) 0)))
+                               cells))))
+    (cons (mapcar (lambda (cell)
+                    (let ((start (myde-help--which-key-docstring-start cell)))
+                      (if (not start)
+                          cell
+                        (pcase-let ((`(,key ,sep ,desc) cell))
+                          (list key sep
+                                (concat (substring desc 0 start)
+                                        (make-string (- width (string-width desc 0 start)) ?\s)
+                                        (substring desc start)))))))
+                  cells)
+          (cdr args))))
+#+end_src
+
 #+begin_src emacs-lisp
 ;;;; core-help
 ;;;; ---------
@@ -1413,6 +1452,14 @@ Flycheck is unnecessary in org buffers — use `M-x org-lint' on demand."
   :ensure t)
 
 (use-package which-key
+  :custom
+  (which-key-max-display-columns 1)
+  (which-key-max-description-length nil)
+  (which-key-show-docstrings t)
+  :config
+  ;; ponytail: advises a private which-key function; recheck the
+  ;; `which-key--pad-column' signature when Emacs is upgraded.
+  (advice-add 'which-key--pad-column :filter-args #'myde-help-which-key-align-docstrings)
   :hook (elpaca-after-init . which-key-mode)
   :diminish which-key-mode
   :ensure nil)

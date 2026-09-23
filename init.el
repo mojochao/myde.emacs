@@ -710,6 +710,14 @@
   :ensure t)
 
 (use-package which-key
+  :custom
+  (which-key-max-display-columns 1)
+  (which-key-max-description-length nil)
+  (which-key-show-docstrings t)
+  :config
+  ;; ponytail: advises a private which-key function; recheck the
+  ;; `which-key--pad-column' signature when Emacs is upgraded.
+  (advice-add 'which-key--pad-column :filter-args #'myde-help-which-key-align-docstrings)
   :hook (elpaca-after-init . which-key-mode)
   :diminish which-key-mode
   :ensure nil)
