@@ -240,16 +240,6 @@
   (global-goto-address-mode 1)
   :ensure nil)
 
-;; macOS-specific setup
-(use-package emacs
-  :if (string= system-type "darwin")
-  :config
-  (setq dired-use-ls-dired t)
-  (setq insert-directory-program
-        (or (executable-find "gls") insert-directory-program))
-  (setq dired-listing-switches "-aBhl --group-directories-first")
-  :ensure nil)
-
 ;;;; Environment
 ;;;; -----------
 ;; Must precede every `executable-find' gate below.  GUI Emacs on macOS, and
@@ -273,6 +263,15 @@
   :config
   (when (or (daemonp) window-system)
     (exec-path-from-shell-initialize)))
+
+;; macOS ls is BSD and rejects --dired and --group-directories-first; use
+;; GNU ls (gls, from coreutils) when installed.  Must follow
+;; `exec-path-from-shell', or gls is not on the bare launchd PATH yet.
+(when-let* (((string= system-type "darwin"))
+            (gls (executable-find "gls")))
+  (setq insert-directory-program gls
+        dired-use-ls-dired t
+        dired-listing-switches "-aBhl --group-directories-first"))
 
 ;;;; core-ui
 ;;;; --------
