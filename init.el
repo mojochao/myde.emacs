@@ -523,6 +523,19 @@
   (ultra-scroll-mode 1)
   :ensure t)
 
+;; Quick Look-style preview: SPC shows the item at point in another window
+;; and keeps focus in the listing.
+;; http://yummymelon.com/devnull/binding-the-spc-key-in-dired-and-ibuffer.html
+(use-package dired
+  :bind (:map dired-mode-map
+              ("SPC" . dired-display-file))
+  :ensure nil)
+
+(use-package ibuffer
+  :bind (:map ibuffer-mode-map
+              ("SPC" . ibuffer-visit-buffer-other-window-noselect))
+  :ensure nil)
+
 ;;;; core-org
 ;;;; --------
 
