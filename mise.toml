@@ -14,6 +14,10 @@ hk = "2.0.1"
 # build it once with `mise exec -- python3 scripts/qmd.py init'.
 "npm:@tobilu/qmd" = "2.5.3"
 
+# markdownlint-cli lints docs/ for `mise run docs-check'.  Pinned to the
+# version the sciplay-docs skill's lint config was written against.
+"npm:markdownlint-cli" = "0.48.0"
+
 [env]
 # Emacs init directory; `mise run link' points this at the repo.
 emacs_dir = "{{env.HOME}}/.config/emacs"
@@ -107,6 +111,15 @@ run = "python3 scripts/qmd.py query"
 [tasks.docs-vendor]
 description = "Re-fetch the pinned docsify assets into docs/vendor/"
 run = "python3 scripts/vendor_docs.py"
+
+# `run' is a list so the checks run in order and stop at the first failure.
+[tasks.docs-check]
+description = "Check docs/ links, traceability, vendored assets, and markdown lint"
+run = [
+  "python3 scripts/check_links.py",
+  "python3 scripts/vendor_docs.py --check",
+  "markdownlint docs/",
+]
 
 [tasks.install-xdg]
 description = "Register the org-protocol:// URI handler (Linux)"

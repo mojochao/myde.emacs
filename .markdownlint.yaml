@@ -1,0 +1,47 @@
+# MD013 (line-length) is disabled: SciPlay docs run one sentence per line,
+# producing lines longer than the default 80 chars.
+MD013: false
+
+# MD041 (first-line-heading) is disabled: docsify partials (docs/_footer.md,
+# docs/_sidebar.md) are not full pages and intentionally have no H1.
+MD041: false
+
+# MD025 (single-h1) is disabled: a project's own docs may legitimately use one
+# H1 per major section, each with its own ## subtree, and demoting those H1s
+# would flatten the subtrees into siblings of their own sections. The shipped
+# templates all use a single H1, so this rule only matters for prose a project
+# adds later.
+MD025: false
+
+# MD024 (no-duplicate-heading) is scoped to siblings only: docs crawled or
+# assembled from several independent sources legitimately repeat subsection
+# names like "Overview" under different parents.
+MD024:
+  siblings_only: true
+
+# MD051 (link-fragments) checks fragments against GitHub's heading-slug
+# algorithm, but the site is rendered by docsify, whose slugify prepends an
+# underscore to any heading slug that would otherwise start with a digit
+# (e.g. "### 3.1 Architecture" -> id="_31-architecture"). Numbered section
+# headings are the SciPlay convention, so ignore fragments starting with `_`
+# rather than fight the numbering scheme.
+MD051:
+  ignored_pattern: "^_"
+
+# MD060 (table-column-style) uses `consistent`: SciPlay tables have padded
+# header/body rows but tight (no-padding) separator rows (`|------|------|`,
+# not `| ------ | ------ |`). None of MD060's strict styles matches that mix,
+# since `aligned` requires a padded separator and `tight` requires no padding
+# anywhere, so `consistent` accepts whatever each table uses as long as it
+# stays uniform within that table. scripts/align_tables.py reflows tables to
+# that tight/padded mix, because markdownlint --fix's own MD060 fixer does not
+# reliably repad every table.
+MD060:
+  style: consistent
+
+# MD010 (no-hard-tabs) ignores code blocks: plans and specs embed tab-indented
+# snippets from languages whose formatters use tabs, so flagging tabs inside
+# fences would mean rewriting correct code into spaces. Prose outside fences is
+# still checked.
+MD010:
+  code_blocks: false
