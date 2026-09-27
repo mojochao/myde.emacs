@@ -21,8 +21,6 @@ The probe (`mise run probe`) boots a throwaway daemon and catches what only show
 
 ## 2. Automatic unit and integration testing
 
-The following subsections describe what each automatic layer verifies, and which requirements it covers.
-
 ### 2.1 Unit tests
 
 `mise run test` loads every file under `tests/*.el` and runs ERT in batch mode.
@@ -34,7 +32,6 @@ Each file's `;;; Commentary:` block names the silent failure its tests cover.
 | `tests/core-help.el` | `myde-help-which-key-align-docstrings` finding each docstring by its face, so alignment can fail while which-key still draws the popup |
 | `tests/core-org.el`  | Project discovery and tag sanitization: an invalid `#+filetags:` value, a missing `#+category:`, a missing agenda directory or file, and an unpruned recursive scan walking `.git` internals |
 
-Individual tests back the requirements this section covers.
 `myde-tangle-source-on-save/fires-through-either-path` backs [FR-9](prd.md#fr-9), asserting that saving `myde.org` through either its real path or the `~/.config/emacs` symlink tangles it.
 `myde-display-warning-advice/drops-daemon-display-below-threshold` backs [FR-4](prd.md#fr-4), asserting that a daemon's first client frame shows a warning only if it would be shown anyway.
 `myde-org-capture-target/falls-back-to-inbox` backs [FR-5](prd.md#fr-5), asserting that a capture lands on the nearest project's tasks file or falls back to the inbox.
@@ -55,7 +52,9 @@ Run the probe before and after a change and diff its `declared:` and `mode:` lin
 A declared package that disappears, or a mode that flips to `off`, is a regression.
 
 **Limit:** `scripts/myde-probe.sh` boots the daemon at lines 30-31 without redirecting stdin.
-Every throwaway daemon of this config, this probe or one booted by hand, logs an end-of-file error reading from stdin during startup, and that error aborts `elpaca-after-init-hook` at `global-flycheck-mode`, so it and every hook after it report `mode: … off` whether or not the mode actually loaded.
+Every throwaway daemon of this config, this probe or one booted by hand, logs an end-of-file error reading from stdin during startup.
+That error aborts `elpaca-after-init-hook` at `global-flycheck-mode`.
+It and every hook after it report `mode: … off` whether or not the mode actually loaded.
 A stripped `PATH` is not the cause: a full `PATH` reproduces the same error, and the stdin reader itself is unidentified.
 The `mode:` lines are only useful as a diff between two probes taken the same way, not as an absolute reading.
 Fixing the stdin handling is tracked as [RM-11](roadmap.md#rm-11).
@@ -72,7 +71,8 @@ Each test builds its own temporary tree rather than depending on `~/org` or `~/d
 `hk.pkl` defines the git hooks that `mise run init` installs.
 `pre-commit` stashes unstaged changes, tangles `myde.org`, and stages `early-init.el`, `init.el`, and `user-lisp/myde.el`, so a commit cannot carry drift between the source and its tangled output ([FR-9](prd.md#fr-9)).
 It then runs `forms` and `test`, both declared to depend on `tangle` so they read the file `tangle` just wrote rather than a stale one.
-`pre-push` runs `mise run check` and `mise run test` as a backstop for a commit made with `--no-verify`, verifying without rewriting anything: `check` tangles, asserts the definitions-only invariant, and fails if the result differs from what is committed ([FR-1](prd.md#fr-1)).
+`pre-push` runs `mise run check` and `mise run test` as a backstop for a commit made with `--no-verify`.
+It verifies without rewriting anything: `check` tangles, asserts the definitions-only invariant, and fails if the result differs from what is committed ([FR-1](prd.md#fr-1)).
 `hk check` and `hk fix` run the same steps by hand.
 
 ### 2.5 Docs checks
@@ -82,12 +82,13 @@ It then runs `forms` and `test`, both declared to depend on `tangle` so they rea
 | Command                        | Catches                                                                                     |
 |----------------------------------|-------------------------------------------------------------------------------------------------|
 | `scripts/check_links.py`        | A broken relative link or an anchor that does not match docsify's slugify algorithm         |
-| `scripts/check_trace.py`        | A requirement's section 8.3 block and a downstream doc (ADR, TDD, QA, roadmap) disagreeing on which links which, or a link missing from the chain |
+| `scripts/check_trace.py`        | A requirement's section 8.3 block and a downstream doc (ADR, TDD, QA, roadmap, changelog) disagreeing on which links which, or a link missing from the chain |
 | `scripts/test_check_trace.py`   | Regressions in `check_trace.py` itself, checked by its own 12 tests against fixtures         |
-| `scripts/vendor_docs.py --check` | A vendored asset that is missing or stale against its pin, or a reference to a live CDN URL instead of `docs/vendor/` ([NFR-7](prd.md#nfr-7)) |
+| `scripts/vendor_docs.py --check` | A pinned asset that is missing or never loaded, an unpinned asset that is loaded, or a reference to a live CDN URL instead of `docs/vendor/` ([NFR-7](prd.md#nfr-7)) |
 | `markdownlint docs/`            | Markdown lint violations against this repo's markdownlint config                             |
 
-A push to `main` that changes `docs/` runs the same five checks in the `check` job of `.github/workflows/docs.yml`, and the `deploy` job that publishes to GitHub Pages declares `needs: check`, so a failing check blocks the publish ([FR-11](prd.md#fr-11)).
+A push to `main` that changes `docs/` runs the same five checks in the `check` job of `.github/workflows/docs.yml`.
+The `deploy` job that publishes to GitHub Pages declares `needs: check`, so a failing check blocks the publish ([FR-11](prd.md#fr-11)).
 That workflow is written by a later task on this branch.
 
 ## 3. Manual testing
@@ -96,15 +97,20 @@ The requirements below have no automated check and are confirmed by hand.
 
 ### 3.1 Daemon, frames, and MCP
 
-1. Restart the daemon: `launchctl kickstart -k gui/$(id -u)/gnu.emacs.daemon`. Expected: the command exits without error and a new daemon process is running.
-2. Open a client frame: `emacsclient -c`. Expected: a GUI frame opens on `*scratch*`, confirming one daemon serves the frame ([FR-4](prd.md#fr-4)).
-3. Open a file with `$EDITOR`. Expected: the file opens in that same daemon's frame, not in a second Emacs process.
-4. Round-trip an MCP `eval-elisp` call against the running daemon. Expected: the call returns the evaluated result, confirming an agent can query and drive the session ([FR-8](prd.md#fr-8)).
+1. On macOS, restart the daemon: `launchctl kickstart -k gui/$(id -u)/gnu.emacs.daemon`.
+   Expected: the command exits without error and a new daemon process is running.
+2. Open a client frame: `emacsclient -c`.
+   Expected: a GUI frame opens on `*scratch*`, confirming one daemon serves the frame ([FR-4](prd.md#fr-4)).
+3. Open a file with `$EDITOR`.
+   Expected: the file opens in that same daemon's frame, not in a second Emacs process.
+4. From an agent, call the MCP `eval-elisp` tool with `(+ 1 2)`.
+   Expected: it returns `3`, confirming an agent can query and drive the session ([FR-8](prd.md#fr-8)).
 
 ### 3.2 Browser capture
 
 Follow the end-to-end steps in [User Guide §2.6](user.md#_26-browser-capture): start Emacs, click the bookmarklet from any page, and save the resulting capture.
-Expected: the capture buffer opens pre-filled with the page's URL and title in the `b` template, and the saved entry lands in `~/org/inbox.org` tagged `:bookmark:`, confirming a browser can capture into the config ([FR-5](prd.md#fr-5)).
+Expected: the capture buffer opens pre-filled with the page's URL and title in the `b` template.
+The saved entry lands in `~/org/inbox.org` tagged `:bookmark:`, confirming a browser can capture into the config ([FR-5](prd.md#fr-5)).
 
 ### 3.3 Platforms, Emacs version, and startup state
 
@@ -127,6 +133,10 @@ Only a completed startup is confirmed.
 
 ### 3.5 Language keys
 
-1. Open a buffer in each gated language and confirm `C-c e`, `C-c t`, `C-c i`, and `C-c d` each run their bound command rather than falling through to the global binding, confirming every language shares the same prefixes ([FR-7](prd.md#fr-7)).
+1. Open a buffer in each gated language.
+   Confirm `C-c e`, `C-c t`, `C-c i`, and `C-c d` each run that language's command.
+   Expected: every language shares the same prefixes ([FR-7](prd.md#fr-7)).
 2. In an Elixir buffer, confirm `C-c e`, `C-c t`, and `C-c i` reach eglot, tests, and the REPL as expected.
-3. In the same buffer, confirm `C-c d` does not reach dape: `mix-minor-mode` binds `C-c d` to `mix-minor-mode-command-map` (`elpaca/sources/mix/mix.el:322`), and it wins over the global dape binding. Tracked as [RM-10](roadmap.md#rm-10).
+3. In the same buffer, confirm `C-c d` does not reach dape.
+   `mix-minor-mode` binds `C-c d` to `mix-minor-mode-command-map` (`elpaca/sources/mix/mix.el:322`), and it wins over the global dape binding.
+   Tracked as [RM-10](roadmap.md#rm-10).
