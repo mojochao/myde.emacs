@@ -521,6 +521,394 @@ A gate is the binary that turns the language's section on, from [2.4](#_24-turn-
 A gated language only runs once that binary is installed and Emacs has restarted.
 `:async` works on any of them, added unconditionally by `ob-async`.
 
+### 4.2 Programming
+
+#### 4.2.1 Common workflow
+
+Every language section builds on `prog-base` and `core-projects`.
+`prog-mode` buffers get line numbers and current-line highlighting.
+`apheleia` runs on save as the shared formatting engine, and each language module below registers its own formatter into it.
+The Lisp family shares `paredit` for structural editing and `rainbow-delimiters` for nested parens, in `emacs-lisp-mode`, `lisp-mode`, `scheme-mode`, `clojure-mode`, `clojure-ts-mode`, `cider-repl-mode`, `sly-mode`, and `slime-repl-mode`.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c p` | `project-prefix-map` | Project commands: switch, find file, and so on |
+| `s-p` | `project-prefix-map` | Same, on the super key |
+| `<f8>` | `myde-neotree-project-root-toggle` | Toggle a project tree explorer, rooted at the current project |
+| `C-c ! n` | `flymake-goto-next-error` | Next LSP diagnostic |
+| `C-c ! p` | `flymake-goto-prev-error` | Previous LSP diagnostic |
+| `C-c ! l` | `flymake-show-buffer-diagnostics` | List diagnostics for the buffer |
+
+`treesit-auto` installs a language's tree-sitter grammar on first visit and remaps its major mode to the `-ts-mode` variant, once, at startup.
+`mise-mode` and `editorconfig-mode` are both global, picking up a project's tool versions and formatting rules with no per-language setup.
+See [2.4](#_24-turn-on-a-language) for the binary that gates each language below.
+See [2.5](#_25-language-servers-and-debuggers) for the LSP servers and debuggers to install.
+See [3.2](#_32-keybinding-prefixes) for the shared `C-c e`, `C-c t`, `C-c i`, and `C-c d` prefixes each subsection follows.
+
+Snippets run on `yasnippet`, enabled globally.
+`TAB` is deliberately left unbound in `yas-minor-mode-map`, since it collides with REPL completion.
+Expand a snippet with `M-x yas-insert-snippet` or `M-x yas-expand` instead.
+`myde-register-snippets` registers a flat `snippets/<language>/` directory for a mode before yasnippet has loaded.
+Go and Elixir are the only languages with one today.
+
+#### 4.2.2 Bash
+
+prog-bash is always on, with no gate binary.
+It sets `bash-ts-mode` for `.sh`, `.bash`, and `.bats` files, and connects `bash-language-server` over eglot for diagnostics through `shellcheck` and formatting through `shfmt`.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `myde-bash-open-shell` | Open or switch to the `*shell*` buffer |
+| `C-c i r` | `myde-bash-send-region` | Send the region to the shell |
+| `C-c i b` | `myde-bash-send-buffer` | Send the buffer to the shell |
+| `C-c i x` | `myde-bash-run-buffer` | Save the buffer and run it with `bash` in a compilation buffer |
+
+- Dape configuration `bash-debug` needs the `bash-debug` VS Code extension unzipped by hand into `$XDG_DATA_HOME/emacs/debug-adapters/bash-debug/`.
+  Nothing else in the config installs it.
+- Org Babel runs shell blocks with no gate, see [4.1.6](#_416-org-babel).
+
+#### 4.2.3 Fish
+
+prog-fish gates on `fish` and adds `fish-mode` for `.fish` files, with a 2-space indent.
+There is no LSP, test runner, REPL, or debugger for fish.
+Org Babel runs a shell block as fish when it opens with a `#!/usr/bin/env fish` shebang, gated on `fish`, see [4.1.6](#_416-org-babel).
+
+#### 4.2.4 Nushell
+
+prog-nushell gates on `nu` and adds `nushell-mode` for `.nu` files and `nu` shebangs, with a 2-space indent.
+LSP runs through `nu --lsp`, built into nushell 0.87 and later, with no separate server to install.
+It offers completion, hover, go to definition, and diagnostics, but not formatting or code actions.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `myde-nushell-open-repl` | Open or switch to the `*nu*` REPL buffer |
+| `C-c i r` | `myde-nushell-send-region` | Send the region to the REPL |
+| `C-c i b` | `myde-nushell-send-buffer` | Send the buffer to the REPL |
+| `C-c i x` | `myde-nushell-run-buffer` | Save the buffer and run it with `nu` in a compilation buffer |
+
+- `nufmt` is registered with apheleia but not enabled on save.
+  It is pre-alpha and can corrupt a script, so formatting stays opt-in through `M-x apheleia-format-buffer` or a project's `.dir-locals.el`.
+- Org Babel needs the `nu` tree-sitter grammar installed first (`M-x treesit-install-language-grammar RET nu RET`), then runs `nu` blocks through `nushell-ts-babel`.
+  It is not in the [4.1.6](#_416-org-babel) table, since the grammar is a second gate beyond the `nu` binary.
+- No snippets directory.
+
+#### 4.2.5 Emacs Lisp
+
+prog-elisp is always on, with no gate binary.
+`M-x compile` byte-compiles the current buffer.
+`dash`, `s`, and `plz` are available to `require` from your own elisp: list and string utilities, and an HTTP client, respectively.
+`buttercup` is available for BDD-style tests, and `package-lint`, `cask-mode`, and `eask-mode` support packaging a library, all with no dedicated keys.
+Org Babel runs elisp blocks with no gate, org's own default, see [4.1.6](#_416-org-babel).
+
+#### 4.2.6 Common Lisp
+
+prog-clisp gates on `sbcl` and adds `lisp-mode` for `.lisp`, `.cl`, and `.asd` files.
+SLY is the primary REPL, falling back to SLIME only when SLY is not loaded.
+LSP through `cl-lsp` is optional and needs Roswell (`ros`) on `PATH`.
+SLY and SLIME cover interactive development without it.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `sly` (or `slime`) | Start the REPL |
+| `C-c i r` | `sly-eval-region` (or `slime-eval-region`) | Evaluate the region |
+| `C-c i b` | `sly-eval-buffer` (or `slime-eval-buffer`) | Evaluate the buffer |
+| `C-c i e` | `sly-eval-last-expression` (or `slime-eval-last-expression`) | Evaluate the expression before point |
+| `C-c i d` | `sly-documentation` (or `slime-documentation`) | Look up documentation |
+| `C-c i z` | `sly-switch-to-repl` (or `slime-switch-to-repl`) | Switch to the REPL |
+| `C-c t b` | `sly-eval-buffer` | Evaluate the buffer, the closest thing to a test key: neither SLY nor SLIME has a FiveAM test runner |
+
+- No dape configuration.
+  SLDB, SLY and SLIME's own debugger, is REPL-integrated rather than a step-through GUI debugger.
+- Org Babel runs `lisp` blocks through `sly-eval` when SLY is loaded, see [4.1.6](#_416-org-babel).
+
+#### 4.2.7 Scheme
+
+prog-scheme gates on `guile` and adds `scheme-mode` for `.scm`, `.ss`, and `.sls` files.
+LSP tries `scheme-langserver`, `guile-lsp-server`, and `chicken-lsp-server` in that order, using whichever is on `PATH`.
+Geiser adds the REPL, offering Guile, CHICKEN, and Chez backends at `M-x geiser`.
+Its default keys, not customized here, are:
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c C-r` | `geiser-eval-region` | Evaluate the region |
+| `C-c C-b` | `geiser-eval-buffer` | Evaluate the buffer |
+| `C-c C-z` | `geiser-mode-switch-to-repl` | Switch to the REPL |
+| `C-c C-d C-m` | `geiser-doc-module` | Show module documentation |
+
+- `schemat` formats on save through apheleia, but only when it is on `PATH` and eglot is managing the buffer, since it is opt-in like `nufmt`.
+- No dape configuration.
+  Errors drop into a `*Geiser Dbg*` buffer instead of a step-through GUI debugger.
+- Org Babel runs `scheme` blocks through Geiser, see [4.1.6](#_416-org-babel).
+
+#### 4.2.8 Clojure
+
+prog-clojure gates on `clojure` and adds `clojure-ts-mode` for `.clj`, `.cljs`, and `.cljc` files, remapped in front of the plain `clojure-mode` CIDER depends on.
+LSP runs through `clojure-lsp`, with its connect timeout raised to 60 seconds for slow first-time indexing.
+`cljfmt` (via `clojure-lsp format`) formats on save through apheleia.
+`M-x cider-jack-in` starts a REPL, CIDER's own default, not rebound here.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c t t` | `cider-test-run-test` | Run the test at point |
+| `C-c t f` | `cider-test-run-ns-tests` | Run the namespace's tests |
+| `C-c t p` | `cider-test-run-project-tests` | Run the project's tests |
+| `C-c t r` | `cider-test-run-loaded-tests` | Rerun loaded tests |
+
+- No dape configuration.
+- Org Babel runs `clojure` blocks through CIDER, see [4.1.6](#_416-org-babel).
+
+#### 4.2.9 Erlang
+
+prog-erlang gates on `erl` and adds `erlang-mode` for `.erl`, `.hrl`, and `.escript` files.
+LSP runs through ELP (`elp server`), which replaced the now-archived `erlang_ls`.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `erlang-shell` | Start an Erlang shell |
+| `C-c i s` | `erlang-shell-buffer` | Switch to the shell buffer |
+| `C-c i r` | `inferior-erlang-send-region` | Send the region to the shell |
+| `C-c t p` | `myde-erlang-run-tests` | Run the Common Test suite with `rebar3 ct` |
+
+- No dape configuration.
+  WhatsApp's `edb` DAP adapter is pre-release.
+- No snippets directory.
+- Org Babel runs `erlang` blocks through `ob-erlang`, see [4.1.6](#_416-org-babel).
+
+#### 4.2.10 Elixir
+
+prog-elixir gates on `elixir` and adds `elixir-ts-mode` for `.ex`, `.exs`, and `.heex` files, with `heex-ts-mode` layered on top for HEEx templates.
+LSP runs through `elixir-ls`, resolved per project through `mise exec`.
+Linting adds `credo` and `dialyzer` diagnostics to flycheck.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `elixir-iex` | Start an IEx session |
+| `C-c i p` | `elixir-iex-project` | Start an IEx session for the project |
+| `C-c i l` | `elixir-iex-send-line` | Send the current line |
+| `C-c i r` | `elixir-iex-send-region` | Send the region |
+| `C-c i b` | `elixir-iex-send-buffer` | Send the buffer |
+| `C-c i m` | `elixir-iex-reload-module` | Reload the module in IEx |
+| `C-c i s` | `elixir-iex-set-repl` | Set the IEx REPL buffer |
+| `C-c t a` | `exunit-verify-all` | Run all tests |
+| `C-c t s` | `exunit-verify-single` | Run the test at point |
+| `C-c t t` | `exunit-toggle-file-and-test` | Toggle between a file and its test |
+
+`mix-minor-mode` binds the whole `C-c d` prefix to its own Mix task keymap (`elpaca/sources/mix/mix.el:322`).
+The global `C-c d` dape keys from [3.2](#_32-keybinding-prefixes) do not reach Elixir buffers as a result.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c d e` | `mix-execute-task` | Run a chosen mix task |
+| `C-c d t` | `mix-test` | Run all tests through mix |
+| `C-c d o` | `mix-test-current-buffer` | Test the current buffer |
+| `C-c d f` | `mix-test-current-test` | Test the item at point |
+| `C-c d q` | `mix-compile` | Compile |
+| `C-c d l` | `mix-last-command` | Rerun the last mix command |
+
+Prefix any of these keys with an extra `d` (for example `C-c d d t`) to target a chosen umbrella subproject.
+
+Dape still has configurations registered for Elixir, reached by name through `M-x dape` rather than the `C-c d` prefix.
+They are `elixir-debug` (`mix run`), `elixir-mix-test`, `elixir-phoenix`, `elixir-remote` (attach), and `elixir-exs-script`.
+[RM-10](roadmap.md#rm-10) tracks resolving the collision.
+
+Debugging a `.exs` script still needs a workaround.
+A bare script's top-level code runs immediately, before the debugger can attach a breakpoint.
+The `elixir-exs-script` configuration's comments describe wrapping the logic in a module function and delaying it with `Task.start`, for example:
+
+```elixir
+defmodule MyScript do
+  def run do
+    a = [1, 2, 3]
+    b = Enum.map(a, &(&1 + 1))
+    IO.inspect(b, label: "result")
+    b
+  end
+end
+
+Task.start(fn ->
+  Process.sleep(4000)
+  MyScript.run()
+end)
+```
+
+`Kernel.dbg/2` with `breakOnDbg` is a lighter alternative that needs no breakpoints.
+
+- Snippets live in `snippets/elixir/`: `case`, `def`, `defmacro`, `defmodule`, `defp`, `receive`, and `test`.
+- Org Babel runs `elixir` blocks through `ob-elixir`, see [4.1.6](#_416-org-babel).
+
+#### 4.2.11 C and C++
+
+prog-cpp gates on `clangd` and adds `c++-ts-mode` for `.cpp`, `.cc`, `.cxx`, `.hpp`, `.hh`, `.hxx`, and `.h` files, `c-ts-mode` for `.c`, and `cmake-ts-mode` for `CMakeLists.txt` and `.cmake` files.
+`clangd` itself is the language server, with no separate install (see [2.5](#_25-language-servers-and-debuggers)), run with `--header-insertion=never --clang-tidy --completion-style=detailed`.
+Formatting runs through eglot's own formatter on save, not apheleia.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c t p` | `myde-cpp-run-tests` | Build with CMake and run CTest |
+| `C-c o` | `ff-find-other-file` | Jump between a header and its source file |
+
+- Dape configuration `cpp-debug` runs `codelldb`, prompting for the binary and defaulting to the project's `build/` directory.
+- Org Babel runs `C` blocks, gated on `clangd`, see [4.1.6](#_416-org-babel).
+- No snippets directory.
+
+#### 4.2.12 Go
+
+prog-go gates on `go` and adds `go-ts-mode` for `.go` files, falling back to `go-mode` when tree-sitter is unavailable.
+LSP runs through `gopls`, with `staticcheck`, `gofumpt`, and inlay hints for variable, field, and parameter types turned on.
+Formatting runs through eglot's own formatter on save.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c t t` | `gotest-ts-run-dwim` | Run the test at point |
+| `C-c t f` | `gotest-ts-run-file` | Run the file's tests |
+| `C-c t p` | `gotest-ts-run-package` | Run the package's tests |
+| `C-c t r` | `gotest-ts-repeat` | Repeat the last run |
+
+These test keys are bound on `go-ts-mode` only, not on the `go-mode` fallback.
+
+- Dape configurations `go-debug` and `go-test` both run `dlv dap`, for a normal run and for `go test` respectively.
+- Snippets: `snippets/go/` (16 of them, covering `func`, `struct`, `range`, `iferr`, `test`, and more).
+- Org Babel runs `go` blocks through `ob-go`, see [4.1.6](#_416-org-babel).
+
+#### 4.2.13 Rust
+
+prog-rust gates on `cargo` and adds Rust support through `rustic`, which derives `rust-ts-mode` from `rust-mode` when tree-sitter is available.
+LSP runs through `rust-analyzer`, with `clippy` on save, inlay hints for types and closures, and full cargo feature checking.
+Formatting runs on save through `rustic-format-trigger`.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c t t` | `rustic-cargo-current-test` | Run the test at point |
+| `C-c t p` | `rustic-cargo-test` | Run all tests |
+
+- Dape configurations `rust-debug` and `rust-test` both run `codelldb`, resolving the binary at `target/debug/<project>` and adding `--test` for the test variant.
+- Org Babel runs `rust` blocks through `ob-rust`, see [4.1.6](#_416-org-babel).
+- No snippets directory.
+
+#### 4.2.14 Zig
+
+prog-zig gates on `zig` and adds `zig-ts-mode` for `.zig` and `.zon` files, falling back to `zig-mode` when tree-sitter is unavailable.
+LSP runs through `zls`, with build-on-save and inlay hints for builtins, parameter names, and variable types turned on.
+Formatting runs through eglot's own formatter on save.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c t p` | `zig-test-all` | Run all tests |
+
+- Dape configuration `zig-debug` runs `codelldb`, resolving the binary at `zig-out/bin/<project>`.
+- Org Babel runs `zig` blocks through `ob-zig`, see [4.1.6](#_416-org-babel).
+  `ob-zig` declares no `Package-Requires`, so it never byte-compiles and warns once at every startup, see [RM-12](roadmap.md#rm-12).
+- No snippets directory.
+
+#### 4.2.15 Python
+
+prog-python gates on `python3` and adds `python-ts-mode` for `.py` files.
+LSP runs through `basedpyright-langserver`, in standard type-checking mode with inlay hints for variables, return types, and call arguments.
+`ruff-format` formats on save.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `run-python` | Start a Python shell |
+| `C-c i r` | `python-shell-send-region` | Send the region |
+| `C-c i b` | `python-shell-send-buffer` | Send the buffer |
+| `C-c i d` | `python-shell-send-defun` | Send the current function |
+| `C-c i s` | `python-shell-switch-to-shell` | Switch to the shell |
+| `C-c t t` | `python-pytest-function-dwim` | Run the test at point |
+| `C-c t f` | `python-pytest-file-dwim` | Run the file's tests |
+| `C-c t p` | `python-pytest` | Run pytest |
+| `C-c t r` | `python-pytest-repeat` | Repeat the last run |
+| `C-c t x` | `python-pytest-last-failed` | Rerun only what failed |
+| `C-c t m` | `python-pytest-dispatch` | Open the pytest argument menu |
+
+- Dape configurations `python-debug` and `python-test` both run `python -m debugpy.adapter`, for the current file and for `pytest` respectively.
+- Org Babel runs `python` blocks, see [4.1.6](#_416-org-babel).
+- No snippets directory.
+
+#### 4.2.16 Ruby
+
+prog-ruby gates on `ruby` and adds `ruby-ts-mode` for `.rb`, `.rake`, `.gemspec`, `Gemfile`, and `Rakefile`, falling back to `ruby-mode` when tree-sitter is unavailable.
+LSP runs through `ruby-lsp`, formatting with `rubocop` and inlay hints for implicit rescues and hash values.
+`robe-mode` adds Ruby-aware navigation and documentation lookup from a running Ruby process.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `inf-ruby` | Start a Ruby REPL |
+| `C-c i r` | `ruby-send-region` | Send the region |
+| `C-c i b` | `ruby-send-buffer` | Send the buffer |
+| `C-c i s` | `ruby-switch-to-inf` | Switch to the REPL |
+| `C-c t t` | `rspec-verify-single` | Run the test at point |
+| `C-c t f` | `rspec-verify` | Run the file's tests |
+| `C-c t p` | `rspec-verify-all` | Run all tests |
+| `C-c t r` | `rspec-rerun` | Rerun the last run |
+| `C-c t x` | `rspec-verify-failures` | Rerun only what failed |
+
+- Dape configuration `ruby-debug` runs `rdbg`, attaching over a local port.
+- Org Babel runs `ruby` blocks, see [4.1.6](#_416-org-babel).
+- No snippets directory.
+
+#### 4.2.17 Lua
+
+prog-lua gates on `lua` and adds `lua-ts-mode` for `.lua` files, falling back to `lua-mode` when tree-sitter is unavailable.
+LSP runs through `lua-language-server`, with hover hints and completion that replaces a call with its full snippet.
+`inf-lua` provides the REPL, with the same keys bound in both `lua-mode` and `lua-ts-mode` buffers, to slightly different underlying commands in each.
+
+| Key | Does |
+|---|---|
+| `C-c i i` | Start a Lua REPL |
+| `C-c i r` | Send the region |
+| `C-c i b` | Send the buffer |
+| `C-c i s` | Switch to the REPL |
+
+- No dape configuration and no test runner.
+- Org Babel runs `lua` blocks, see [4.1.6](#_416-org-babel).
+- No snippets directory.
+
+#### 4.2.18 JavaScript
+
+prog-javascript gates on `node` and adds `js-ts-mode` for `.js` and `.jsx` files.
+LSP runs through `rass tslint`, a multiplexer over `typescript-language-server` and `vscode-eslint-language-server`, so completions and ESLint diagnostics both arrive through eglot.
+`add-node-modules-path` prefers a project's local `node_modules/.bin` over global installs, and `prettier` formats on save through apheleia.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `nodejs-repl` | Start a Node REPL |
+| `C-c i r` | `nodejs-repl-send-region` | Send the region |
+| `C-c i b` | `nodejs-repl-send-buffer` | Send the buffer |
+| `C-c i s` | `nodejs-repl-switch-to-repl` | Switch to the REPL |
+| `C-c t t` | `jest-test-run-at-point` | Run the test at point |
+| `C-c t f` | `jest-test-run` | Run the file's tests |
+| `C-c t p` | `jest-test-run-all-tests` | Run all tests |
+| `C-c t r` | `jest-test-rerun-test` | Rerun the last run |
+
+`jest-test-mode`'s own defaults sit on `C-c C-t *`, unbound here in favor of the `C-c t` keys above.
+
+- Dape configurations `node-script` and `node-jest` both run through `@vscode/js-debug` (`npm install -g @vscode/js-debug`), for a script and for Jest respectively.
+- Org Babel runs `js` blocks, see [4.1.6](#_416-org-babel).
+- No snippets directory.
+
+#### 4.2.19 TypeScript
+
+prog-typescript gates on `node` and adds `typescript-ts-mode` for `.ts` files and `tsx-ts-mode` for `.tsx` files, and marks `tsconfig.json`, `jsconfig.json`, and `package.json` as project roots.
+LSP runs through the same `rass tslint` multiplexer as JavaScript, streaming diagnostics from both servers incrementally.
+`prettier` formats on save through apheleia, and `jest-test-mode` provides the same test keys as JavaScript's.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c i i` | `run-ts` | Start a TypeScript REPL |
+| `C-c i r` | `ts-send-region` | Send the region |
+| `C-c i b` | `ts-send-buffer` | Send the buffer |
+| `C-c i s` | `ts-send-buffer-and-go` | Send the buffer and switch to the REPL |
+| `C-c t t` | `jest-test-run-at-point` | Run the test at point |
+| `C-c t f` | `jest-test-run` | Run the file's tests |
+| `C-c t p` | `jest-test-run-all-tests` | Run all tests |
+| `C-c t r` | `jest-test-rerun-test` | Rerun the last run |
+
+The REPL keys are bound on `typescript-ts-mode` only, not on `tsx-ts-mode`.
+
+- Dape configurations `ts-node-script` and `ts-jest` both run through `@vscode/js-debug`, the same as JavaScript, with `ts-node` as the runtime executable for the script variant.
+- Org Babel runs `ts` blocks through `ob-typescript`, see [4.1.6](#_416-org-babel).
+- No snippets directory.
+
 ## 5. Error handling
 
 ## 6. FAQ
