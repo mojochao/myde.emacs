@@ -71,6 +71,15 @@ description = "Run the ERT checks under tests/ in batch mode"
 # tests/**/*.el.
 run = '''emacs -Q --batch --eval "(mapc #'load (file-expand-wildcards \"{{config_root}}/tests/*.el\"))" -f ert-run-tests-batch-and-exit'''
 
+# myde.org's #+export_file_name sends every export, batch or C-c C-e, to
+# build/.  Org will not create the directory itself.
+[tasks.export]
+description = "Export myde.org to build/myde.tex and build/myde.pdf"
+run = [
+  "mkdir -p {{config_root}}/build",
+  "emacs -Q --batch --eval \"(progn (require 'ox-latex) (find-file \\\"{{config_root}}/myde.org\\\") (org-latex-export-to-pdf))\"",
+]
+
 [tasks.probe]
 description = "Boot this config as a throwaway daemon and report its observable state"
 run = "scripts/myde-probe.sh {{config_root}} {{arg(name='report')}}"

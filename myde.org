@@ -1,5 +1,6 @@
 #+title: MyDE — *MY* Development Environment
 #+author: Allen Gooch
+#+export_file_name: build/myde
 #+property: header-args:emacs-lisp :tangle no :results none :comments no
 
 * Early Init

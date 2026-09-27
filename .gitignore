@@ -4,6 +4,9 @@
 # temp files
 tmp/
 
+# org exports of myde.org (`mise run export')
+build/
+
 # cache files
 eln-cache/
 
