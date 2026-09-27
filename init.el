@@ -101,6 +101,9 @@
 
 ;; Startup configuration
 (setq warning-minimum-level :error)
+;; A daemon otherwise shows every startup warning on its first client frame,
+;; whatever the level above.
+(advice-add 'display-warning :around #'myde-display-warning-advice)
 (setq recentf-max-saved-items 50)
 (add-to-list 'find-file-not-found-functions #'myde-auto-create-missing-dirs)
 

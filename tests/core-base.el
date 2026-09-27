@@ -22,12 +22,21 @@
 ;;;     whichever of the two paths the file was not opened by -- you would
 ;;;     save myde.org, see no error, and find the drift at commit time.
 ;;;
+;;;   - `myde-display-warning-advice' keeps a daemon from showing *Warnings*
+;;;     on its first client frame for a warning below `warning-minimum-level'.
+;;;     Emacs queues that display on `after-make-frame-functions' without
+;;;     checking the level, so a broken advice shows up only as the buffer
+;;;     popping up again after the next daemon restart.
+;;;
 ;;; Run with `mise run test'.
 
 ;;; Code:
 
 (require 'ert)
 (require 'org)
+;; Loaded before the tests bind `warning-minimum-level', or `let' binds it
+;; lexically and the code under test reads the global default instead.
+(require 'warnings)
 
 (defvar myde-test-root
   (expand-file-name
@@ -84,5 +93,29 @@ on every save in the session."
           (should-not (file-exists-p output)))
       (remove-hook 'after-save-hook #'myde-tangle-source-on-save)
       (delete-directory tmp :recursive))))
+
+(ert-deftest myde-display-warning-advice/drops-daemon-display-below-threshold ()
+  "A daemon startup warning is shown on the first frame only if it would be
+shown anyway.  The stand-in for `display-warning' queues a display the way
+its daemon branch does; the advice must discard that for a warning below
+`warning-minimum-level' or in `warning-suppress-types', keep it otherwise,
+and log every warning either way."
+  (let ((warning-minimum-level :error)
+        (warning-suppress-types '((quiet)))
+        (after-make-frame-functions nil)
+        logged)
+    (cl-letf (((symbol-function 'daemonp) (lambda () t)))
+      (pcase-dolist (`(,type ,level ,shown) '((loud nil nil)
+                                              (loud :warning nil)
+                                              (loud :error t)
+                                              (quiet :error nil)))
+        (setq after-make-frame-functions nil)
+        (myde-display-warning-advice
+         (lambda (type &rest _)
+           (push type logged)
+           (add-hook 'after-make-frame-functions #'ignore))
+         type "message" level)
+        (should (eq shown (and (memq #'ignore after-make-frame-functions) t)))))
+    (should (equal logged '(quiet loud loud loud)))))
 
 ;;; core-base.el ends here

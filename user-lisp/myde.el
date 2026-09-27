@@ -58,6 +58,26 @@ instead of the default `user-emacs-directory/tree-sitter/'."
   (funcall orig-fn lang
            (or out-dir (expand-file-name "emacs/tree-sitter" (xdg-data-home)))))
 
+(defun myde-display-warning-advice (orig-fn type message &optional level buffer-name)
+  "Keep a daemon startup warning off the first frame unless it merits display.
+
+Advises `display-warning'.  While a daemon has no client frame, that
+function queues the *Warnings* buffer onto `after-make-frame-functions'
+for the first frame, and skips `warning-minimum-level' and
+`warning-suppress-types' in doing so.  When those settings would not
+display this warning, call ORIG-FN with the hook bound locally, so the
+queued display is discarded and TYPE and MESSAGE are only logged.  LEVEL
+and BUFFER-NAME pass through unchanged."
+  (require 'warnings)
+  (if (and (daemonp)
+           (eq (selected-frame) terminal-frame)
+           (or (< (warning-numeric-level (or level :warning))
+                  (warning-numeric-level warning-minimum-level))
+               (warning-suppress-p type warning-suppress-types)))
+      (let ((after-make-frame-functions after-make-frame-functions))
+        (funcall orig-fn type message level buffer-name))
+    (funcall orig-fn type message level buffer-name)))
+
 (defun myde-treesit-install-language-grammar (lang)
   "Interactively install a tree-sitter grammar for LANG into the XDG data directory.
 
