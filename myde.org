@@ -422,6 +422,14 @@ interactive entry point."
   (setq backup-directory-alist `(("." . ,backup-dir)))
   (make-directory backup-dir :parents))
 
+;; Themes trusted without a prompt: batppuccin frappe and mocha.  The hashes
+;; pin those files' contents, so a batppuccin update prompts again.  Set before
+;; custom.el loads so a theme Customize saves as safe there is not overwritten.
+(setq custom-safe-themes
+      '("68a0201c7bb9dba9c9b6fd6662d1f3daf8865860ba8fc56d0201be859da535fc"
+        "b0cedf3c6d8fbbf65934e2045dddacff0a031992f2f389215adcb0ca741347c3"
+        default))
+
 ;; Load user customizations.
 (let* ((path (expand-file-name "custom.el" user-emacs-directory))
        (exists (file-exists-p path)))
@@ -701,6 +709,12 @@ Outside a project: full path, or buffer name for non-file buffers."
 ;; Icons support
 (use-package nerd-icons  ;; https://github.com/rainstormstudio/nerd-icons.el
   :ensure t)
+
+;; Default font.  A nil frame also sets the default for frames made later,
+;; so client frames of the daemon get it.
+(set-face-attribute 'default nil
+                    :family "JetBrainsMono Nerd Font Mono"
+                    :height 120)
 
 ;; Fonts support
 (use-package show-font  ;; https://github.com/protesilaos/show-font
