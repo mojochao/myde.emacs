@@ -381,6 +381,146 @@ Use `git add -f tasks.org` to commit one on purpose.
 
 ## 4. Usage and workflows
 
+### 4.1 Org and notes
+
+Org handles tasks, thoughts, bookmarks, and durable notes across the files and directories described in [3.4](#_34-where-files-live).
+
+#### 4.1.1 Capturing
+
+`C-c o c` opens the capture menu, then one more key picks a template.
+
+| Key | Captures | Files into |
+|---|---|---|
+| `t` | Task | `~/org/inbox.org` |
+| `T` | Task in the current project | the nearest `tasks.org`, falling back to the inbox |
+| `h` | Thought | `~/org/inbox.org` |
+| `b` | Bookmark, tagged, from the browser | `~/org/inbox.org` |
+| `n` | Note (Denote) | `~/org/notes/` |
+| `N` | Note from the browser (Denote) | `~/org/notes/` |
+
+Finish a capture with `C-c C-c`, or abandon it with `C-c C-k`.
+Templates `b` and `N` need the `org-protocol` setup in [2.6](#_26-browser-capture).
+Template `T` files under a `Tasks` heading, creating one at the end of the file if it is missing.
+
+#### 4.1.2 The agenda and task states
+
+`C-c o a` opens the agenda dispatcher.
+Press `d` for the day view built for this setup.
+
+| Block | Shows |
+|---|---|
+| Today | today's scheduled items and deadlines, warning 14 days ahead |
+| Next actions | every entry marked `NEXT`, across all files |
+| `Inbox — needs refiling` | `TODO`/`NEXT` items still sitting in the inbox |
+
+The rest of the dispatcher is stock Org, not configured here.
+
+| Key | Shows |
+|---|---|
+| `C-c o a a` | Agenda for the current day or week |
+| `C-c o a t` | The global TODO list |
+| `C-c o a m` | Headlines matching a tag or property condition |
+| `C-c o a s` | Full-text search across agenda files |
+
+Inside an agenda buffer:
+
+| Key | Does |
+|---|---|
+| `RET` | Jump to the item |
+| `TAB` | Peek at the item in another window |
+| `t` | Cycle its TODO state |
+| `C-c C-s` | Schedule |
+| `C-c C-d` | Set a deadline |
+| `C-c C-w` | Refile |
+| `r` | Rebuild the view |
+| `q` | Quit |
+
+Task states:
+
+```text
+TODO → NEXT → WAIT → DONE / CANCELLED
+```
+
+| State | Meaning | Key |
+|---|---|---|
+| `TODO` | Captured, not yet actionable | `t` |
+| `NEXT` | The thing to do next | `n` |
+| `WAIT` | Blocked on someone else | `w` |
+| `DONE` | Finished | `d` |
+| `CANCELLED` | Dropped | `c` |
+
+Cycle with `C-c C-t` in a file, or `t` in the agenda.
+Entering `WAIT` prompts for a note and logs a timestamp on exit.
+Entering `DONE` logs a timestamp.
+Entering `CANCELLED` prompts for a note.
+
+#### 4.1.3 Finding things by tag
+
+Two commands cover org tags: thoughts, bookmarks, and the `#+filetags:` on a project's `tasks.org` (see [3.3](#_33-projects)).
+Denote keywords are a separate namespace, searched with `C-c o n s` instead.
+
+`C-c o t` lists every tag in use, most-used first, with an entry count and a file count per tag.
+Press `RET` to search the tag on the current line, `s` to search a combination of tags, `g` to rescan, or `q` to quit.
+
+`C-c o T` reads one or more tags with completion over every tag in use.
+By default it matches entries carrying all of the given tags.
+Add a prefix argument (`C-u`) before it to match any of them instead.
+A match is required, so a typo cannot silently return an empty agenda.
+
+#### 4.1.4 Notes with denote
+
+Denote is for durable notes, the kind worth finding again later.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c o n n` | `denote` | New note, prompting for a title then keywords |
+| `C-c o n l` | `denote-link` | Insert a link to another note |
+| `C-c o n b` | `denote-backlinks` | Show notes linking to this one |
+| `C-c o n f` | `denote-open-or-create` | Open a note by name, creating it if absent |
+| `C-c o n s` | `denote-grep` | Search note contents |
+
+Notes live in `~/org/notes/`.
+Keyword completion offers every keyword already in use plus a preset list: `paper`, `book`, `research`, `distributed-systems`, `kubernetes`, `consensus`, `raft`.
+Typing any other keyword works too.
+Denote itself loads lazily, on first use, but its capture templates (`n` and `N`) are on the `C-c o c` menu from startup.
+
+#### 4.1.5 Refiling and archiving
+
+Refile moves an item to its real home: `C-c C-w`, then pick a target.
+Targets are any heading up to three levels deep across the inbox and every project's `tasks.org`.
+This is how the inbox gets drained.
+
+Archive moves finished work out of the agenda: `C-c C-x C-a`.
+It goes to `~/org/archive/<file>.org_archive` (see [3.4](#_34-where-files-live)), off the agenda but still on disk and greppable.
+
+#### 4.1.6 Org Babel
+
+Code blocks in an org file run without a confirmation prompt, since `org-confirm-babel-evaluate` is off.
+
+| Language | Gate |
+|---|---|
+| Emacs Lisp | none, org's own default |
+| Shell (bash) | none |
+| Shell (fish, via a `#!/usr/bin/env fish` shebang) | `fish` |
+| Common Lisp | `sbcl` |
+| Scheme | `guile` |
+| Clojure | `clojure` |
+| C | `clangd` |
+| Zig | `zig` |
+| Python | `python3` |
+| Ruby | `ruby` |
+| Lua | `lua` |
+| JavaScript | `node` |
+| TypeScript | `node` |
+| Erlang | `erl` |
+| Elixir | `elixir` |
+| Go | `go` |
+| Rust | `cargo` |
+
+A gate is the binary that turns the language's section on, from [2.4](#_24-turn-on-a-language).
+A gated language only runs once that binary is installed and Emacs has restarted.
+`:async` works on any of them, added unconditionally by `ob-async`.
+
 ## 5. Error handling
 
 ## 6. FAQ
