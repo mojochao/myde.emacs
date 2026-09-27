@@ -12,7 +12,7 @@ One file, `myde.org`, is edited by hand.
 MyDE replaced an earlier package.el configuration built from a `modules/` tree, one directory per module, each carrying its own enable toggle.
 The toggles were a second source of truth that could drift from the code they gated.
 Commit `803a8cc` replaced package.el with elpaca, and the 2026-09-15 design (`superpowers/specs/2026-09-15-three-file-literate-config-design.md`) replaced the module tree and its toggles with binary-presence gates tangled from one literate source.
-AGENTS.md's *Performance* note gives the payoff: a warm start now reaches `elpaca-after-init-hook` in roughly 4 seconds, against roughly 7 seconds for the package.el configuration it replaced.
+AGENTS.md records the result: a warm start now reaches `elpaca-after-init-hook` in roughly 4 seconds, against roughly 7 seconds for the package.el configuration it replaced.
 
 ## 3. Scope
 
@@ -31,7 +31,9 @@ A section that needs a toolchain is wrapped in a binary-presence gate, `(when (e
 Installing the binary turns the section on at the next start, and removing it turns the section off, with no toggle to maintain (FR-2).
 elpaca queues a package order when the `use-package` form is expanded, before any `:if` or `:when` runs, so the gate has to wrap the whole form or it cannot prevent a clone.
 Binary gates run during init, so `exec-path` has to be complete first.
-GUI processes on macOS do not inherit the login shell's `PATH`, so the Environment section runs `exec-path-from-shell-initialize` synchronously, with `:ensure (:wait t)`, ahead of every gated section, so gates see the same `PATH` in a daemon or a windowed session (FR-3).
+GUI processes on macOS do not inherit the login shell's `PATH`.
+The Environment section therefore runs `exec-path-from-shell-initialize` synchronously, with `:ensure (:wait t)`, ahead of every gated section.
+Gates see the same `PATH` in a daemon or a windowed session (FR-3).
 
 Packages are managed by elpaca instead of package.el.
 A warm start with a populated `elpaca/` directory reaches `elpaca-after-init-hook` in roughly 4 seconds (NFR-3).
@@ -59,7 +61,7 @@ Org capture and projects.
 Tasks, thoughts, bookmarks, and notes can be captured from Emacs and from a browser through `org-protocol` (FR-5).
 Any directory holding a `tasks.org` is a project, and its tasks appear in the agenda (FR-6).
 
-Keybinding prefixes are shared across every language section: `C-c o` for org, `C-c e` for eglot, `C-c t` for tests, `C-c i` for the REPL, `C-c d` for the debugger (FR-7).
+Keybinding prefixes are shared across every language section: `C-c e` for eglot, `C-c t` for tests, `C-c i` for the REPL, `C-c d` for the debugger (FR-7).
 
 The `ai-mcp` section runs an MCP server inside Emacs, so agents can query and drive the running session (FR-8).
 
@@ -95,7 +97,8 @@ Clone the repository.
 Run `mise trust` once per machine, since mise refuses to read an untrusted config.
 Run `mise run init`, which symlinks the repo into `~/.config/emacs` and installs the hk git hooks.
 Start Emacs.
-The first, cold start clones and builds every package with elpaca into `./elpaca/`, which takes a few minutes, and later starts only activate what is already built.
+The first, cold start clones and builds every package with elpaca into `./elpaca/`, which takes a few minutes.
+Later starts only activate what is already built.
 A launchd agent (`gnu.emacs.daemon.plist`) starts `emacs --fg-daemon` at login.
 Every GUI frame comes from `emacsclient -c`, and `$EDITOR` and `$VISUAL` point at `emacsclient`, so they reach the same daemon (FR-4).
 
@@ -104,8 +107,8 @@ Every GUI frame comes from `emacsclient -c`, and `$EDITOR` and `$VISUAL` point a
 A git host can flake mid-clone and leave an elpaca source directory holding `.git` but no working tree.
 elpaca does not recover on its own, so the order fails on every start until the checkout is completed and `elpaca-rebuild` is called.
 A missing binary leaves its gated section off, with no error, and installing the binary turns the section on at the next start.
-A failed elpaca bootstrap does not leave GC disabled or TRAMP broken.
-GC and `file-name-handler-alist` restoration stay on `emacs-startup-hook` in `early-init.el`, not `elpaca-after-init-hook`, so a failed bootstrap cannot leave a session with GC disabled (NFR-6).
+GC and `file-name-handler-alist` restoration stay on `emacs-startup-hook` in `early-init.el`, not `elpaca-after-init-hook`.
+A failed elpaca bootstrap therefore cannot leave a session with GC disabled or TRAMP broken (NFR-6).
 
 ## 6. Configuration
 
@@ -119,7 +122,6 @@ Presence of a binary on `PATH` is the setting, checked with `executable-find` ar
 `mix.el` binds `C-c d` to `mix-minor-mode-command-map` in `mix-minor-mode` (`elpaca/sources/mix/mix.el:322`).
 The global dape debug keys also live under `C-c d`.
 In an Elixir buffer, `mix-minor-mode`'s binding wins, so the dape keys never reach it.
-Changing `myde.org` to resolve the collision is out of scope for this design.
 Resolving it is tracked as [RM-10](roadmap.md#rm-10).
 
 ## 8. Requirements Inventory
@@ -390,7 +392,7 @@ The docs site fetches no third-party script or stylesheet at runtime.
 ## 10. References
 
 - [Root README](https://github.com/mojochao/myde.emacs/blob/main/README.md)
-- [AGENTS.md](https://github.com/mojochao/myde.emacs/blob/main/AGENTS.md)
+- [AGENTS.md](https://github.com/mojochao/myde.emacs/blob/main/.agents/AGENTS.md)
 - [2026-05-11 Projectile to project.el design](superpowers/specs/2026-05-11-projectile-to-project-design.md)
 - [2026-08-05 Org workflow design](superpowers/specs/2026-08-05-org-workflow-design.md)
 - [2026-09-15 Three-file literate config design](superpowers/specs/2026-09-15-three-file-literate-config-design.md)
