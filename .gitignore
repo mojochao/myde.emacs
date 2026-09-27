@@ -46,3 +46,6 @@ projects
 
 # ...but the docsify shell is hand-written source, not an org export.
 !docs/index.html
+
+# Bytecode from the docs checkers under scripts/.
+__pycache__/
