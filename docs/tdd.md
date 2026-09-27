@@ -36,8 +36,10 @@ Startup runs in four steps.
 
 1. `early-init.el` runs first.
 2. `init.el` bootstraps elpaca, then `(require 'myde)` loads every definition in `user-lisp/myde.el`. `use-package` forms queue elpaca orders as the file is read, and the queue drains after `after-init-hook`. `exec-path-from-shell` runs synchronously with `:ensure (:wait t)`, so every binary gate that follows it sees a complete `exec-path` during init.
-3. Activation blocks run in section order: `core-base`, `Environment`, the remaining `core-*` sections, then `ai-*`, `auth-*`, `data-*`, `containers-*`, `prog-*`, `text-*`, `ebook-*`. This order is known-working and is not reordered for aesthetics.
-4. `elpaca-after-init-hook` fires once every queued package is activated. Startup global modes hang off this hook.
+3. Activation blocks run in section order: `core-base`, `Environment`, the remaining `core-*` sections, then `ai-*`, `auth-*`, `data-*`, `containers-*`, `prog-*`, `text-*`, `ebook-*`.
+   This order is known-working and is not reordered for aesthetics.
+4. `elpaca-after-init-hook` fires once every queued package is activated.
+   Startup global modes hang off this hook.
 
 ### 1.3 Binary gates
 
@@ -67,13 +69,15 @@ One daemon serves every frame ([ADR-05](adr.md#adr-05)).
 A launchd agent starts `emacs --fg-daemon` at login, and every GUI frame comes from `emacsclient -c` against that process.
 `$EDITOR` and `$VISUAL` already point at `emacsclient`, so every entry point reaches the same daemon ([FR-4](prd.md#fr-4)).
 `~/Applications/Emacsclient.app` wraps `emacsclient -c -n -a ""` for the Dock, carrying Emacs' own icon, so the Dock tile looks like Emacs without starting a second process.
-Dashboard is `:defer t` and opened on demand with `M-x dashboard-open`. A client frame opens on `*scratch*` instead of a startup screen.
+Dashboard is `:defer t` and opened on demand with `M-x dashboard-open`.
+A client frame opens on `*scratch*` instead of a startup screen.
 Never launch Emacs.app alongside the daemon.
 Two processes on this config fight over the server socket, the MCP socket, and the XDG state files.
 
 ## 2. Data Model and Persistence
 
-The config's persistent state splits three ways: XDG-routed files, elpaca packages, and org files, all guarded by a fixed set of singleton sockets.
+The config's persistent state splits three ways: XDG-routed files, elpaca packages, and org files.
+A few singletons are shared by every Emacs process on this config.
 
 ### 2.1 XDG paths
 
@@ -102,7 +106,8 @@ elpaca keeps its own tree at `./elpaca/` under the repo root, gitignored.
 | `cache/`   | elpaca's own metadata                             |
 
 `M-x elpaca-log` shows build status, and `M-x elpaca-manager` and `M-x elpaca-update-all` manage updates.
-A recursive `grep` over `builds/` misses matches, since it holds symlinks rather than files. Search `sources/` instead.
+A recursive `grep` over `builds/` misses matches, since it holds symlinks rather than files.
+Search `sources/` instead.
 
 ### 2.3 Org files and projects
 
@@ -112,17 +117,22 @@ A recursive `grep` over `builds/` misses matches, since it holds symlinks rather
 A project is any directory containing a `tasks.org`, at any depth and under any name ([ADR-08](adr.md#adr-08)).
 `myde-org-project-root` finds it with `locate-dominating-file`, searching upward from `default-directory`, with no fixed root and no naming convention ([FR-6](prd.md#fr-6)).
 `myde-org-code-directory` (`~/devel/projects/` by default) is scanned only to build `org-agenda-files`.
-A project outside it still works for capture and visiting. It just is not in the agenda.
+A project outside it still works for capture and visiting.
+It just is not in the agenda.
 
 `myde-org-find-task-files` prunes dot-directories and `node_modules` while it scans.
 Pruning cuts a real scan from roughly 16ms to under 1ms by skipping `.git` internals, and keeps archived projects parked under `.ATTIC/` out of the agenda.
-A missing `#+category:` is a real risk here, not decoration. Org derives it from the file name, and every project's file is named `tasks.org`, so an omitted category would make every project report the same category, `tasks`.
+A missing `#+category:` is a real risk here, not decoration.
+Org derives it from the file name, and every project's file is named `tasks.org`.
+An omitted category would make every project report the same category, `tasks`.
 `myde-org-project-tasks-template` sets `#+category:` and `#+filetags:` explicitly, sanitizing the project name first, since `org-tag-re` excludes `-` and `.`.
 
 ### 2.4 Singleton state
 
 Three singletons hold last-writer-wins state.
-The `server` socket picks one winner. When a second Emacs starts, the daemon keeps the socket, and the second process silently skips `server-start`, so `$EDITOR` opens files in a process with no visible frame.
+The `server` socket picks one winner.
+When a second Emacs starts, the daemon keeps the socket, and the second process silently skips `server-start`.
+`$EDITOR` then opens files in a process with no visible frame.
 The `mcp-server` Unix socket under `$XDG_CACHE_HOME/emacs/` is fixed, not per-process, so only one Emacs can hold it at a time.
 The XDG state files (`recentf.eld`, `places.eld`, `history`) are last-writer-wins between whichever process touches them last.
 
@@ -140,8 +150,10 @@ Two `org-protocol://capture` templates arrive over the same daemon.
 ### 3.2 Error responses
 
 `mcp-server-socket-conflict-resolution` is `error`, not `force` or `warn`.
-A stale socket left by a dead daemon is reclaimed before that setting is consulted, but a second live Emacs on this config leaves the daemon's own socket alone and starts with no MCP server.
-A bridge that reports `CONNECTION_CLOSED` means the server side died. Restart it in the daemon:
+A stale socket left by a dead daemon is reclaimed before that setting is consulted.
+A second live Emacs on this config leaves the daemon's own socket alone and starts with no MCP server.
+A bridge that reports `CONNECTION_CLOSED` means the server side died.
+Restart it in the daemon:
 
 ```shell
 emacsclient --eval '(progn (ignore-errors (mcp-server-stop)) (mcp-server-start-unix))'
@@ -151,14 +163,16 @@ Then reconnect with `/mcp`.
 
 ## 4. Integration Layer
 
-Three layers sit between `myde.org` and the tools it wraps: elpaca for packages, the shell environment for platform differences, and per-language tooling for editing itself.
+These subsections cover what the config integrates with: elpaca, the shell environment, language tooling, tree-sitter, and the OS URI handlers.
 
 ### 4.1 elpaca
 
 elpaca replaced package.el ([ADR-01](adr.md#adr-01)).
 A `use-package` form queues its order as `init.el` is read, and the queue drains after `after-init-hook`, not during the form's own evaluation.
 One order runs synchronously instead. `exec-path-from-shell` carries `:ensure (:wait t)`, so the binary gates that follow it see a complete `exec-path` during init.
-Every package needs exactly one ensuring form. A duplicate order makes elpaca 0.12 abort init, so any additional `use-package` form for the same package must say `:ensure nil`.
+Every package needs exactly one ensuring form.
+A duplicate order makes elpaca 0.12 abort init.
+Any additional `use-package` form for the same package must say `:ensure nil`.
 A warm start with a populated `elpaca/` reaches `elpaca-after-init-hook` in roughly 4 seconds, against roughly 7 seconds for the package.el config it replaced ([NFR-3](prd.md#nfr-3)).
 A cold start from an empty `elpaca/` clones and builds every package instead, and takes minutes.
 
@@ -169,13 +183,15 @@ Every binary gate depends on it having run first.
 This config targets both Linux and macOS ([NFR-2](prd.md#nfr-2)), and platform-specific code is guarded with `(when (memq window-system '(mac ns)) ...)` or `(string= system-type "darwin")`.
 Homebrew paths differ by architecture, `/usr/local/bin` on Intel against `/opt/homebrew/bin` on Apple Silicon, so a gated section always resolves a binary with `executable-find` rather than a hardcoded path.
 macOS dired needs GNU `ls` for `--group-directories-first`, resolved the same way through `(executable-find "gls")`.
-Native compilation of files loaded before `exec-path-from-shell` runs, elpaca's own files among them, fails with an "error invoking gcc driver" under the bare GUI `PATH`, because libgccjit cannot find the Homebrew gcc driver.
+Native compilation fails for files loaded before `exec-path-from-shell` runs, elpaca's own files among them.
+Under the bare GUI `PATH`, libgccjit cannot find the Homebrew gcc driver and reports "error invoking gcc driver".
 That failure is a warning, not a fatal one, and those files run byte-compiled until a start with a full `PATH` compiles them.
 
 ### 4.3 Language servers, tests, REPLs, and debuggers
 
 Every language section shares four keybinding prefixes: `C-c e` for eglot, `C-c t` for tests, `C-c i` for the REPL, and `C-c d` for dape ([FR-7](prd.md#fr-7)).
-`myde-eglot-add-workspace-config`, in `core-projects`, upserts LSP workspace configuration for a server key without clobbering another section's settings. Nothing assigns `eglot-workspace-configuration` directly.
+`myde-eglot-add-workspace-config`, in `core-projects`, upserts LSP workspace configuration for a server key without clobbering another section's settings.
+Nothing assigns `eglot-workspace-configuration` directly.
 `dape` binds `C-c d d` through `C-c d q` globally, for start, continue, step, and breakpoint commands.
 
 `mix.el` binds its own `C-c d` prefix inside `mix-minor-mode` (`elpaca/sources/mix/mix.el:322`), shadowing the global dape keys in every Elixir buffer.
@@ -193,7 +209,8 @@ The browser sends an `org-protocol://` URI, and the OS has to route it to `emacs
 On Linux, `mise run install-xdg` installs the desktop file already checked into `etc/org-protocol.desktop`.
 On macOS, `mise run install-macos` builds `~/Applications/OrgProtocol.app` with `osacompile`, registers the `org-protocol` URL scheme in its `Info.plist` with `plutil`, and re-signs the bundle with `codesign`.
 AppleScript is required there, not a stylistic choice. macOS delivers URI activations as Apple Events, and a plain shell script inside a bundle never receives the URL.
-The bundle must be re-signed after `Info.plist` is edited, since `osacompile`'s ad-hoc signature does not survive the edit. Without that step, `codesign -v` reports an invalid `Info.plist`.
+The bundle must be re-signed after `Info.plist` is edited, since `osacompile`'s ad-hoc signature does not survive the edit.
+Without that step, `codesign -v` reports an invalid `Info.plist`.
 
 ## 5. Security, Deployment and Operations
 
@@ -204,8 +221,10 @@ Four concerns keep the tangled elisp trustworthy and the docs site reachable: ta
 Three layers re-tangle `myde.org`, each catching a different editor ([ADR-06](adr.md#adr-06)).
 In Emacs, `myde-tangle-source-on-save` sits on the global `after-save-hook` and re-tangles on every save.
 For Claude Code, `.claude/settings.json` runs `scripts/claude-tangle-hook.sh`. `tangle` fires on PostToolUse after an edit to `myde.org`, and `guard` fires on PreToolUse to deny any edit to `early-init.el`, `init.el`, or `user-lisp/myde.el`.
-The deny matters more than the tangle. An agent that edited a tangled file directly would have the change silently discarded at the next tangle, with the loss only surfacing at pre-push.
-hk's pre-commit hook re-tangles rather than rejecting. It stashes unstaged changes, runs `mise run tangle`, stages the three tangled files, then runs `mise run forms` and `mise run test`.
+The deny matters more than the tangle.
+An agent that edited a tangled file directly would have the change silently discarded at the next tangle, with the loss only surfacing at pre-push.
+hk's pre-commit hook re-tangles rather than rejecting.
+It stashes unstaged changes, runs `mise run tangle`, stages the three tangled files, then runs `mise run forms` and `mise run test`.
 pre-push runs the same checks without rewriting anything, as a backstop for `--no-verify` ([FR-9](prd.md#fr-9)).
 
 ### 5.2 Startup failure containment
@@ -221,7 +240,8 @@ The docs site is served by a vendored docsify 4.13.1, not a CDN copy ([ADR-11](a
 `docs/vendor/` holds docsify, its search plugin, docsify-themeable's simple-dark CSS, the Catppuccin Frappé mauve theme, and the Prism grammars the docs use, each pinned in `scripts/vendor_docs.py`.
 The Catppuccin theme's remote `@import` is rewritten to a vendored file, so the published site fetches no third-party script or stylesheet at runtime ([NFR-7](prd.md#nfr-7)).
 `docs/index.html` sets `noEmoji: true`, and fetches the sidebar's version string with an explicit `Accept: text/plain` header, so docsify-cli's dev server does not answer with `index.html` instead.
-`vendor_docs.py --check` runs offline. It scans `docs/index.html` and `docs/vendor/*.css` for a remaining remote `@import`, `url()`, `src`, or `href`, and exits 1 on any hit.
+`vendor_docs.py --check` runs offline.
+It scans `docs/index.html` and `docs/vendor/*.css` for a remaining remote `@import`, `url()`, `src`, or `href`, and exits 1 on any hit.
 `mise run docs` serves `docs/` natively with `docsify serve`, for local preview ([FR-10](prd.md#fr-10)).
 `mise run docs-up` serves the same site from a container, `docs.compose.yaml` mounting the repo root read-only so the `docs/VERSION` symlink resolves inside it.
 `mise run docs-search` queries a qmd index, built once with `python3 scripts/qmd.py init`.
@@ -238,7 +258,8 @@ The published site is `https://mojochao.github.io/myde.emacs/`.
 `actions/upload-pages-artifact` tars its artifact with `--dereference --hard-dereference`, so the Pages artifact holds the real file rather than a dangling symlink.
 Between releases, the sidebar shows the last released version, since `VERSION` only changes as part of a release ([FR-12](prd.md#fr-12)).
 
-The release flow: edit `VERSION`, move `Unreleased` to that version and `Now` items to `Shipped` in the docs, fix the `Shipped` links `mise run docs-check` reports, commit, then run `mise run tag`.
+The release flow: edit `VERSION`, move `Unreleased` to that version and `Now` items to `Shipped` in the docs, and fix the `Shipped` links `mise run docs-check` reports.
+Then commit and run `mise run tag`.
 `mise run tag` refuses unless `docs/changelog.md` has a `## <VERSION> - <date>` heading, then creates the annotated tag `v<VERSION>`.
 Pushing the commit and the tag finishes the release.
 
