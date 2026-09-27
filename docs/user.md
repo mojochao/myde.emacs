@@ -909,8 +909,216 @@ The REPL keys are bound on `typescript-ts-mode` only, not on `tsx-ts-mode`.
 - Org Babel runs `ts` blocks through `ob-typescript`, see [4.1.6](#_416-org-babel).
 - No snippets directory.
 
+### 4.3 Git
+
+`magit`, `forge`, `git-modes`, `diff-hl`, and `blamer` are always on, with no gate binary.
+
+`magit-status` has no bound key.
+Reach it directly with `M-x magit-status`, which opens the status buffer for the current repository.
+`C-c g b` toggles `blamer-mode`, showing the last commit for the current line inline.
+It is the only `C-c g` binding, see [3.2](#_32-keybinding-prefixes).
+
+- `forge` adds pull requests and issues to magit buffers.
+  It needs a repository remote pointing at a supported forge, such as GitHub or GitLab.
+  Its database lives at `$XDG_DATA_HOME/emacs/forge-database.sqlite`, see [3.4](#_34-where-files-live).
+- `git-modes` adds major modes for `.gitignore`, `.gitconfig`, and `.gitattributes` files.
+  It binds no keys.
+- `diff-hl` marks uncommitted changes in the fringe everywhere.
+  It refreshes itself around every magit operation.
+
+Two more packages add AI-generated text through the `gptel` backend from [3.1](#_31-sections).
+
+`gptel-magit` adds these inside magit:
+
+| Key | Command | Does |
+|---|---|---|
+| `M-g` | `gptel-magit-generate-message` | Generate a commit message in the commit buffer, in place |
+| `g` | `gptel-magit-commit-generate` | Create the commit directly, with a generated message, from magit's commit transient (`c` in `magit-status`) |
+| `x` | `gptel-magit-diff-explain` | Explain the diff at point, from magit's diff transient |
+
+`gptel-forge-prs` adds these inside the buffer forge opens for `forge-create-pullreq`:
+
+| Key | Command | Does |
+|---|---|---|
+| `M-g` | `gptel-forge-prs-generate-description` | Generate a PR description from the diff between the source and target branches |
+| `M-r` | `gptel-forge-prs-generate-description-with-rationale` | Same, after prompting for a rationale |
+
+Either key reuses a PR template forge already inserted into the buffer, as the structure to fill in.
+
+### 4.4 Writing
+
+`core-spell` and `text-markdown` are always on, with no gate binary.
+
+**Spell checking.**
+`jinx` checks spelling across whatever text is visible, not word by word.
+It compiles a small native module against `libenchant` at build time, so that library needs to be on the system first: `brew install enchant` on macOS, or `libenchant-2-dev` (Debian, Ubuntu) or the equivalent for your distribution on Linux.
+
+| Buffer | Checks |
+|---|---|
+| Any `text-mode` buffer, including Markdown and AsciiDoc | Everything |
+| Any `prog-mode` buffer | Comments and docstrings only |
+| Org buffers | Prose, and comments inside `#+begin_src` blocks, but not code |
+
+Org gets its own face list rather than jinx's default, so a src block's comments stay checked while its code does not.
+
+| Key | Command | Does |
+|---|---|---|
+| `M-$` | `jinx-correct` | Correct the word at point |
+| `C-M-$` | `jinx-correct-all` | Correct every misspelling in the buffer |
+
+**Markdown.**
+`text-markdown` maps `gfm-mode` to `.md` and `README.md` files, and renders through `pandoc`.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c C-p` | `markdown-preview-mode` | Open a live-updating browser preview, mermaid diagrams included |
+| `C-c C-g` | `grip-mode` | Open a second preview rendered by GitHub's own API, exact GFM fidelity but no mermaid |
+| `C-c C-e h` | `myde-markdown-export-html` | Export to HTML alongside the source |
+| `C-c C-e p` | `myde-markdown-export-pdf` | Export to PDF alongside the source |
+| `C-c v` | `visual-fill-column-mode` | Toggle wrapping at `fill-column` instead of window width |
+| `C-c t` | `markdown-table-align` | Align the table at point |
+
+`grip-mode` needs `mdopen`, `go-grip`, or `grip` (`pip install grip`) on `PATH`, tried in that order.
+PDF export also needs a TeX engine, for example `brew install --cask basictex`.
+`markdown-do`, markdown-mode's own default, keeps its usual `C-c C-d`.
+`C-c C-e` is freed from that default so the export keys above can use it as a prefix.
+
 ## 5. Error handling
+
+### 5.1 A package will not install
+
+An elpaca order fails on every start, and `elpaca/sources/<pkg>/` holds a `.git` folder but no working tree.
+
+elpaca clones with `--filter=tree:0 --no-checkout`, then completes the checkout later by fetching trees and blobs on demand.
+When a git host flakes during that second step, the checkout never finishes, and elpaca does not retry it on its own.
+Codeberg-hosted packages are the usual victims.
+
+Find every half-finished clone, searching recursively since some packages nest their elisp in subdirectories:
+
+```sh
+for d in elpaca/sources/*/; do
+  [ "$(find "$d" -name '*.el' -not -path '*/.git/*' | wc -l)" = 0 ] && echo "$d"
+done
+```
+
+Complete the checkout, checking the branch name first since some repos use `main` and some use `master`:
+
+```sh
+git -C elpaca/sources/<pkg> checkout "$(git -C elpaca/sources/<pkg> symbolic-ref --short HEAD)"
+```
+
+Then rebuild from a running Emacs:
+
+```elisp
+(elpaca-rebuild '<pkg>)
+(elpaca-process-queues)
+```
+
+`elpaca-rebuild` only queues the order.
+`elpaca-process-queues` drains it, since a running session will not drain the queue on its own.
+
+### 5.2 "Cannot open load file" after an update
+
+`require` fails for a file that is plainly present under `elpaca/sources/<pkg>/`.
+
+`elpaca-merge` and `elpaca-update` reuse the file list elpaca cached the first time it built that package in the running session.
+A file added upstream afterward never gets linked into `elpaca/builds/<pkg>/`, so nothing fails until the next daemon restart.
+
+Rebuild the package, which clears the cached list:
+
+```elisp
+(elpaca-rebuild 'pkg)
+(elpaca-process-queues)
+```
+
+Restarting the daemon before running `M-x elpaca-update-all` avoids the problem entirely.
+
+### 5.3 $EDITOR opens files nowhere
+
+`$EDITOR` or `$VISUAL` returns with no visible frame, even though a terminal editor should have opened one.
+
+A second Emacs is running next to the daemon, most often `Emacs.app` launched by mistake instead of an `emacsclient -c` frame, see [2.3](#_23-run-as-a-daemon).
+The daemon wins the `server` socket, so the second process silently skips `server-start`, and `$EDITOR` reaches a process with no frame.
+
+Quit the second Emacs, confirm only the daemon remains, then retry:
+
+```sh
+ps aux | grep -i "[E]macs" | grep -v emacsclient
+```
+
+Launch frames only through `emacsclient -c`, or through `~/Applications/Emacsclient.app` on macOS, never `Emacs.app` directly.
+
+### 5.4 MCP bridge CONNECTION_CLOSED
+
+`/mcp` reports `CONNECTION_CLOSED` although the daemon is running, see [2.7](#_27-emacs-mcp-server).
+
+The `mcp-server` process inside the daemon is not listening on its socket, usually because the daemon restarted without it, or because it crashed.
+`mcp-server-socket-conflict-resolution` is `error`, so a second Emacs (`Emacs.app`, or `mise run probe`) never steals the socket, it just starts without an MCP server and leaves the daemon's alone.
+
+Restart the server inside the daemon:
+
+```sh
+emacsclient --eval '(progn (ignore-errors (mcp-server-stop)) (mcp-server-start-unix))'
+```
+
+Then reconnect with `/mcp`.
+
+### 5.5 "error invoking gcc driver"
+
+Native compilation logs `error invoking gcc driver` for one of elpaca's own files during startup, on macOS.
+
+Those files load before `exec-path-from-shell` runs, so libgccjit cannot find the Homebrew gcc driver on the bare GUI `PATH` Emacs starts with.
+
+It is a warning, not a failure.
+The affected file runs byte-compiled for that start, and compiles natively on the next start that has a full `PATH`, such as the daemon started from a login shell.
+No action is needed.
+
+### 5.6 Org problems
+
+**A project's tasks all show up as `tasks` in the agenda.**
+The file is missing `#+category:`.
+Org falls back to the file name, and every project's file is named `tasks.org`.
+Add `#+category: <project_name>` at the top, with underscores in place of hyphens or dots.
+
+**A `tasks.org` I just created is not in the agenda.**
+The agenda rescans before every `C-c o a`, so no restart is needed, see [4.1.2](#_412-the-agenda-and-task-states).
+Check instead that the directory is under `myde-org-code-directory` (`~/devel/projects/` by default), and outside a dot-directory or `node_modules`, both pruned on purpose.
+
+**Capture went to the inbox instead of the project.**
+There was no `tasks.org` at or above the current directory, see [3.3](#_33-projects).
+`M-: (myde-org-project-root)` returns nil when none is found.
+`C-c o P` creates one.
+
+**`M-x org-lint` instead of on-the-fly checking.**
+Flycheck is off in org buffers on purpose.
+Its bundled `org-lint` checker crashes on current org versions, on save and whenever the agenda first visits a `tasks.org`.
+Run `M-x org-lint` by hand when you want the checks.
 
 ## 6. FAQ
 
+**Why doesn't Emacs show a dashboard when a frame opens?**
+Dashboard is deliberately not a startup screen.
+`initial-buffer-choice` cannot be relied on under elpaca, since `elpaca-log-initial-queues` overwrites it whenever any package order is unbuilt or has failed.
+Dashboard is `:defer t`, opened on demand with `M-x dashboard-open`.
+A client frame from `emacsclient -c` opens on `*scratch*` instead, at no cost.
+
+**How do I turn a section off?**
+Uninstall the binary that gates it, or remove it from `PATH`, then restart the daemon, see [2.4](#_24-turn-on-a-language).
+There is no toggle, no override list, and no `custom.el` entry for a section.
+The section comes back the next time the binary is on `PATH` again.
+
+**What does `custom.el` hold?**
+Only what `M-x customize-*` writes, such as a theme marked safe.
+It is gitignored, and `myde.org` loads it if present, so a setting saved through Customize survives a restart.
+It carries no section toggles.
+
 ## 7. References
+
+- [Org manual](https://orgmode.org/manual/)
+- [Denote manual](https://protesilaos.com/emacs/denote)
+- [elpaca](https://github.com/progfolio/elpaca)
+- [Eglot manual](https://www.gnu.org/software/emacs/manual/html_node/eglot/)
+- [Dape](https://elpa.gnu.org/packages/dape.html)
+- [Magit manual](https://docs.magit.vc/magit)
+- [Root README](https://github.com/mojochao/myde.emacs/blob/main/README.md)
+- [Developer Guide](developer.md)
