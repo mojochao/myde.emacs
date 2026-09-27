@@ -22,7 +22,7 @@ It tangles into three committed files.
 |---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
 | `early-init.el`     | Runs before `init.el` and before startup.el creates directories. GC and `file-name-handler-alist` suppression, eln-cache redirection, frame defaults, `package-enable-at-startup nil`. |
 | `init.el`           | Installs elpaca, requires `myde`, then every `use-package` form, binary gate, and variable assignment, in load order.                        |
-| `user-lisp/myde.el` | Definitions only: `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, `define-minor-mode`. No side effects.                    |
+| `user-lisp/myde.el` | Definitions and declarations only, the forms `mise run forms` allows, with no side effects.                    |
 
 The tangled outputs are committed, so a fresh clone starts Emacs without tangling anything ([FR-1](prd.md#fr-1)).
 Emacs 31.1 is a hard floor for this design ([NFR-1](prd.md#nfr-1)).

@@ -23,7 +23,7 @@ It tangles into three committed files: `early-init.el`, `init.el`, and `user-lis
 The tangled files are committed, so a fresh clone starts Emacs without tangling anything (FR-1).
 Saving `myde.org` re-tangles it on the global `after-save-hook`, and the pre-commit hook re-tangles again and stages the three files, so `myde.org` and its tangled output cannot drift apart in a commit (FR-9).
 
-`user-lisp/myde.el` holds only `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, and `define-minor-mode` forms.
+`user-lisp/myde.el` holds only definitions and declarations, such as `defun`, `defvar`, `defcustom`, and `define-minor-mode`.
 It has no side effects, which lets it load in batch with no running Emacs and keeps it testable under ERT (NFR-5).
 `init.el` holds the `use-package` forms, binary gates, and variable assignments that activate what `myde.el` defines.
 

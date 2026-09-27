@@ -33,7 +33,8 @@ See [Developer Guide §5.1](developer.md#_51-the-launchd-agent-and-emacsclientap
 ## Definition block
 
 The other block a `myde.org` section's `***` heading can hold, tangled into `user-lisp/myde.el`.
-It carries only `defun`, `defvar`, `defcustom`, `defconst`, `define-derived-mode`, and `define-minor-mode` forms, with no side effects.
+It carries definitions and declarations only, such as `defun`, `defvar`, and `define-minor-mode`, with no side effects.
+`mise run forms` checks each top-level form against the list in `scripts/myde-forms.py`.
 `mise run forms` asserts that invariant holds.
 See [Developer Guide §3.1](developer.md#_31-editing-mydeorg).
 

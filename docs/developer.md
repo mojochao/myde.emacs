@@ -40,7 +40,7 @@ Everything from here on runs from inside the clone.
 | `VERSION` | The released version, shown in the docs sidebar |
 | `README.md` | The project overview and install steps |
 | `.claude/settings.json` | The Claude Code hooks that guard and re-tangle `myde.org`, see [3.1](#_31-editing-mydeorg) |
-| `.mcp.json` | Registers the qmd MCP server used by `mise run docs-search` |
+| `.mcp.json` | Registers qmd as an MCP server, so an agent can search `docs/` directly |
 | `docs.compose.yaml` | The container definition behind `mise run docs-up` |
 
 Gitignored, and therefore missing from a fresh clone until built or created: `elpaca/` (built packages), `custom.el` (Customize output), and `build/` (`mise run export` output).
