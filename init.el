@@ -3521,7 +3521,7 @@
   :hook ((lua-mode . myde-lua-mode-setup)
          (lua-mode . myde-lua-format-on-save-setup))
   :bind (:map lua-mode-map
-              ("C-c i i" . inf-lua)
+              ("C-c i i" . lua-start-process)
               ("C-c i r" . lua-send-region)
               ("C-c i b" . lua-send-buffer)
               ("C-c i s" . lua-show-process-buffer))
@@ -3532,24 +3532,17 @@
 ;; Lua tree-sitter mode
 ;; -----------------------------------------------------------------------------
 
+;; The REPL keys use each mode's own inferior Lua.  inf-lua was dropped: it
+;; has no minor mode or send commands, only a REPL both modes already ship.
 (use-package lua-ts-mode  ;; built-in Emacs 29+
   :hook ((lua-ts-mode . myde-lua-mode-setup)
          (lua-ts-mode . myde-lua-format-on-save-setup))
   :bind (:map lua-ts-mode-map
-              ("C-c i i" . inf-lua)
-              ("C-c i r" . inf-lua-send-region)
-              ("C-c i b" . inf-lua-send-buffer)
-              ("C-c i s" . inf-lua-switch-to-repl))
+              ("C-c i i" . lua-ts-inferior-lua)
+              ("C-c i r" . lua-ts-send-region)
+              ("C-c i b" . lua-ts-send-buffer)
+              ("C-c i s" . lua-ts-show-process-buffer))
   :ensure nil)
-
-;; -----------------------------------------------------------------------------
-;; Interactive Lua REPL via inf-lua
-;; -----------------------------------------------------------------------------
-
-(use-package inf-lua  ;; https://github.com/nverno/inf-lua
-  :hook ((lua-mode    . inf-lua-minor-mode)
-         (lua-ts-mode . inf-lua-minor-mode))
-  :ensure (:host github :repo "nverno/inf-lua"))
 
 ;; -----------------------------------------------------------------------------
 ;; Org Babel
