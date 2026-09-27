@@ -4,56 +4,75 @@
 <head>
   <meta charset="utf-8">
   <title>MyDE</title>
-  <meta name="description" content="My Development Environment — a literate Emacs configuration">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <!-- Every CDN asset is pinned to an exact version and carries an SRI hash.
-       A floating tag such as `docsify@5' would let any future 5.x publish, or
-       a compromised CDN, run arbitrary script in a reader's browser; with
-       `integrity' the browser refuses to execute bytes that do not match.
-       Regenerate a hash after a version bump with:
-         curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/themes/core.min.css"
-        integrity="sha384-u1ltA0BWEetQbGokjUjglT9sN702RQwy8JESh3Ha4GNlyzMU57usk6duY0/BOTMj"
-        crossorigin="anonymous">
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/themes/addons/vue.min.css"
-        integrity="sha384-Juf4pwILpOysilbsFQxO8a3Ct3yDvSPolGmartfG+QQRLj6m7c1mYWV38WDI1N93"
-        crossorigin="anonymous">
+  <meta name="description" content="My Development Environment, a literate Emacs configuration">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Every asset is vendored under vendor/ by scripts/vendor_docs.py, so the
+       site fetches nothing from a third party at runtime.  The Catppuccin
+       stylesheet sets colors only, so it loads after the layout theme. -->
+  <link rel="stylesheet" href="vendor/theme-simple-dark.css">
+  <link rel="stylesheet" href="vendor/catppuccin-frappe-mauve.css">
+  <style>
+    .app-version { color: var(--subtext0); font-size: 0.6em; margin-left: 0.4em; }
+  </style>
 </head>
 <body>
   <div id="app"></div>
   <script>
+    // Show the repo root VERSION (docs/VERSION links to it) after the sidebar
+    // name.  Only a bare semver is shown, so an error page served in place of
+    // a missing file never reaches the sidebar.
+    function mydeVersionPlugin(hook) {
+      hook.ready(function () {
+        fetch('VERSION')
+          .then(function (response) { return response.ok ? response.text() : ''; })
+          .then(function (text) {
+            var version = text.trim();
+            var link = document.querySelector('.app-name-link');
+            if (!link || !/^\d+\.\d+\.\d+$/.test(version)) return;
+            var span = document.createElement('span');
+            span.className = 'app-version';
+            span.textContent = 'v' + version;
+            link.appendChild(span);
+          })
+          .catch(function () {});
+      });
+    }
     window.$docsify = {
       name: 'MyDE',
       repo: 'mojochao/myde.emacs',
       loadSidebar: true,
       subMaxLevel: 2,
       auto2top: true,
+      // docsify 4 turns :shortcode: text into images from the GitHub CDN.
+      // Turning that off keeps the site same-origin.
+      noEmoji: true,
       search: {
         depth: 3,
         placeholder: 'Search',
         noData: 'No matches',
       },
-    }
+      plugins: [mydeVersionPlugin],
+    };
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/docsify.min.js"
-          integrity="sha384-w6yZXzkazsxmservgGooUY9zjEHzIFHubRNZMLJ3enj/JD+Z8BvAGBqdrjfnLNhu"
-          crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify@5.0.0/dist/plugins/search.min.js"
-          integrity="sha384-wZGyhbW44GtFpUJG1z6siOX84RFRDAht5UTeOlV/LlRP6T2GXj3LrLwcUHTyzfby"
-          crossorigin="anonymous"></script>
-  <!-- docsify bundles Prism core only.  These three grammars cover the code
-       blocks this doc set actually contains; `lisp' registers the `elisp'
-       alias and `bash' registers `shell'. -->
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-lisp.min.js"
-          integrity="sha384-zA/YrVCkPoaF3OoC82PV8+nG/SucEOf0CNguQOfSnLyzVM+bVkJwB0U+i8+XG9zE"
-          crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"
-          integrity="sha384-9WmlN8ABpoFSSHvBGGjhvB3E/D8UkNB9HpLJjBQFC2VSQsM1odiQDv4NbEo+7l15"
-          crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-toml.min.js"
-          integrity="sha384-Uh6n44GRSQeQSMIIfAjlbqojWR7F5KALTHNsspuLDrNCsXpDPRdZbJ5A42AP/cA4"
-          crossorigin="anonymous"></script>
+  <script src="vendor/docsify.min.js"></script>
+  <script src="vendor/search.min.js"></script>
+  <script src="vendor/prism-bash.min.js"></script>
+  <script src="vendor/prism-c.min.js"></script>
+  <script src="vendor/prism-clojure.min.js"></script>
+  <script src="vendor/prism-cpp.min.js"></script>
+  <script src="vendor/prism-elixir.min.js"></script>
+  <script src="vendor/prism-erlang.min.js"></script>
+  <script src="vendor/prism-go.min.js"></script>
+  <script src="vendor/prism-json.min.js"></script>
+  <script src="vendor/prism-lisp.min.js"></script>
+  <script src="vendor/prism-lua.min.js"></script>
+  <script src="vendor/prism-python.min.js"></script>
+  <script src="vendor/prism-ruby.min.js"></script>
+  <script src="vendor/prism-rust.min.js"></script>
+  <script src="vendor/prism-scheme.min.js"></script>
+  <script src="vendor/prism-toml.min.js"></script>
+  <script src="vendor/prism-typescript.min.js"></script>
+  <script src="vendor/prism-yaml.min.js"></script>
+  <script src="vendor/prism-zig.min.js"></script>
 </body>
 </html>

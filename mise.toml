@@ -8,7 +8,7 @@ hk = "2.0.1"
 # same reason as hk: a docs preview that renders differently per machine is
 # worse than no preview.  The npm backend needs node, which mise resolves from
 # the system when the repo does not pin one.
-"npm:docsify-cli" = "5.0.0"
+"npm:docsify-cli" = "4.4.4"
 
 # qmd indexes docs/ for `mise run docs-search'.  Its index lives in .qmd/;
 # build it once with `mise exec -- python3 scripts/qmd.py init'.
@@ -103,6 +103,10 @@ run = "docker compose -f docs.compose.yaml down"
 [tasks.docs-search]
 description = "Search docs/ with qmd. Usage: mise run docs-search <question>"
 run = "python3 scripts/qmd.py query"
+
+[tasks.docs-vendor]
+description = "Re-fetch the pinned docsify assets into docs/vendor/"
+run = "python3 scripts/vendor_docs.py"
 
 [tasks.install-xdg]
 description = "Register the org-protocol:// URI handler (Linux)"
