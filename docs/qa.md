@@ -103,7 +103,7 @@ The requirements below have no automated check and are confirmed by hand.
 
 ### 3.2 Browser capture
 
-Follow the end-to-end steps in [org-protocol setup §3](org-protocol-setup.md#_3-verify-end-to-end): start Emacs, click the bookmarklet from any page, and save the resulting capture.
+Follow the end-to-end steps in [User Guide §2.6](user.md#_26-browser-capture): start Emacs, click the bookmarklet from any page, and save the resulting capture.
 Expected: the capture buffer opens pre-filled with the page's URL and title in the `b` template, and the saved entry lands in `~/org/inbox.org` tagged `:bookmark:`, confirming a browser can capture into the config ([FR-5](prd.md#fr-5)).
 
 ### 3.3 Platforms, Emacs version, and startup state
