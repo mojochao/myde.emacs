@@ -209,8 +209,7 @@ See [User Guide §2.6](user.md#_26-browser-capture) for the browser bookmarklet 
 
 ### 6.2 Publishing the docs
 
-`.github/workflows/docs.yml` does not exist yet.
-A later task on this branch adds it, with this shape:
+`.github/workflows/docs.yml` publishes the docs:
 
 - It triggers on a push to `main` that touches `docs/**`, `VERSION`, `scripts/**`, `.markdownlint*`, `mise.toml`, or the workflow file itself, and on `workflow_dispatch`.
 - Its `check` job runs `mise run docs-check`.

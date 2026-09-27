@@ -38,7 +38,7 @@ Gates see the same `PATH` in a daemon or a windowed session (FR-3).
 Packages are managed by elpaca instead of package.el.
 A warm start with a populated `elpaca/` directory reaches `elpaca-after-init-hook` in roughly 4 seconds (NFR-3).
 
-Nothing but packages lives inside `user-emacs-directory`.
+Nothing but packages and the gitignored `custom.el` lives inside `user-emacs-directory`.
 State, data, and cache are redirected to `$XDG_STATE_HOME/emacs/`, `$XDG_DATA_HOME/emacs/`, and `$XDG_CACHE_HOME/emacs/` (NFR-4).
 
 The docs site under `docs/` is vendored rather than loaded from a CDN.
@@ -158,7 +158,7 @@ Priority follows:
 | NFR-1 | Emacs 31.1 with native compilation is the minimum supported Emacs.                              | Compatibility | Must     | [§4](#_4-target-audience) |
 | NFR-2 | The config runs on Linux and macOS.                                                             | Compatibility | Must     | [§4](#_4-target-audience) |
 | NFR-3 | A warm start reaches `elpaca-after-init-hook` in about 4 s.                                     | Performance   | Should   | [§3.1](#_31-architecture) |
-| NFR-4 | Only packages live inside `user-emacs-directory`. State, data, and cache go to XDG directories. | Operability   | Must     | [§3.1](#_31-architecture) |
+| NFR-4 | Only packages and `custom.el` live inside `user-emacs-directory`. State, data, and cache go to XDG directories. | Operability   | Must     | [§3.1](#_31-architecture) |
 | NFR-5 | `user-lisp/myde.el` holds definitions only, so it loads in batch without side effects.          | Testability   | Must     | [§3.1](#_31-architecture) |
 | NFR-6 | A failed package bootstrap cannot leave GC disabled or TRAMP broken.                            | Reliability   | Must     | [§5.2](#_52-failure-flow) |
 | NFR-7 | The docs site fetches no third-party script or stylesheet at runtime.                           | Security      | Must     | [§3.1](#_31-architecture) |
@@ -337,7 +337,8 @@ A warm start reaches `elpaca-after-init-hook` in about 4 s.
 
 #### NFR-4
 
-Only packages live inside `user-emacs-directory`. State, data, and cache go to XDG directories.
+Only packages and `custom.el` live inside `user-emacs-directory`.
+State, data, and cache go to XDG directories.
 
 - **Type:** Operability
 - **Priority:** Must

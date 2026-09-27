@@ -81,7 +81,7 @@ A few singletons are shared by every Emacs process on this config.
 
 ### 2.1 XDG paths
 
-Only packages live inside `user-emacs-directory` ([ADR-07](adr.md#adr-07)).
+Only packages and `custom.el` live inside `user-emacs-directory` ([ADR-07](adr.md#adr-07)).
 Everything else is routed through the built-in `xdg.el` library ([NFR-4](prd.md#nfr-4)).
 
 | Kind                                                     | Path                     |

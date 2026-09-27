@@ -170,11 +170,11 @@ Commit `4a8c68c` redirected them to the XDG base directory locations.
 **Decision:** State such as recentf, places, history, tramp, and auto-save-list goes to `$XDG_STATE_HOME/emacs/`.
 Data such as transient and tree-sitter goes to `$XDG_DATA_HOME/emacs/`.
 Cache such as eln-cache and url goes to `$XDG_CACHE_HOME/emacs/`.
-Only packages stay inside `user-emacs-directory`, under `elpaca/` at the repository root.
+Only packages, under `elpaca/` at the repository root, and the gitignored `custom.el` stay inside `user-emacs-directory`.
 
 **Consequences:** `auto-save-list-file-prefix` has to be set in `early-init.el`, because Emacs creates that directory before `init.el` runs.
 Native compilation cache redirection has to happen in `early-init.el` too, before any compilation occurs.
-A fresh clone leaves nothing but packages inside `user-emacs-directory`.
+A fresh clone leaves nothing but packages and `custom.el` inside `user-emacs-directory`.
 
 ## ADR-08: Project tasks in a `tasks.org` beside the code :id=adr-08
 

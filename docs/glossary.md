@@ -128,5 +128,5 @@ Only `myde.el` belongs there, since a file named `org.el` there would shadow bui
 
 The `$XDG_STATE_HOME/emacs/`, `$XDG_DATA_HOME/emacs/`, and `$XDG_CACHE_HOME/emacs/` paths that hold this config's state, data, and cache.
 They are set in the `core-base` section through the built-in `xdg.el` library.
-Only packages live inside `user-emacs-directory` itself, in `./elpaca/` at the repo root.
+Only packages, in `./elpaca/` at the repo root, and `custom.el` live inside `user-emacs-directory` itself.
 See [Technical Design §2.1](tdd.md#_21-xdg-paths).

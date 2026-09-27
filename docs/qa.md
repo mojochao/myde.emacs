@@ -16,7 +16,7 @@ The probe (`mise run probe`) boots a throwaway daemon and catches what only show
 | `check`    | `mise run check`                       | Local, pre-push              | Tangled elisp drifting from `myde.org`                                      |
 | Probe      | `mise run probe <report>`              | Local, by hand                | A declared package or startup mode regressing, diffed across two reports    |
 | hk hooks   | `hk.pkl` pre-commit and pre-push       | Every commit and push        | A commit or push that would carry drift, a broken definitions-only invariant, or a test failure |
-| Docs checks | `mise run docs-check`                 | Local, CI                    | A broken link, a traceability mismatch, a stale vendored asset, a markdown lint violation |
+| Docs checks | `mise run docs-check`                 | Local, CI                    | A broken link, a traceability mismatch, a missing or remote-loaded vendored asset, a markdown lint violation |
 | CI         | `.github/workflows/docs.yml` `check` job | GitHub Actions on push to `main` | The same docs checks, gating the `deploy` job                              |
 
 ## 2. Automatic unit and integration testing
@@ -89,7 +89,6 @@ It verifies without rewriting anything: `check` tangles, asserts the definitions
 
 A push to `main` that changes `docs/` runs the same five checks in the `check` job of `.github/workflows/docs.yml`.
 The `deploy` job that publishes to GitHub Pages declares `needs: check`, so a failing check blocks the publish ([FR-11](prd.md#fr-11)).
-That workflow is written by a later task on this branch.
 
 ## 3. Manual testing
 
