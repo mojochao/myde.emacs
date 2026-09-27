@@ -31,6 +31,8 @@ Tasks live in `mise.toml`; `mise tasks` lists them all.
 | `mise run test`            | Run the ERT checks under `tests/` in batch mode                            |
 | `mise run probe <report>`  | Boot this config as a throwaway daemon and report its state                |
 | `mise run docs`            | Serve `docs/` as a live-reloading site on http://localhost:3000            |
+| `mise run docs-up` / `docs-down` | Start or stop the same site in a container, for machines without node |
+| `mise run docs-search <q>` | Search `docs/` with qmd (build the index once: `mise exec -- python3 scripts/qmd.py init`) |
 | `mise run export`          | Export `myde.org` to `build/myde.tex` and `build/myde.pdf`                 |
 | `mise run install-xdg`     | Register the `org-protocol://` URI handler (Linux)                         |
 | `mise run install-macos`   | Register the `org-protocol://` URI handler (macOS)                         |

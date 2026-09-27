@@ -1,0 +1,19 @@
+# Local docs preview: docsify in a container.
+# Start:  mise run docs-up    Stop:  mise run docs-down
+# `mise run docs' serves the same site natively, without Docker.
+name: "myde-docs" # isolate this stack from any other compose stack
+services:
+  docsify:
+    image: node:26-alpine
+    working_dir: /docs
+    # Same version as the mise pin.  5.x binds localhost by default, which the
+    # published port cannot reach from outside the container.
+    command: npx -y docsify-cli@5.0.0 serve . -p 3000 --host 0.0.0.0
+    volumes:
+      - ./docs:/docs # live edits from the host
+      - npm-cache:/root/.npm # cache the npx docsify-cli install across restarts
+    ports:
+      - "3000:3000"
+      - "35729:35729" # docsify livereload
+volumes:
+  npm-cache:

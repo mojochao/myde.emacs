@@ -10,6 +10,10 @@ hk = "2.0.1"
 # the system when the repo does not pin one.
 "npm:docsify-cli" = "5.0.0"
 
+# qmd indexes docs/ for `mise run docs-search'.  Its index lives in .qmd/;
+# build it once with `mise exec -- python3 scripts/qmd.py init'.
+"npm:@tobilu/qmd" = "2.5.3"
+
 [env]
 # Emacs init directory; `mise run link' points this at the repo.
 emacs_dir = "{{env.HOME}}/.config/emacs"
@@ -87,6 +91,18 @@ run = "scripts/myde-probe.sh {{config_root}} {{arg(name='report')}}"
 [tasks.docs]
 description = "Serve docs/ as a live-reloading site on http://localhost:3000"
 run = "docsify serve {{config_root}}/docs"
+
+[tasks.docs-up]
+description = "Serve docs/ from a container on http://localhost:3000"
+run = "docker compose -f docs.compose.yaml up"
+
+[tasks.docs-down]
+description = "Stop the docs container"
+run = "docker compose -f docs.compose.yaml down"
+
+[tasks.docs-search]
+description = "Search docs/ with qmd. Usage: mise run docs-search <question>"
+run = "python3 scripts/qmd.py query"
 
 [tasks.install-xdg]
 description = "Register the org-protocol:// URI handler (Linux)"
