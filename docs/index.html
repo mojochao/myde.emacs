@@ -20,10 +20,12 @@
   <script>
     // Show the repo root VERSION (docs/VERSION links to it) after the sidebar
     // name.  Only a bare semver is shown, so an error page served in place of
-    // a missing file never reaches the sidebar.
+    // a missing file never reaches the sidebar.  The Accept header matters:
+    // docsify-cli's history fallback answers any extensionless path that
+    // accepts HTML, which a bare fetch does, with index.html.
     function mydeVersionPlugin(hook) {
       hook.ready(function () {
-        fetch('VERSION')
+        fetch('VERSION', { headers: { Accept: 'text/plain' } })
           .then(function (response) { return response.ok ? response.text() : ''; })
           .then(function (text) {
             var version = text.trim();
