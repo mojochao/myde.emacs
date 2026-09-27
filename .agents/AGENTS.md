@@ -18,6 +18,9 @@ mise run probe <report>   # Boot this config as a throwaway daemon and report it
 mise run docs             # Serve docs/ as a live-reloading site on localhost:3000
 mise run docs-up          # Serve docs/ from a container on localhost:3000 (docs-down stops it)
 mise run docs-search <q>  # Search docs/ with qmd; index once with `mise exec -- python3 scripts/qmd.py init`
+mise run docs-check       # Check docs/ links, traceability, vendored assets, and markdown lint
+mise run docs-vendor      # Re-fetch the pinned docsify assets into docs/vendor/
+mise run tag              # Tag HEAD v<VERSION> once docs/changelog.md has that release
 mise run export           # Export myde.org to build/myde.tex and build/myde.pdf
 mise run install-xdg      # Register the org-protocol:// URI handler (Linux)
 mise run install-macos    # Register the org-protocol:// URI handler (macOS)

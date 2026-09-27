@@ -33,6 +33,9 @@ Tasks live in `mise.toml`; `mise tasks` lists them all.
 | `mise run docs`            | Serve `docs/` as a live-reloading site on http://localhost:3000            |
 | `mise run docs-up` / `docs-down` | Start or stop the same site in a container, for machines without node |
 | `mise run docs-search <q>` | Search `docs/` with qmd (build the index once: `mise exec -- python3 scripts/qmd.py init`) |
+| `mise run docs-check`      | Check `docs/` links, traceability, vendored assets, and markdown lint      |
+| `mise run docs-vendor`     | Re-fetch the pinned docsify assets into `docs/vendor/`                     |
+| `mise run tag`             | Tag HEAD `v<VERSION>` once `docs/changelog.md` has that release            |
 | `mise run export`          | Export `myde.org` to `build/myde.tex` and `build/myde.pdf`                 |
 | `mise run install-xdg`     | Register the `org-protocol://` URI handler (Linux)                         |
 | `mise run install-macos`   | Register the `org-protocol://` URI handler (macOS)                         |
@@ -147,7 +150,7 @@ Sections follow consistent keybinding prefixes:
 | `C-c i *` | REPL / interactive — language-specific | `C-c i i` start REPL     |
 | `C-c d *` | Debug (dape) — global                  | `C-c d d` start debugger |
 
-For detailed test and REPL keybinding granularity across languages, see `docs/prog-modules-design.md`.
+Per-language keys are in the User Guide, `docs/user.md` §4.2.
 
 ### XDG paths
 
@@ -188,8 +191,7 @@ browser.
 
 The last two arrive over `org-protocol`, which needs a system URI handler —
 `mise run install-xdg` on Linux, `mise run install-macos` on macOS — plus a browser
-bookmarklet. See `docs/org-protocol-setup.md` for both, and `docs/org-workflow-design.md`
-for the design.
+bookmarklet. See `docs/user.md` §2.6 for both, and `docs/tdd.md` §2.3 for the design.
 
 ## Running as a daemon
 
@@ -301,11 +303,6 @@ M-x myde-treesit-install-language-grammar RET xml RET
 
 ## Documentation
 
-| Document                                  | Covers                                           |
-|-------------------------------------------|--------------------------------------------------|
-| `AGENTS.md`                               | Repo conventions, in the form agents read        |
-| `docs/org-workflow-design.md`             | The task, note, and tag design behind `core-org` |
-| `docs/org-protocol-setup.md`              | URI handler and browser bookmarklet setup        |
-| `docs/prog-modules-design.md`             | Per-language test and REPL keybinding layout     |
-| `docs/elixir-developer-guide.md`          | Elixir tooling, tests, and debugging             |
-| `docs/projectile-to-project-migration.md` | Notes from the move to built-in `project.el`     |
+The docs site is published at https://mojochao.github.io/myde.emacs/.
+Its source is `docs/`, starting at `docs/README.md`.
+`AGENTS.md` holds the repo conventions, in the form agents read.
