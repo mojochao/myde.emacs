@@ -143,13 +143,17 @@ Emacs.app must never run alongside the daemon, since the two processes would con
 
 **Context:** A Makefile previously drove tangle and check targets by hand, with no hook enforcing that `myde.org` and its tangled output stayed in sync at commit time.
 Commit `1d8c3e0` replaced it with mise tasks and hk hooks on 2026-09-18.
-Commit `6f3393e` added two further layers: an Emacs `after-save-hook` that re-tangles on save, and a Claude Code PostToolUse hook that does the same for agent edits, paired with a PreToolUse hook that denies edits to the three tangled files outright.
+Commit `6f3393e` added two further layers.
+An Emacs `after-save-hook` re-tangles on save.
+A Claude Code PostToolUse hook does the same for agent edits, paired with a PreToolUse hook that denies edits to the three tangled files outright.
 
-**Decision:** hk's pre-commit hook treats drift between `myde.org` and the tangled elisp as a fix, not a rejection: it stashes unstaged changes, runs `mise run tangle`, and stages the three tangled files before running `mise run forms` and `mise run test`.
+**Decision:** hk's pre-commit hook treats drift between `myde.org` and the tangled elisp as a fix, not a rejection.
+It stashes unstaged changes, runs `mise run tangle`, stages the three tangled files, then runs `mise run forms` and `mise run test`.
 pre-push runs the same checks without rewriting anything, as a backstop for `--no-verify`.
 
 **Consequences:** `myde.org` and its tangled output cannot drift apart in a commit made through the normal hook path.
-An agent that edited a tangled file directly would have its change silently discarded at the next tangle, so the PreToolUse guard denies the edit instead of letting the loss surface later at pre-push.
+An agent that edited a tangled file directly would have its change silently discarded at the next tangle.
+The PreToolUse guard denies the edit, rather than letting the loss surface later at pre-push.
 `stage` is restricted to the three tangled files, so a partially staged `myde.org` keeps whatever staging the user chose.
 
 ## ADR-07: State, data, and cache in XDG directories :id=adr-07
@@ -163,7 +167,9 @@ An agent that edited a tangled file directly would have its change silently disc
 **Context:** Emacs state, data, and cache files used to accumulate directly inside `user-emacs-directory`, cluttering the config directory.
 Commit `4a8c68c` redirected them to the XDG base directory locations.
 
-**Decision:** State such as recentf, places, history, tramp, and auto-save-list goes to `$XDG_STATE_HOME/emacs/`, data such as transient and tree-sitter goes to `$XDG_DATA_HOME/emacs/`, and cache such as eln-cache and url goes to `$XDG_CACHE_HOME/emacs/`.
+**Decision:** State such as recentf, places, history, tramp, and auto-save-list goes to `$XDG_STATE_HOME/emacs/`.
+Data such as transient and tree-sitter goes to `$XDG_DATA_HOME/emacs/`.
+Cache such as eln-cache and url goes to `$XDG_CACHE_HOME/emacs/`.
 Only packages stay inside `user-emacs-directory`, under `elpaca/` at the repository root.
 
 **Consequences:** `auto-save-list-file-prefix` has to be set in `early-init.el`, because Emacs creates that directory before `init.el` runs.
@@ -197,9 +203,11 @@ Agenda discovery prunes dot-directories and `node_modules`, keeping a recursive 
 
 **Requirements:** [FR-8](prd.md#fr-8)
 
-**Context:** The MCP server's default conflict-resolution setting, `warn`, silently rebound to an alternative `emacs-mcp-server-N.sock` path instead of the fixed one the stdio bridge hardcodes, leaving agents unable to reach a live daemon.
+**Context:** The MCP server's default conflict-resolution setting, `warn`, silently rebound to an alternative `emacs-mcp-server-N.sock` path instead of the fixed one the stdio bridge hardcodes.
+Agents were left unable to reach a live daemon.
 Commit `69470b4` switched the setting to `force`, which unlinked whatever held the fixed path.
-Commit `9ee87eb` found that `force` let a second Emacs, such as Emacs.app launched by mistake or `mise run probe`, steal the daemon's own socket, and switched the setting to `error` instead.
+Commit `9ee87eb` found that `force` let a second Emacs, such as Emacs.app launched by mistake or `mise run probe`, steal the daemon's own socket.
+It switched the setting to `error` instead.
 
 **Decision:** `mcp-server-socket-conflict-resolution` is set to `error`, so a second Emacs on this config leaves a live daemon's socket alone and starts without an MCP server.
 The startup hook catches that error so the rest of `elpaca-after-init-hook` still runs.
@@ -237,7 +245,8 @@ Every other startup hook that depends on a package being loaded has to use `elpa
 **Context:** The docs site ran docsify 5 loaded from a CDN, fetching third-party scripts and stylesheets at runtime on every visit.
 Catppuccin's Frappé theme and docsify-themeable's simple-dark layout both target docsify 4, not 5.
 
-**Decision:** `docs/vendor/` now holds docsify 4.13.1, its search plugin, docsify-themeable's simple-dark CSS, the Catppuccin Frappé mauve theme, and the Prism grammars the docs actually use, each pinned to a version or commit.
+**Decision:** `docs/vendor/` now holds docsify 4.13.1, its search plugin, docsify-themeable's simple-dark CSS, the Catppuccin Frappé mauve theme, and the Prism grammars the docs actually use.
+Each is pinned to a version or commit.
 The Catppuccin theme's remote `@import` is rewritten to a vendored file so no stylesheet loads from a CDN.
 
 **Consequences:** The published site fetches no third-party script or stylesheet at runtime.
@@ -254,7 +263,8 @@ Upgrading a pinned version means editing one pin table and reviewing the resulti
 
 **Context:** The repository had no Pages site configured, and `docs/.nojekyll` existed only to suppress a Jekyll build that a GitHub Actions deployment never runs.
 
-**Decision:** A `docs.yml` workflow runs a check job that installs markdownlint and runs `mise run docs-check`, the same check a developer runs locally, followed by a deploy job that needs it to pass.
+**Decision:** A `docs.yml` workflow runs a check job that installs markdownlint and runs `mise run docs-check`, the same check a developer runs locally.
+A deploy job follows and needs the check job to pass.
 The deploy job alone carries the `pages` and `id-token` permissions, and every action is pinned to a full commit SHA.
 
 **Consequences:** A push to `main` that changes docs, `VERSION`, scripts, the lint config, or `mise.toml` triggers a deploy, gated on the same checks a developer would run by hand.
@@ -275,6 +285,7 @@ Each needed the same version string without maintaining three separate copies of
 **Decision:** A single `VERSION` file at the repository root holds one semver string, starting at `0.1.0`, and `docs/VERSION` is a relative symlink to it.
 The file names the version most recently released, so the sidebar shows the last tag between releases rather than an unreleased placeholder.
 
-**Consequences:** `actions/upload-pages-artifact` tars with `--dereference`, so the Pages artifact holds the real file rather than a dangling symlink, and the docs container mounts the repository root so the same symlink resolves inside it.
+**Consequences:** `actions/upload-pages-artifact` tars with `--dereference`, so the Pages artifact holds the real file rather than a dangling symlink.
+The docs container mounts the repository root, so the same symlink resolves inside it.
 docsify-cli's local dev server answers any extensionless path that accepts HTML with `index.html`, so the sidebar plugin fetches `VERSION` with an explicit `Accept: text/plain` header, which commit `fb7ee5e` fixed.
 `mise run tag` creates the annotated tag `v<VERSION>` and refuses when `docs/changelog.md` has no matching release heading.
