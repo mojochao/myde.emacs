@@ -23,12 +23,10 @@ NPM = "https://cdn.jsdelivr.net/npm"
 CATPPUCCIN = "https://raw.githubusercontent.com/catppuccin/docsify/628ff2668a8d952b6ef04e435632cc3470cd24b2"
 
 # One Prism grammar per fence language the docs use. docsify 4 bundles Prism
-# core with markup, css, clike, and javascript. index.html loads these in list
-# order, and c must come before cpp.
-PRISM_LANGS = [
-    "bash", "c", "clojure", "cpp", "elixir", "erlang", "go", "json", "lisp",
-    "lua", "python", "ruby", "rust", "scheme", "toml", "typescript", "yaml", "zig",
-]
+# core with markup, css, clike, and javascript. bash also covers sh and shell,
+# and lisp covers elisp. index.html loads these in list order, so a grammar
+# that extends another (cpp extends c) must come after it.
+PRISM_LANGS = ["bash", "elixir", "lisp"]
 
 PINS = {
     "docsify.min.js": f"{NPM}/docsify@4.13.1/lib/docsify.min.js",
