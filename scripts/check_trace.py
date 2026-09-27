@@ -94,6 +94,8 @@ def parse(path):
         if not HEADING_RE.match(text):
             continue
         m = HEADING_RE.match(raw[i])
+        if not m:  # a `#` followed by a masked code span, not a heading
+            continue
         title = m.group(2)
         idm = ID_ATTR_RE.search(title)
         anchor = idm.group(1) if idm else docsify_slugify(title)
@@ -163,7 +165,7 @@ def check(root):
             n, value = field
             targets = links("prd.md", [value])
             if not targets and not (may_be_none and re.match(r"none\b", value)):
-                wanted = f"a link to {doc}" + (" or `none`" if may_be_none else "")
+                wanted = f"a link to {doc}" + (" or none" if may_be_none else "")
                 find("prd.md", n, f"{rid} {name} needs {wanted}")
             for tdoc, anchor in targets:
                 if tdoc != doc:
@@ -172,6 +174,9 @@ def check(root):
                 target = section(doc, anchor)
                 if target is None:
                     find("prd.md", n, f"{rid} {name} links {doc}#{anchor}, which does not exist")
+                    continue
+                if target.level == 1:
+                    find("prd.md", n, f"{rid} {name} links the whole of {doc}, not a section")
                     continue
                 forward[rid][name].add(anchor)
                 if rid not in requirements(target.links()):

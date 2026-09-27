@@ -145,5 +145,15 @@ class CheckTraceTest(unittest.TestCase):
         )
 
 
+    def test_hash_before_a_code_span_is_not_a_heading(self):
+        self.assertEqual(run(edit("tdd.md", "Serves", "#`include` is C.\n\nServes")), [])
+
+    def test_forward_link_to_a_whole_doc(self):
+        self.assert_finds(
+            "FR-1 Designed in links the whole of tdd.md, not a section",
+            edit("prd.md", "[§1](tdd.md#_1-design)", "[TDD](tdd.md#technical-design)"),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

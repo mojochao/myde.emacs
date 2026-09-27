@@ -126,8 +126,8 @@ run = [
 [tasks.tag]
 description = "Tag HEAD v<VERSION> once docs/changelog.md has that release"
 run = [
-  "grep -qF \"## $(cat VERSION) - \" docs/changelog.md || { echo \"docs/changelog.md has no '## $(cat VERSION) - <date>' heading\"; exit 1; }",
-  "git tag -a v$(cat VERSION) -m v$(cat VERSION)",
+  "grep -q \"^## $(cat VERSION) - \" docs/changelog.md || { echo \"docs/changelog.md has no '## $(cat VERSION) - <date>' heading\"; exit 1; }",
+  "git tag -a \"v$(cat VERSION)\" -m \"v$(cat VERSION)\"",
 ]
 
 [tasks.install-xdg]
