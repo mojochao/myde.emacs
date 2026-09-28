@@ -19,7 +19,7 @@ Nothing is planned.
 ### RM-12: Decide on `ob-zig` :id=rm-12
 
 - **Decisions:** [ADR-01](adr.md#adr-01)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.0](changelog.md#_010-2026-09-28)
 
 `ob-zig` is pinned to [`mojochao/ob-zig.el`](https://github.com/mojochao/ob-zig.el), a fork that adds the `lexical-binding` cookie and the `Package-Requires` line upstream lacks.
 Without them elpaca compiled it with no `zig-mode` on `load-path`, the compile failed, and Emacs warned about the source on every start.
@@ -29,7 +29,7 @@ With it elpaca builds `ob-zig.elc`, and startup logs no warnings.
 ### RM-11: Find what reads stdin during a throwaway daemon's startup :id=rm-11
 
 - **Requirements:** [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.0](changelog.md#_010-2026-09-28)
 
 The read was `global-mise-mode` asking whether to trust the repo's `mise.toml`.
 The probe's private `XDG_STATE_HOME` hid mise's trust store, and elpaca's buffers under `elpaca/` led mise to that config whatever the daemon's working directory.
@@ -39,7 +39,7 @@ The probe now sets `MISE_TRUSTED_CONFIG_PATHS` to the config it boots, and every
 ### RM-15: Every key, hook, and setting goes through a use-package keyword :id=rm-15
 
 - **Requirements:** [FR-7](prd.md#fr-7), [NFR-4](prd.md#nfr-4)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.0](changelog.md#_010-2026-09-28)
 
 An audit of `myde.org` moved every raw `define-key`, `add-hook`, and `setq` inside a `use-package` form onto `:bind`, `:bind-keymap`, `:hook`, `:custom`, or `:interpreter`.
 The conversion exposed defects the raw calls had hidden: recentf never loaded, hl-line stayed on in terminal buffers, nov wrote reading positions to the repo root, and cider's test keys and slime's setup never applied.
@@ -48,7 +48,7 @@ The conversion exposed defects the raw calls had hidden: recentf never loaded, h
 ### RM-10: Resolve the `C-c d` collision in Elixir buffers :id=rm-10
 
 - **Requirements:** [FR-7](prd.md#fr-7)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.0](changelog.md#_010-2026-09-28)
 
 `mix.el`'s command map moved from `C-c d` to `C-c x`.
 The global dape keys under `C-c d` now reach Elixir buffers.
@@ -56,7 +56,7 @@ The global dape keys under `C-c d` now reach Elixir buffers.
 ### RM-14: Every bound key runs a real command :id=rm-14
 
 - **Requirements:** [FR-7](prd.md#fr-7)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.0](changelog.md#_010-2026-09-28)
 
 Several keys across dape, Common Lisp, Erlang, Go, Zig, Python, and Ruby were bound to commands that did not exist.
 Each now runs a real command, and gotest-ts now loads in Go buffers.
@@ -66,7 +66,7 @@ Each now runs a real command, and gotest-ts now loads in Go buffers.
 
 - **Requirements:** [FR-10](prd.md#fr-10), [FR-11](prd.md#fr-11), [FR-12](prd.md#fr-12), [NFR-7](prd.md#nfr-7)
 - **Decisions:** [ADR-11](adr.md#adr-11), [ADR-12](adr.md#adr-12), [ADR-13](adr.md#adr-13)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.0](changelog.md#_010-2026-09-28)
 
 `docs/` follows the SciPlay doc schema with requirement traceability, a vendored Catppuccin Frappé theme, GitHub Pages publishing, and a root `VERSION` file.
 The first deploy published the site on 2026-09-28.
@@ -74,7 +74,7 @@ The first deploy published the site on 2026-09-28.
 ### RM-13: Lua and tree-sitter grammar fixes :id=rm-13
 
 - **Requirements:** [FR-7](prd.md#fr-7)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.0](changelog.md#_010-2026-09-28)
 
 Lua buffers run their full setup and open in `lua-ts-mode`.
 Every configured tree-sitter grammar installs, and each mode that uses one passes its font-lock queries against it.
@@ -82,7 +82,7 @@ Every configured tree-sitter grammar installs, and each mode that uses one passe
 ### RM-8: Docs site with preview and search :id=rm-8
 
 - **Requirements:** [FR-10](prd.md#fr-10)
-- **Shipped:** 2026-09-27, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-27, [0.1.0](changelog.md#_010-2026-09-28)
 
 A docsify site for `docs/`, served natively or from a container, with qmd search.
 
@@ -90,7 +90,7 @@ A docsify site for `docs/`, served natively or from a container, with qmd search
 
 - **Requirements:** [FR-4](prd.md#fr-4)
 - **Decisions:** [ADR-05](adr.md#adr-05)
-- **Shipped:** 2026-09-27, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-27, [0.1.0](changelog.md#_010-2026-09-28)
 
 The dashboard opens on demand, and daemon startup warnings stay off the first client frame.
 
@@ -98,7 +98,7 @@ The dashboard opens on demand, and daemon startup warnings stay off the first cl
 
 - **Requirements:** [FR-8](prd.md#fr-8)
 - **Decisions:** [ADR-09](adr.md#adr-09)
-- **Shipped:** 2026-09-22, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-22, [0.1.0](changelog.md#_010-2026-09-28)
 
 The MCP server listens on a fixed socket that a second Emacs cannot take from a live daemon.
 
@@ -106,7 +106,7 @@ The MCP server listens on a fixed socket that a second Emacs cannot take from a 
 
 - **Requirements:** [FR-9](prd.md#fr-9)
 - **Decisions:** [ADR-06](adr.md#adr-06)
-- **Shipped:** 2026-09-21, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-21, [0.1.0](changelog.md#_010-2026-09-28)
 
 Saving `myde.org` in Emacs re-tangles it.
 
@@ -114,7 +114,7 @@ Saving `myde.org` in Emacs re-tangles it.
 
 - **Requirements:** [FR-5](prd.md#fr-5), [FR-6](prd.md#fr-6)
 - **Decisions:** [ADR-08](adr.md#adr-08)
-- **Shipped:** 2026-09-18, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-18, [0.1.0](changelog.md#_010-2026-09-28)
 
 Capture, `tasks.org` projects, ERT tests, and the macOS `org-protocol://` handler.
 
@@ -122,7 +122,7 @@ Capture, `tasks.org` projects, ERT tests, and the macOS `org-protocol://` handle
 
 - **Requirements:** [FR-9](prd.md#fr-9)
 - **Decisions:** [ADR-06](adr.md#adr-06)
-- **Shipped:** 2026-09-18, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-18, [0.1.0](changelog.md#_010-2026-09-28)
 
 mise tasks replace the Makefile, and hk runs the git hooks.
 
@@ -130,7 +130,7 @@ mise tasks replace the Makefile, and hk runs the git hooks.
 
 - **Requirements:** [NFR-5](prd.md#nfr-5)
 - **Decisions:** [ADR-03](adr.md#adr-03)
-- **Shipped:** 2026-09-18, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-18, [0.1.0](changelog.md#_010-2026-09-28)
 
 `user-lisp/myde.el` holds only definitions.
 
@@ -138,6 +138,6 @@ mise tasks replace the Makefile, and hk runs the git hooks.
 
 - **Requirements:** [FR-1](prd.md#fr-1), [FR-2](prd.md#fr-2), [FR-3](prd.md#fr-3), [FR-9](prd.md#fr-9), [NFR-1](prd.md#nfr-1), [NFR-3](prd.md#nfr-3)
 - **Decisions:** [ADR-00](adr.md#adr-00), [ADR-01](adr.md#adr-01), [ADR-02](adr.md#adr-02)
-- **Shipped:** 2026-09-15, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-15, [0.1.0](changelog.md#_010-2026-09-28)
 
 One literate `myde.org`, elpaca, and binary gates replace the `modules/` tree.

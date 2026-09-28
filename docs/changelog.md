@@ -1,11 +1,18 @@
 # Changelog
 
-No release has been cut yet.
 Entries start at 2026-09-15, the three-file literate config.
 Earlier history is in `git log`.
 Each entry traces to the roadmap item it shipped.
 
 ## Unreleased
+
+### Added
+
+### Changed
+
+### Fixed
+
+## 0.1.0 - 2026-09-28
 
 ### Added
 
