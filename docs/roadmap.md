@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 2026-09-27.
+Status as of 2026-09-28.
 
 ## Now
 
@@ -38,6 +38,14 @@ A startup read of stdin then aborts `elpaca-after-init-hook`, so the probe repor
 AGENTS.md lists three options: live with the warning, pin a fork that adds the header, or drop the package.
 
 ## Shipped
+
+### RM-13: Lua and tree-sitter grammar fixes :id=rm-13
+
+- **Requirements:** [FR-7](prd.md#fr-7)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+Lua buffers run their full setup and open in `lua-ts-mode`.
+Every configured tree-sitter grammar installs, and each mode that uses one passes its font-lock queries against it.
 
 ### RM-8: Docs site with preview and search :id=rm-8
 

@@ -242,7 +242,7 @@ Every language uses the same prefixes for LSP, tests, REPL, and debugging.
 - **Decided by:** none
 - **Designed in:** [§4.3](tdd.md#_43-language-servers-tests-repls-and-debuggers)
 - **Verified by:** [§3.5](qa.md#_35-language-keys)
-- **Roadmap:** [RM-10](roadmap.md#rm-10)
+- **Roadmap:** [RM-10](roadmap.md#rm-10), [RM-13](roadmap.md#rm-13)
 
 #### FR-8
 

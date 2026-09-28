@@ -38,6 +38,21 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: Lua buffers run their full setup again, and the `C-c i` REPL keys work in both Lua modes.
+  A hook to `inf-lua-minor-mode`, which inf-lua never defined, stopped each Lua buffer's setup before eglot and format-on-save ran.
+  inf-lua is dropped for each mode's own inferior Lua.
+  Traces to [RM-13](roadmap.md#rm-13), [FR-7](prd.md#fr-7).
+  Commit `57901d0`.
+- 2026-09-28: `.lua` files open in `lua-ts-mode`.
+  The Lua grammar source named a branch and a source directory the repository does not have, so the grammar never installed.
+  It is now pinned to the commit Emacs 31's `lua-ts-mode` is written against.
+  Traces to [RM-13](roadmap.md#rm-13), [FR-7](prd.md#fr-7).
+  Commit `adad9bd`.
+- 2026-09-28: The Go, Zig, Clojure, and Common Lisp grammars install from their real repositories.
+  Elixir buffers use the built-in `heex-ts-mode`, since the external package of the same name broke `elixir-ts-mode`.
+  XML files open in `nxml-mode` directly, since Emacs 31 has no `xml-ts-mode`.
+  Traces to [RM-13](roadmap.md#rm-13), [FR-7](prd.md#fr-7).
+  Commit `35e41ff`.
 - 2026-09-22: The MCP server keeps a fixed socket path, and a second Emacs on this config no longer takes the socket from a live daemon.
   Traces to [RM-6](roadmap.md#rm-6), [FR-8](prd.md#fr-8), [ADR-09](adr.md#adr-09).
   Commits `69470b4` and `9ee87eb`.
