@@ -16,6 +16,16 @@ Nothing is planned.
 
 ## Shipped
 
+### RM-16: GitHub releases on tag push :id=rm-16
+
+- **Requirements:** [FR-12](prd.md#fr-12)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+Pushing a `v*` tag runs `.github/workflows/release.yml`, which checks the tag against `VERSION` and runs `mise run release`.
+The task publishes the GitHub release with `gh release create --verify-tag`, so it never creates a tag.
+Its notes are the version's changelog section, cut by `scripts/release_notes.py` with the relative doc links rewritten to the Pages site.
+The same task published the v0.1.0 release, whose tag predates the workflow.
+
 ### RM-12: Decide on `ob-zig` :id=rm-12
 
 - **Decisions:** [ADR-01](adr.md#adr-01)

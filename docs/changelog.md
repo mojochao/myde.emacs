@@ -8,6 +8,11 @@ Each entry traces to the roadmap item it shipped.
 
 ### Added
 
+- 2026-09-28: Pushing a `v*` tag publishes its GitHub release, with that version's changelog section as the notes.
+  `mise run release` does the publishing, and `.github/workflows/release.yml` runs it on the tag push once the tag matches `VERSION`.
+  Traces to [RM-16](roadmap.md#rm-16), [FR-12](prd.md#fr-12).
+  Commit `b7b7b36`.
+
 ### Changed
 
 ### Fixed

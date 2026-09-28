@@ -164,7 +164,7 @@ Anything that only shows up in a window-system frame needs a client frame to con
 - `mise run probe <report>` boots this config as a throwaway daemon and writes a report of its declared `use-package` forms, global modes, init time, and startup errors.
   Run it before and after a change, and diff its `declared:` and `mode:` lines.
   A declared package that disappears, or a mode that flips to `off`, is a regression.
-- `mise run docs-check` runs the docs checkers and markdownlint in order: `check_links.py`, `check_trace.py`, `test_check_trace.py`, `vendor_docs.py --check`, then `markdownlint docs/`.
+- `mise run docs-check` runs the docs checkers and markdownlint in order: `check_links.py`, `check_trace.py`, `test_check_trace.py`, `test_release_notes.py`, `vendor_docs.py --check`, then `markdownlint docs/`.
 
 See [Quality Assurance](qa.md) for what each check catches, how it is enforced by git hooks, and the manual checks that have no automated equivalent.
 
@@ -227,6 +227,8 @@ Once it is set, a passing push to `main` publishes to [https://mojochao.github.i
    It checks that `docs/changelog.md` has a `## <VERSION> - <date>` heading, and refuses otherwise.
    `git tag -a` itself refuses if `v<VERSION>` already exists.
 6. Push the commit and the tag.
+   The tag push runs `.github/workflows/release.yml`, which publishes the GitHub release with `mise run release`.
+   Its notes are the version's section of `docs/changelog.md`.
 
 The owner runs step 6.
 

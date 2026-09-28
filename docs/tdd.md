@@ -261,7 +261,8 @@ Between releases, the sidebar shows the last released version, since `VERSION` o
 The release flow: edit `VERSION`, move `Unreleased` to that version and `Now` items to `Shipped` in the docs, and fix the `Shipped` links `mise run docs-check` reports.
 Then commit and run `mise run tag`.
 `mise run tag` refuses unless `docs/changelog.md` has a `## <VERSION> - <date>` heading, then creates the annotated tag `v<VERSION>`.
-Pushing the commit and the tag finishes the release.
+Pushing the tag runs `.github/workflows/release.yml`, which checks that the tag matches `VERSION` at its commit and runs `mise run release`.
+That publishes the GitHub release, its notes cut from the version's changelog section by `scripts/release_notes.py`, with relative doc links rewritten to the Pages site.
 
 ## 6. Testing Strategy
 
