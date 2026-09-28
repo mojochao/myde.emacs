@@ -1,4 +1,4 @@
-# MyDE
+# My Development Environment (MyDE) - Emacs
 
 ## Introduction
 
