@@ -146,8 +146,10 @@ unless the gate passed.
 - `use-package-always-ensure t` is set in `init.el`. Third-party forms need no `:ensure`;
   **every built-in form must say `:ensure nil`**, or elpaca tries to clone it.
 - Git-only packages take a recipe plist: `:ensure (:host github :repo "owner/name")`.
-  Add `:files (:defaults "subdir")` when a package loads files outside elpaca's default
-  set — `mcp-server` needs its `tools/` directory this way.
+  Add `:files (:defaults ("subdir" "subdir/*.el"))` when a package loads files outside
+  elpaca's default set, as `mcp-server` does for its `tools/` directory. A bare
+  `"subdir"` links the directory itself, and `byte-recompile-directory` skips a
+  symlinked directory, so its files are never compiled and load as source.
 - **One ensuring form per package.** Any additional `use-package` form for the same
   package must say `:ensure nil`. A duplicate order makes elpaca 0.12 abort init: it
   `warn`s about the duplicate and then treats the warning's return value as an order

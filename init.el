@@ -1358,9 +1358,12 @@
   (mcp-server-socket-conflict-resolution 'error)
   :hook (elpaca-after-init . myde/mcp-server-startup-hook)
   ;; The tool modules live in tools/, which mcp-server-emacs-tools.el resolves
-  ;; relative to itself; elpaca's default :files would leave them behind.
+  ;; relative to itself, so elpaca's default :files would leave them behind.
+  ;; ("tools" "tools/*.el") links each file into a real tools/ directory.  A
+  ;; bare "tools" links the directory itself, which byte-recompile-directory
+  ;; skips as a symlink, so the tools loaded as source and warned on every start.
   :ensure (:host github :repo "rhblind/emacs-mcp-server"
-                 :files (:defaults "tools")))
+                 :files (:defaults ("tools" "tools/*.el"))))
 
 ;;;; auth-1password
 ;;;; --------------
