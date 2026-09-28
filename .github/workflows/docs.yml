@@ -1,5 +1,9 @@
-# Check docs/ and publish it to GitHub Pages.  The deploy job runs only after
-# the same `mise run docs-check' a developer runs has passed.
+# Check docs/ and publish it to GitHub Pages.  The check job uploads the site
+# only after the same `mise run docs-check' a developer runs has passed, and the
+# deploy job publishes that one artifact.  Keeping the upload out of the deploy
+# job means re-running a failed deploy reuses the artifact instead of uploading
+# a second one, which deploy-pages refuses, and it gives the artifact time to
+# show up in the run's listing before deploy-pages asks for it.
 name: docs
 
 on:
@@ -37,26 +41,22 @@ jobs:
           version: 2026.9.15
           install_args: "npm:markdownlint-cli"
       - run: mise run docs-check
+      # The action tars with --dereference, so docs/VERSION ships as a file.
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: docs
 
   deploy:
     needs: check
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    # A job-level block replaces the workflow's, so contents: read is repeated
-    # here for the checkout, which a private repository needs.
     permissions:
-      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
-      # The action tars with --dereference, so docs/VERSION ships as a file.
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: docs
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
