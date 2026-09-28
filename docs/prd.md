@@ -251,7 +251,7 @@ Agents can query and drive the running Emacs over MCP.
 - **Decided by:** [ADR-09](adr.md#adr-09)
 - **Designed in:** [§3.1](tdd.md#_31-endpoints)
 - **Verified by:** [§3.1](qa.md#_31-daemon-frames-and-mcp)
-- **Roadmap:** [RM-6](roadmap.md#rm-6)
+- **Roadmap:** [RM-6](roadmap.md#rm-6), [RM-20](roadmap.md#rm-20)
 
 #### FR-9
 

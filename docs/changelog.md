@@ -12,6 +12,11 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: Emacs no longer logs "`when-let` is an obsolete macro" from mcp-server's tools on every start.
+  The tools are byte-compiled now, because the recipe links them into a real `tools/` directory instead of a symlink the compile step skipped.
+  Traces to [RM-20](roadmap.md#rm-20), [FR-8](prd.md#fr-8).
+  Commit `358ea8f`.
+
 ## 0.1.3 - 2026-09-28
 
 ### Added
