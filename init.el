@@ -3486,11 +3486,14 @@
 ;; Tree-sitter grammar
 ;; -----------------------------------------------------------------------------
 
+;; Pinned to the commit Emacs 31's lua-ts-mode is written against.  lua-ts-mode
+;; registers the same entry, but only once it loads, which is after the first
+;; .lua visit has already tried to install the grammar through treesit-auto.
 (use-package treesit
   :config
   (add-to-list 'treesit-language-source-alist
                '(lua "https://github.com/tree-sitter-grammars/tree-sitter-lua"
-                     "master" "lua/src"))
+                     :commit "db16e76558122e834ee214c8dc755b4a3edc82a9"))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------

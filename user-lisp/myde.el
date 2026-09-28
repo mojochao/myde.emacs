@@ -1383,7 +1383,7 @@ Runs after mise-mode has applied the project environment, so
 
 (defun myde-lua-ts-or-plain-mode ()
   "Use `lua-ts-mode' if tree-sitter is available, otherwise fall back to `lua-mode'."
-  (if (treesit-ready-p 'lua)
+  (if (treesit-ready-p 'lua t)
       (lua-ts-mode)
     (lua-mode)))
 
