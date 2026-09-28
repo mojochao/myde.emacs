@@ -1136,7 +1136,7 @@
   :config
   (setq dape-buffer-window-arrangement 'right)
   :bind (("C-c d d" . dape)
-         ("C-c d l" . dape-last)
+         ("C-c d l" . dape-restart)   ; restart, or re-run the last config
          ("C-c d b" . dape-breakpoint-toggle)
          ("C-c d n" . dape-next)
          ("C-c d s" . dape-step-in)
@@ -2059,7 +2059,7 @@
   (define-key sly-mode-map (kbd "C-c i b") 'sly-eval-buffer)
   (define-key sly-mode-map (kbd "C-c i e") 'sly-eval-last-expression)
   (define-key sly-mode-map (kbd "C-c i d") 'sly-documentation)
-  (define-key sly-mode-map (kbd "C-c i z") 'sly-switch-to-repl)
+  (define-key sly-mode-map (kbd "C-c i z") 'sly-mrepl)
   :ensure t)
 
 ;; SLIME: Fallback REPL for Common Lisp (larger ecosystem if SLY unavailable)
@@ -2078,7 +2078,7 @@
     (define-key slime-mode-map (kbd "C-c i b") 'slime-eval-buffer)
     (define-key slime-mode-map (kbd "C-c i e") 'slime-eval-last-expression)
     (define-key slime-mode-map (kbd "C-c i d") 'slime-documentation)
-    (define-key slime-mode-map (kbd "C-c i z") 'slime-switch-to-repl))
+    (define-key slime-mode-map (kbd "C-c i z") 'slime-switch-to-output-buffer))
   :ensure t)
 
 ;; FiveAM: Test framework documentation
@@ -2503,8 +2503,7 @@
          (erlang-mode . flycheck-mode))
   :bind (:map erlang-mode-map
               ("C-c i i" . erlang-shell)
-              ("C-c i s" . erlang-shell-buffer)
-              ("C-c i r" . inferior-erlang-send-region)
+              ("C-c i s" . erlang-shell-display)
               ("C-c t p" . myde-erlang-run-tests))
   :mode (("\\.erl\\'"     . erlang-mode)
          ("\\.hrl\\'"     . erlang-mode)
@@ -2766,6 +2765,11 @@
 (use-package mix  ;; https://github.com/ayrat555/mix.el
   :after elixir-ts-mode
   :hook (elixir-ts-mode . mix-minor-mode)
+  :config
+  ;; mix binds its command map on C-c d, the shared dape prefix.  The debug
+  ;; keys win, so the mix commands move to C-c x.
+  (define-key mix-minor-mode-map (kbd "C-c d") nil t)
+  (define-key mix-minor-mode-map (kbd "C-c x") 'mix-minor-mode-command-map)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -2951,14 +2955,13 @@
   (("\\.go\\'" . myde-go-ts-or-plain-mode))
   :ensure t)
 
+;; No :after go-mode: .go files open in the built-in go-ts-mode, which never
+;; loads the go-mode package, so the form would never run.
 (use-package gotest-ts  ;; https://github.com/chmouel/gotest-ts.el
-  :after go-mode
   :hook (go-ts-mode . gotest-ts-setup)
   :bind (:map go-ts-mode-map
-              ("C-c t t" . gotest-ts-run-dwim)
-              ("C-c t f" . gotest-ts-run-file)
-              ("C-c t p" . gotest-ts-run-package)
-              ("C-c t r" . gotest-ts-repeat))
+              ;; gotest-ts-setup binds C-c t r/f/i/n/p/m in both Go mode maps.
+              ("C-c t t" . gotest-ts-run-dwim))
   :ensure (:host github :repo "chmouel/gotest-ts.el"))
 
 ;; -----------------------------------------------------------------------------
@@ -3149,7 +3152,7 @@
   :hook ((zig-mode . myde-zig-mode-setup)
          (zig-mode . myde-zig-format-on-save-setup))
   :bind (:map zig-mode-map
-              ("C-c t p" . zig-test-all))
+              ("C-c t p" . zig-test-buffer))
   :mode (("\\.zig\\'" . myde-zig-ts-or-plain-mode)
          ("\\.zon\\'" . myde-zig-ts-or-plain-mode))
   :ensure t)
@@ -3162,7 +3165,7 @@
   :hook ((zig-ts-mode . myde-zig-mode-setup)
          (zig-ts-mode . myde-zig-format-on-save-setup))
   :bind (:map zig-ts-mode-map
-              ("C-c t p" . zig-test-all))
+              ("C-c t p" . zig-test-buffer))
   :ensure (:host github :repo "emacsmirror/zig-ts-mode"))
 
 ;; -----------------------------------------------------------------------------
@@ -3269,7 +3272,7 @@
 (use-package python-pytest  ;; https://github.com/wbolster/emacs-python-pytest
   :after python
   :bind (:map python-ts-mode-map
-              ("C-c t t" . python-pytest-function-dwim)
+              ("C-c t t" . python-pytest-run-def-at-point-treesit)
               ("C-c t f" . python-pytest-file-dwim)
               ("C-c t p" . python-pytest)
               ("C-c t r" . python-pytest-repeat)
@@ -3403,7 +3406,7 @@
               ("C-c t f" . rspec-verify)
               ("C-c t p" . rspec-verify-all)
               ("C-c t r" . rspec-rerun)
-              ("C-c t x" . rspec-verify-failures))
+              ("C-c t x" . rspec-run-last-failed))
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
