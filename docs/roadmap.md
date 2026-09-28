@@ -8,12 +8,15 @@ Nothing is in progress.
 
 ## Next
 
-### RM-11: Boot the probe daemon with stdin closed :id=rm-11
+### RM-11: Find what reads stdin during a throwaway daemon's startup :id=rm-11
 
 - **Requirements:** [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3)
 
-`scripts/myde-probe.sh` starts its throwaway daemon without redirecting stdin.
-A startup read of stdin then aborts `elpaca-after-init-hook`, so the probe reports modes as off that are on in a real session.
+Every throwaway daemon of this config, the probe included, logs an elpaca error from `elpaca--check-queue-completion`: `(end-of-file "Error reading from stdin")`.
+The read aborts `elpaca-after-init-hook` at `global-flycheck-mode`, so the probe reports modes as off that are on in a real session, and the hooks that built-in forms add during init never run at all.
+Redirecting stdin from `/dev/null` was tried on 2026-09-28 and does not help.
+It turns a hang into this error.
+The fix is finding the read.
 
 ## Later
 
@@ -25,6 +28,15 @@ A startup read of stdin then aborts `elpaca-after-init-hook`, so the probe repor
 AGENTS.md lists three options: live with the warning, pin a fork that adds the header, or drop the package.
 
 ## Shipped
+
+### RM-15: Every key, hook, and setting goes through a use-package keyword :id=rm-15
+
+- **Requirements:** [FR-7](prd.md#fr-7), [NFR-4](prd.md#nfr-4)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+An audit of `myde.org` moved every raw `define-key`, `add-hook`, and `setq` inside a `use-package` form onto `:bind`, `:bind-keymap`, `:hook`, `:custom`, or `:interpreter`.
+The conversion exposed defects the raw calls had hidden: recentf never loaded, hl-line stayed on in terminal buffers, nov wrote reading positions to the repo root, and cider's test keys and slime's setup never applied.
+`CLAUDE.md` records the three use-package traps behind them.
 
 ### RM-10: Resolve the `C-c d` collision in Elixir buffers :id=rm-10
 

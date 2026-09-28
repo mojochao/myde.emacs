@@ -26,6 +26,10 @@ Each entry traces to the roadmap item it shipped.
 
 ### Changed
 
+- 2026-09-28: Every key, hook, and setting inside a `use-package` form goes through a keyword: `:bind`, `:bind-keymap`, `:hook`, `:custom`, or `:interpreter`.
+  Built-in concerns with no package form live in `emacs`, `prog-mode`, and `text-mode` forms, and the redundant `:defer t` lines are gone.
+  Traces to [RM-15](roadmap.md#rm-15).
+  Commit `8f5f3f6`.
 - 2026-09-27: The dashboard opens on demand instead of as the initial buffer, and daemon startup warnings stay off the first client frame.
   Traces to [RM-5](roadmap.md#rm-5), [FR-4](prd.md#fr-4), [ADR-05](adr.md#adr-05).
   Commits `16da103`, `6dec388`, and `1d87ae0`.
@@ -43,6 +47,22 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: recentf tracks recent files again.
+  A deferring keyword left `recentf-mode` in a `:config` block that nothing ever loaded, so the mode was off in every session.
+  Traces to [RM-15](roadmap.md#rm-15), [NFR-4](prd.md#nfr-4).
+  Commit `8f5f3f6`.
+- 2026-09-28: The current-line highlight stays out of vterm, term, eshell, comint, and eat buffers.
+  The variable that was meant to exclude them does not exist in Emacs 31.
+  Traces to [RM-15](roadmap.md#rm-15).
+  Commit `8f5f3f6`.
+- 2026-09-28: nov saves EPUB reading positions under `$XDG_STATE_HOME/emacs/`.
+  The setting named a variable nov does not have, so the default path in the repo root was in effect.
+  Traces to [RM-15](roadmap.md#rm-15), [NFR-4](prd.md#nfr-4).
+  Commit `8f5f3f6`.
+- 2026-09-28: cider's `C-c t` test keys bind in Clojure buffers, and slime's REPL keys and `inferior-lisp-program` apply on `M-x slime`.
+  cider's keys waited on a feature the `cider-mode` hook never loads, and slime's setup sat behind a guard that sly always defeated.
+  Traces to [RM-15](roadmap.md#rm-15), [FR-7](prd.md#fr-7).
+  Commit `8f5f3f6`.
 - 2026-09-28: `C-c ! n`, `p`, and `l` navigate the language server's diagnostics in eglot buffers.
   flycheck's `C-c !` map used to shadow them in every flycheck buffer, so they only ever reached flycheck.
   They now dispatch to flymake where it runs and to flycheck elsewhere.

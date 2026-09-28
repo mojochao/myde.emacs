@@ -240,7 +240,7 @@ Every language uses the same prefixes for LSP, tests, REPL, and debugging.
 - **Decided by:** none
 - **Designed in:** [§4.3](tdd.md#_43-language-servers-tests-repls-and-debuggers)
 - **Verified by:** [§3.5](qa.md#_35-language-keys)
-- **Roadmap:** [RM-10](roadmap.md#rm-10), [RM-13](roadmap.md#rm-13), [RM-14](roadmap.md#rm-14)
+- **Roadmap:** [RM-10](roadmap.md#rm-10), [RM-13](roadmap.md#rm-13), [RM-14](roadmap.md#rm-14), [RM-15](roadmap.md#rm-15)
 
 #### FR-8
 
@@ -344,7 +344,7 @@ State, data, and cache go to XDG directories.
 - **Decided by:** [ADR-04](adr.md#adr-04), [ADR-07](adr.md#adr-07)
 - **Designed in:** [§2.1](tdd.md#_21-xdg-paths)
 - **Verified by:** [§3.3](qa.md#_33-platforms-emacs-version-and-startup-state)
-- **Roadmap:** none
+- **Roadmap:** [RM-15](roadmap.md#rm-15)
 
 #### NFR-5
 
