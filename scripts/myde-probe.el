@@ -57,10 +57,21 @@ Secondary metric: only packages actually loaded at startup appear here."
             (unless (member name names) (push name names))))))
     (sort names #'string<)))
 
-(defun myde-probe-startup-errors ()
-  "Return startup error lines found in the *Messages* buffer."
+(defconst myde-probe-expected-error
+  "MCP server not started: .*Socket already exists"
+  "Regexp for the one error line every probe logs by design.
+The live daemon holds the MCP socket, and ADR-09 has any other Emacs leave
+it alone.  mcp-server reclaims a socket with no listener, so this line means
+a live Emacs owns it, which is the design working.")
+
+(defun myde-probe-startup-errors (&optional buffer)
+  "Return startup error and warning lines found in BUFFER.
+BUFFER defaults to the *Messages* buffer.  `display-warning' logs there as
+\"Error (TYPE): ...\" and \"Warning (TYPE): ...\", which is how an error in
+`elpaca-after-init-hook' surfaces.  Lines matching
+`myde-probe-expected-error' are left out."
   (let ((hits '()))
-    (with-current-buffer (messages-buffer)
+    (with-current-buffer (or buffer (messages-buffer))
       (save-excursion
         (goto-char (point-min))
         (while (re-search-forward
@@ -70,10 +81,13 @@ Secondary metric: only packages actually loaded at startup appear here."
                         "error in process\\|Wrong type argument\\|"
                         "Wrong number of arguments\\|"
                         "use-package.*Error\\|Package.*is unavailable\\|"
-                        "Failed to\\|Cannot open load file\\|Cannot load"
+                        "Failed to\\|Cannot open load file\\|Cannot load\\|"
+                        "\\(?:Error\\|Warning\\) ([^)\n]+):"
                         "\\).*\\)$")
                 nil t)
-          (push (string-trim (match-string 1)) hits))))
+          (let ((line (string-trim (match-string 1))))
+            (unless (string-match-p myde-probe-expected-error line)
+              (push line hits))))))
     (nreverse hits)))
 
 (defun myde-probe-enabled-modules ()
@@ -119,7 +133,7 @@ Only meaningful for the baseline; empty once the toggles are gone."
     (dolist (p (myde-probe-declared-packages)) (insert (format "declared: %s\n" p)))
     (insert "\n;; loaded third-party packages (load-history)\n")
     (dolist (p (myde-probe-loaded-packages)) (insert (format "loaded: %s\n" p)))
-    (insert "\n;; startup errors\n")
+    (insert "\n;; startup errors and warnings\n")
     (let ((errs (myde-probe-startup-errors)))
       (if errs
           (dolist (e errs) (insert (format "error: %s\n" e)))

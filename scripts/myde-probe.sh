@@ -13,6 +13,8 @@
 #   - MISE_TRUSTED_CONFIG_PATHS, because the private XDG_STATE_HOME hides
 #     mise's trust store, and global-mise-mode's trust prompt reads stdin in a
 #     frameless daemon and aborts elpaca-after-init-hook
+#   - stdin from /dev/null and a deadline on init, so any other startup
+#     prompt fails the probe instead of hanging it (see the boot below)
 set -euo pipefail
 
 DIR="${1:?usage: myde-probe.sh <init-directory> <output-file>}"
@@ -21,9 +23,14 @@ PROBE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/myde-probe.el"
 EMACS="$(command -v emacs)"
 SOCK="myde-probe-$$"
 STATE="$(mktemp -d "${TMPDIR:-/tmp}/myde-probe-state.XXXXXX")"
+LOG="$STATE/daemon.log"
 
 cleanup() {
   emacsclient -s "$SOCK" -e '(kill-emacs)' >/dev/null 2>&1 || true
+  # A daemon still in init has no server to take kill-emacs.  On macOS it is
+  # also a re-exec'd child of the process started below.  Both carry the
+  # unique socket name in their arguments.
+  pkill -f -- "${SOCK}( |\$)" 2>/dev/null || true
   rm -rf "$STATE"
 }
 trap cleanup EXIT
@@ -31,9 +38,26 @@ trap cleanup EXIT
 rm -f "$OUT"
 echo "booting $DIR as daemon $SOCK ..."
 env PATH=/usr/bin:/bin XDG_STATE_HOME="$STATE" MISE_TRUSTED_CONFIG_PATHS="$(cd "$DIR" && pwd)" \
-  "$EMACS" --init-directory="$DIR" --daemon="$SOCK" >/dev/null 2>&1 || {
-  echo "FAIL: daemon did not start. Run without redirection to see why:"
-  echo "  env PATH=/usr/bin:/bin XDG_STATE_HOME=/tmp/x MISE_TRUSTED_CONFIG_PATHS=$DIR $EMACS --init-directory=$DIR --daemon=$SOCK"
+  "$EMACS" --init-directory="$DIR" --daemon="$SOCK" </dev/null >"$LOG" 2>&1 &
+BOOT=$!
+
+# `emacs --daemon' returns once init finishes, and elpaca's async builds are
+# waited for after that.  A startup prompt can keep init from finishing: its
+# read of the empty stdin usually signals end-of-file, but a second prompt
+# during elpaca's error report has been seen to spin at 100% CPU instead.
+# Emacs prints each prompt before reading, so the log's tail names what asked.
+deadline=$((SECONDS + 300))
+while kill -0 "$BOOT" 2>/dev/null; do
+  if [ "$SECONDS" -gt "$deadline" ]; then
+    echo "FAIL: daemon still in init after 5 minutes. Its output ends with:"
+    tail -n 5 "$LOG" | sed 's/^/  /'
+    exit 1
+  fi
+  sleep 1
+done
+wait "$BOOT" || {
+  echo "FAIL: daemon did not start. Its output ends with:"
+  tail -n 20 "$LOG" | sed 's/^/  /'
   exit 1
 }
 
