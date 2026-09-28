@@ -844,21 +844,10 @@ The error is caught so the rest of `elpaca-after-init-hook' still runs."
       (add-hook 'before-save-hook #'myde-xml-format-buffer nil t)
     (remove-hook 'before-save-hook #'myde-xml-format-buffer t)))
 
-(defun myde-xml-ts-mode-hook ()
-  "Set up xml-ts-mode buffers."
-  (myde-xml-mode-setup)
-  (eglot-ensure))
-
 (defun myde-nxml-mode-hook ()
   "Set up nxml-mode buffers."
   (myde-xml-mode-setup)
   (eglot-ensure))
-
-(defun myde-xml-ts-or-nxml-mode ()
-  "Use `xml-ts-mode' if tree-sitter is available, otherwise fall back to `nxml-mode'."
-  (if (treesit-ready-p 'xml)
-      (xml-ts-mode)
-    (nxml-mode)))
 
 ;;;; prog-base
 ;;;; ---------
@@ -1009,7 +998,7 @@ tree-sitter grammar for future commonlisp-ts-mode compatibility."
   ;; No commonlisp-ts-mode exists yet, but grammar is available for future
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(commonlisp "https://github.com/tree-sitter/tree-sitter-commonlisp"))))
+      '(commonlisp "https://github.com/tree-sitter-grammars/tree-sitter-commonlisp"))))
 
 (defun myde-prog-clisp-lisp-mode-setup ()
   "Buffer-local setup for `lisp-mode': initialize SLY and disable hard tabs."
@@ -1146,7 +1135,7 @@ adds project root markers for mono-repos, and registers tree-sitter grammar."
   ;; Already bundled in clojure-ts-mode, but register system-wide for completeness
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(clojure "https://github.com/tree-sitter/tree-sitter-clojure"))))
+      '(clojure "https://github.com/sogaiu/tree-sitter-clojure" "unstable-20250526"))))
 
 (defun myde-prog-clojure-cider-setup ()
   "Configure CIDER for Clojure development.

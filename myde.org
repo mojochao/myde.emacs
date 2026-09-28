@@ -2740,21 +2740,10 @@ The error is caught so the rest of `elpaca-after-init-hook' still runs."
       (add-hook 'before-save-hook #'myde-xml-format-buffer nil t)
     (remove-hook 'before-save-hook #'myde-xml-format-buffer t)))
 
-(defun myde-xml-ts-mode-hook ()
-  "Set up xml-ts-mode buffers."
-  (myde-xml-mode-setup)
-  (eglot-ensure))
-
 (defun myde-nxml-mode-hook ()
   "Set up nxml-mode buffers."
   (myde-xml-mode-setup)
   (eglot-ensure))
-
-(defun myde-xml-ts-or-nxml-mode ()
-  "Use `xml-ts-mode' if tree-sitter is available, otherwise fall back to `nxml-mode'."
-  (if (treesit-ready-p 'xml)
-      (xml-ts-mode)
-    (nxml-mode)))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2763,37 +2752,20 @@ The error is caught so the rest of `elpaca-after-init-hook' still runs."
 
 
 ;; -----------------------------------------------------------------------------
-;; Tree-sitter grammar
-;; -----------------------------------------------------------------------------
-
-(use-package treesit
-  :config
-  (add-to-list 'treesit-language-source-alist
-               '(xml "https://github.com/tree-sitter/tree-sitter-xml" "master" "xml/src"))
-  :ensure nil)
-
-;; -----------------------------------------------------------------------------
-;; nxml-mode — built-in, used as fallback when tree-sitter grammar is absent
+;; nxml-mode — built-in.  Emacs 31 ships no xml-ts-mode, so there is no
+;; tree-sitter mode for XML to prefer over it.
 ;; -----------------------------------------------------------------------------
 
 (use-package nxml-mode  ;; built-in
-  :mode (("\\.xml\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xsd\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xsl\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xslt\\'"  . myde-xml-ts-or-nxml-mode)
-         ("\\.svg\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xhtml\\'" . myde-xml-ts-or-nxml-mode))
+  :mode (("\\.xml\\'"   . nxml-mode)
+         ("\\.xsd\\'"   . nxml-mode)
+         ("\\.xsl\\'"   . nxml-mode)
+         ("\\.xslt\\'"  . nxml-mode)
+         ("\\.svg\\'"   . nxml-mode)
+         ("\\.xhtml\\'" . nxml-mode))
   :hook (nxml-mode . myde-nxml-mode-hook)
   :custom
   (nxml-slash-auto-complete-flag t)
-  :ensure nil)
-
-;; -----------------------------------------------------------------------------
-;; xml-ts-mode — built-in (Emacs 29+), primary when XML grammar is installed
-;; -----------------------------------------------------------------------------
-
-(use-package xml-ts-mode  ;; built-in (Emacs 29+)
-  :hook (xml-ts-mode . myde-xml-ts-mode-hook)
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -2804,7 +2776,7 @@ The error is caught so the rest of `elpaca-after-init-hook' still runs."
   :after nxml-mode
   :config
   (add-to-list 'eglot-server-programs
-               `((nxml-mode xml-ts-mode) . (,(expand-file-name "~/.local/bin/lemminx"))))
+               `(nxml-mode . (,(expand-file-name "~/.local/bin/lemminx"))))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -2812,7 +2784,7 @@ The error is caught so the rest of `elpaca-after-init-hook' still runs."
 ;; -----------------------------------------------------------------------------
 
 (use-package xml-format  ;; https://github.com/wbolster/emacs-xml-format
-  :hook ((nxml-mode xml-ts-mode) . myde-xml-format-on-save-mode)
+  :hook (nxml-mode . myde-xml-format-on-save-mode)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -2820,7 +2792,7 @@ The error is caught so the rest of `elpaca-after-init-hook' still runs."
 ;; -----------------------------------------------------------------------------
 
 (use-package emmet-mode  ;; https://github.com/smihica/emmet-mode
-  :hook ((nxml-mode xml-ts-mode) . emmet-mode)
+  :hook (nxml-mode . emmet-mode)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -2833,7 +2805,7 @@ The error is caught so the rest of `elpaca-after-init-hook' still runs."
   :ensure t)
 
 (use-package indent-bars
-  :hook ((xml-ts-mode nxml-mode) . indent-bars-mode)
+  :hook (nxml-mode . indent-bars-mode)
   :ensure nil)
 #+end_src
 
@@ -3451,7 +3423,7 @@ tree-sitter grammar for future commonlisp-ts-mode compatibility."
   ;; No commonlisp-ts-mode exists yet, but grammar is available for future
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(commonlisp "https://github.com/tree-sitter/tree-sitter-commonlisp"))))
+      '(commonlisp "https://github.com/tree-sitter-grammars/tree-sitter-commonlisp"))))
 
 (defun myde-prog-clisp-lisp-mode-setup ()
   "Buffer-local setup for `lisp-mode': initialize SLY and disable hard tabs."
@@ -3515,7 +3487,7 @@ LSP is optional; SLIME/SLY are superior for interactive CL development."
   ;; Currently no stable commonlisp-ts-mode on MELPA, but grammar is available
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(commonlisp "https://github.com/tree-sitter/tree-sitter-commonlisp"))))
+      '(commonlisp "https://github.com/tree-sitter-grammars/tree-sitter-commonlisp"))))
 
 ;; Project root detection for CL toolchains
 (use-package project
@@ -3930,7 +3902,7 @@ adds project root markers for mono-repos, and registers tree-sitter grammar."
   ;; Already bundled in clojure-ts-mode, but register system-wide for completeness
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(clojure "https://github.com/tree-sitter/tree-sitter-clojure"))))
+      '(clojure "https://github.com/sogaiu/tree-sitter-clojure" "unstable-20250526"))))
 
 (defun myde-prog-clojure-cider-setup ()
   "Configure CIDER for Clojure development.
@@ -3955,7 +3927,7 @@ Users who prefer zprint can override `cider-format-code-options' via
   ;; Register Clojure grammar for system-wide availability
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(clojure "https://github.com/tree-sitter/tree-sitter-clojure"))))
+      '(clojure "https://github.com/sogaiu/tree-sitter-clojure" "unstable-20250526"))))
 
 (use-package project
   :ensure nil
@@ -4380,11 +4352,13 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
          (elixir-ts-mode . yas-minor-mode))
   :ensure nil)
 
-(use-package heex-ts-mode  ;; https://github.com/wkirschbaum/heex-ts-mode
+;; Built in since Emacs 30.  The external package of the same name shadows it
+;; and lacks `heex-ts--range-rules', which the built-in elixir-ts-mode reads.
+(use-package heex-ts-mode  ;; built-in (Emacs 30+)
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
   :hook ((heex-ts-mode . yas-minor-mode))
-  :ensure t)
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Testing
@@ -4663,7 +4637,7 @@ Set breakOnDbg: true in the dape configuration to enable automatic breaking."
 (use-package treesit
   :config
   (add-to-list 'treesit-language-source-alist
-               '(go "https://github.com/tree-sitter-grammars/tree-sitter-go"))
+               '(go "https://github.com/tree-sitter/tree-sitter-go"))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -4939,7 +4913,7 @@ Used as the `:program' callback for dape Zig debug configurations."
 (use-package treesit
   :config
   (add-to-list 'treesit-language-source-alist
-               '(zig "https://github.com/maxxmino/tree-sitter-zig"))
+               '(zig "https://github.com/tree-sitter-grammars/tree-sitter-zig"))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------

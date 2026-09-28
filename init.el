@@ -1528,37 +1528,20 @@
 
 
 ;; -----------------------------------------------------------------------------
-;; Tree-sitter grammar
-;; -----------------------------------------------------------------------------
-
-(use-package treesit
-  :config
-  (add-to-list 'treesit-language-source-alist
-               '(xml "https://github.com/tree-sitter/tree-sitter-xml" "master" "xml/src"))
-  :ensure nil)
-
-;; -----------------------------------------------------------------------------
-;; nxml-mode — built-in, used as fallback when tree-sitter grammar is absent
+;; nxml-mode — built-in.  Emacs 31 ships no xml-ts-mode, so there is no
+;; tree-sitter mode for XML to prefer over it.
 ;; -----------------------------------------------------------------------------
 
 (use-package nxml-mode  ;; built-in
-  :mode (("\\.xml\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xsd\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xsl\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xslt\\'"  . myde-xml-ts-or-nxml-mode)
-         ("\\.svg\\'"   . myde-xml-ts-or-nxml-mode)
-         ("\\.xhtml\\'" . myde-xml-ts-or-nxml-mode))
+  :mode (("\\.xml\\'"   . nxml-mode)
+         ("\\.xsd\\'"   . nxml-mode)
+         ("\\.xsl\\'"   . nxml-mode)
+         ("\\.xslt\\'"  . nxml-mode)
+         ("\\.svg\\'"   . nxml-mode)
+         ("\\.xhtml\\'" . nxml-mode))
   :hook (nxml-mode . myde-nxml-mode-hook)
   :custom
   (nxml-slash-auto-complete-flag t)
-  :ensure nil)
-
-;; -----------------------------------------------------------------------------
-;; xml-ts-mode — built-in (Emacs 29+), primary when XML grammar is installed
-;; -----------------------------------------------------------------------------
-
-(use-package xml-ts-mode  ;; built-in (Emacs 29+)
-  :hook (xml-ts-mode . myde-xml-ts-mode-hook)
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -1569,7 +1552,7 @@
   :after nxml-mode
   :config
   (add-to-list 'eglot-server-programs
-               `((nxml-mode xml-ts-mode) . (,(expand-file-name "~/.local/bin/lemminx"))))
+               `(nxml-mode . (,(expand-file-name "~/.local/bin/lemminx"))))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -1577,7 +1560,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package xml-format  ;; https://github.com/wbolster/emacs-xml-format
-  :hook ((nxml-mode xml-ts-mode) . myde-xml-format-on-save-mode)
+  :hook (nxml-mode . myde-xml-format-on-save-mode)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -1585,7 +1568,7 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package emmet-mode  ;; https://github.com/smihica/emmet-mode
-  :hook ((nxml-mode xml-ts-mode) . emmet-mode)
+  :hook (nxml-mode . emmet-mode)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -1598,7 +1581,7 @@
   :ensure t)
 
 (use-package indent-bars
-  :hook ((xml-ts-mode nxml-mode) . indent-bars-mode)
+  :hook (nxml-mode . indent-bars-mode)
   :ensure nil)
 
 ;;;; data-yaml
@@ -2038,7 +2021,7 @@
   ;; Currently no stable commonlisp-ts-mode on MELPA, but grammar is available
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(commonlisp "https://github.com/tree-sitter/tree-sitter-commonlisp"))))
+      '(commonlisp "https://github.com/tree-sitter-grammars/tree-sitter-commonlisp"))))
 
 ;; Project root detection for CL toolchains
 (use-package project
@@ -2366,7 +2349,7 @@
   ;; Register Clojure grammar for system-wide availability
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(clojure "https://github.com/tree-sitter/tree-sitter-clojure"))))
+      '(clojure "https://github.com/sogaiu/tree-sitter-clojure" "unstable-20250526"))))
 
 (use-package project
   :ensure nil
@@ -2721,11 +2704,13 @@
          (elixir-ts-mode . yas-minor-mode))
   :ensure nil)
 
-(use-package heex-ts-mode  ;; https://github.com/wkirschbaum/heex-ts-mode
+;; Built in since Emacs 30.  The external package of the same name shadows it
+;; and lacks `heex-ts--range-rules', which the built-in elixir-ts-mode reads.
+(use-package heex-ts-mode  ;; built-in (Emacs 30+)
   :after elixir-ts-mode
   :mode ("\\.heex\\'" . heex-ts-mode)
   :hook ((heex-ts-mode . yas-minor-mode))
-  :ensure t)
+  :ensure nil)
 
 ;; -----------------------------------------------------------------------------
 ;; Testing
@@ -2924,7 +2909,7 @@
 (use-package treesit
   :config
   (add-to-list 'treesit-language-source-alist
-               '(go "https://github.com/tree-sitter-grammars/tree-sitter-go"))
+               '(go "https://github.com/tree-sitter/tree-sitter-go"))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -3135,7 +3120,7 @@
 (use-package treesit
   :config
   (add-to-list 'treesit-language-source-alist
-               '(zig "https://github.com/maxxmino/tree-sitter-zig"))
+               '(zig "https://github.com/tree-sitter-grammars/tree-sitter-zig"))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
