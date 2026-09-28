@@ -19,7 +19,7 @@ Nothing is planned.
 ### RM-17: The probe reports what went wrong on its own :id=rm-17
 
 - **Requirements:** [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.1](changelog.md#_011-2026-09-28)
 
 The report's `error:` lines now include the `Error (…)` and `Warning (…)` lines that `display-warning` logs, which is where RM-11's hook failure and the `ob-zig` warnings surfaced.
 They leave out the MCP "Socket already exists" line, because under ADR-09 it only means the live daemon owns the socket.
@@ -30,7 +30,7 @@ Past the deadline the probe fails with the tail of the daemon's output, which na
 ### RM-16: GitHub releases on tag push :id=rm-16
 
 - **Requirements:** [FR-12](prd.md#fr-12)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.1](changelog.md#_011-2026-09-28)
 
 Pushing a `v*` tag runs `.github/workflows/release.yml`, which checks the tag against `VERSION` and runs `mise run release`.
 The task publishes the GitHub release with `gh release create --verify-tag`, so it never creates a tag.

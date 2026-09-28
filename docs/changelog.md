@@ -8,12 +8,26 @@ Each entry traces to the roadmap item it shipped.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## 0.1.1 - 2026-09-28
+
+### Added
+
 - 2026-09-28: Pushing a `v*` tag publishes its GitHub release, with that version's changelog section as the notes.
   `mise run release` does the publishing, and `.github/workflows/release.yml` runs it on the tag push once the tag matches `VERSION`.
   Traces to [RM-16](roadmap.md#rm-16), [FR-12](prd.md#fr-12).
   Commit `b7b7b36`.
 
 ### Changed
+
+- 2026-09-28: `ob-zig` follows its fork to Zig 0.16 and Emacs 30.1, and no longer depends on `zig-mode`.
+  A block without a `main` is wrapped in `pub fn main(init: std.process.Init)`, so it writes to stdout through `init.io`.
+  The fork drops `:using-namespaces` and makes scalar variables `const`.
+  Traces to [RM-12](roadmap.md#rm-12), [ADR-01](adr.md#adr-01).
+  Fork commit `79f399c` in `mojochao/ob-zig.el`.
 
 ### Fixed
 
