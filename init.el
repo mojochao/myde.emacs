@@ -3161,14 +3161,13 @@
 ;; Org Babel
 ;; -----------------------------------------------------------------------------
 
-;; ob-zig declares no Package-Requires, so elpaca byte-compiles it with only its
-;; own build directory on `load-path', its `(require 'zig-mode)' fails, and no
-;; .elc is produced.  Emacs loads the source, which carries no lexical-binding
-;; cookie, and warns once per startup.  `elpaca-rebuild' uses the same load-path
-;; and cannot fix it; only an upstream header or a fork can.
-(use-package ob-zig  ;; https://github.com/jolby/ob-zig.el
+;; A fork of https://github.com/jolby/ob-zig.el.  Upstream declares no
+;; Package-Requires and no lexical-binding cookie, so elpaca compiled it without
+;; zig-mode on `load-path', the compile failed, and Emacs warned about the
+;; source on every start.  The fork adds those two header lines and nothing else.
+(use-package ob-zig  ;; https://github.com/mojochao/ob-zig.el
   :defer t
-  :ensure (:host github :repo "jolby/ob-zig.el"))
+  :ensure (:host github :repo "mojochao/ob-zig.el"))
 
 (use-package org
   :defer t

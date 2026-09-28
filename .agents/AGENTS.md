@@ -166,9 +166,9 @@ or a `-pkg.el`. A package that declares nothing gets only its own build director
 so any `require` of another package fails, the compile errors, and no `.elc` is
 written. Emacs then loads the `.el`, and a source file with no `lexical-binding`
 cookie warns on every startup. `elpaca-rebuild` uses the same load-path and cannot
-help. `ob-zig` is the case here: it requires `zig-mode` and declares nothing. The
-options are to live with the warning, pin a fork that adds the header, or drop the
-package.
+help. The options are to live with the warning, pin a fork that adds the header, or
+drop the package. `ob-zig` was the case here: it requires `zig-mode` and declares
+nothing, so it is pinned to `mojochao/ob-zig.el`, a fork that adds the header.
 
 #### A package that will not install may be a half-finished clone
 
