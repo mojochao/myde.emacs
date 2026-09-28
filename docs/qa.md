@@ -43,6 +43,7 @@ All three test files load `user-lisp/myde.el` directly, which [NFR-5](prd.md#nfr
 ### 2.2 Integration tests
 
 `mise run probe <report>` boots this config as an isolated throwaway daemon: a unique socket, `PATH` stripped to `/usr/bin:/bin`, and a private `XDG_STATE_HOME`.
+The private state directory also hides mise's trust store, so the probe sets `MISE_TRUSTED_CONFIG_PATHS` to the config under test.
 It writes a report of the declared `use-package` forms, the global modes enabled at startup, init time, and startup errors.
 
 The stripped `PATH` leaves only `git` and the login shell on it, so a gated section turns on only if `exec-path-from-shell` recovered the rest during init ([FR-2](prd.md#fr-2), [FR-3](prd.md#fr-3)).
@@ -51,13 +52,8 @@ A fresh clone boots with nothing tangled ([FR-1](prd.md#fr-1)), and a warm start
 Run the probe before and after a change and diff its `declared:` and `mode:` lines.
 A declared package that disappears, or a mode that flips to `off`, is a regression.
 
-**Limit:** `scripts/myde-probe.sh` boots the daemon at lines 30-31 without redirecting stdin.
-Every throwaway daemon of this config, this probe or one booted by hand, logs an end-of-file error reading from stdin during startup.
-That error aborts `elpaca-after-init-hook` at `global-flycheck-mode`.
-It and every hook after it report `mode: … off` whether or not the mode actually loaded.
-A stripped `PATH` is not the cause: a full `PATH` reproduces the same error, and the stdin reader itself is unidentified.
-The `mode:` lines are only useful as a diff between two probes taken the same way, not as an absolute reading.
-Fixing the stdin handling is tracked as [RM-11](roadmap.md#rm-11).
+**Limit:** the report's `error:` lines come from a pattern that does not match elpaca's `Error (elpaca): Subscriber …` warnings.
+A startup hook that signals an error shows up only as modes flipping to `off` in the `mode:` diff.
 
 ### 2.3 How tests are specified
 

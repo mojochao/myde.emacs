@@ -164,8 +164,6 @@ Anything that only shows up in a window-system frame needs a client frame to con
 - `mise run probe <report>` boots this config as a throwaway daemon and writes a report of its declared `use-package` forms, global modes, init time, and startup errors.
   Run it before and after a change, and diff its `declared:` and `mode:` lines.
   A declared package that disappears, or a mode that flips to `off`, is a regression.
-  The probe's own stdin handling limits what its `mode:` lines mean in absolute terms.
-  That limit is tracked as [RM-11](roadmap.md#rm-11).
 - `mise run docs-check` runs the docs checkers and markdownlint in order: `check_links.py`, `check_trace.py`, `test_check_trace.py`, `vendor_docs.py --check`, then `markdownlint docs/`.
 
 See [Quality Assurance](qa.md) for what each check catches, how it is enforced by git hooks, and the manual checks that have no automated equivalent.

@@ -8,15 +8,7 @@ Nothing is in progress.
 
 ## Next
 
-### RM-11: Find what reads stdin during a throwaway daemon's startup :id=rm-11
-
-- **Requirements:** [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3)
-
-Every throwaway daemon of this config, the probe included, logs an elpaca error from `elpaca--check-queue-completion`: `(end-of-file "Error reading from stdin")`.
-The read aborts `elpaca-after-init-hook` at `global-flycheck-mode`, so the probe reports modes as off that are on in a real session, and the hooks that built-in forms add during init never run at all.
-Redirecting stdin from `/dev/null` was tried on 2026-09-28 and does not help.
-It turns a hang into this error.
-The fix is finding the read.
+Nothing is queued.
 
 ## Later
 
@@ -28,6 +20,16 @@ The fix is finding the read.
 AGENTS.md lists three options: live with the warning, pin a fork that adds the header, or drop the package.
 
 ## Shipped
+
+### RM-11: Find what reads stdin during a throwaway daemon's startup :id=rm-11
+
+- **Requirements:** [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+The read was `global-mise-mode` asking whether to trust the repo's `mise.toml`.
+The probe's private `XDG_STATE_HOME` hid mise's trust store, and elpaca's buffers under `elpaca/` led mise to that config whatever the daemon's working directory.
+A daemon with no frame reads the answer from stdin, so the failed read ended `elpaca-after-init-hook` right after `global-mise-mode`.
+The probe now sets `MISE_TRUSTED_CONFIG_PATHS` to the config it boots, and every startup mode reports `on`.
 
 ### RM-15: Every key, hook, and setting goes through a use-package keyword :id=rm-15
 

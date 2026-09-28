@@ -47,6 +47,10 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: `mise run probe` reports startup modes as they are.
+  A trust prompt from `global-mise-mode` read stdin in the frameless probe daemon and aborted `elpaca-after-init-hook`, so 11 modes read `off` in every probe.
+  Traces to [RM-11](roadmap.md#rm-11), [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3).
+  Commit `fac81e8`.
 - 2026-09-28: recentf tracks recent files again.
   A deferring keyword left `recentf-mode` in a `:config` block that nothing ever loaded, so the mode was off in every session.
   Traces to [RM-15](roadmap.md#rm-15), [NFR-4](prd.md#nfr-4).

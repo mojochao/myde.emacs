@@ -271,6 +271,4 @@ See [Quality Assurance](qa.md) for both, and for the docs checks that gate them.
 
 ## 7. Open Questions
 
-`scripts/myde-probe.sh` starts its throwaway daemon with no stdin redirection, `"$EMACS" --init-directory="$DIR" --daemon="$SOCK" >/dev/null 2>&1`.
-A daemon started this way can hit a startup stdin read that aborts `elpaca-after-init` partway through, reporting modes as `off` that are not actually off in a normal session.
-Fixing the probe is tracked as [RM-11](roadmap.md#rm-11).
+There are no open questions at present.
