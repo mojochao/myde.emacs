@@ -66,6 +66,11 @@ to `/usr/bin:/bin`, private `XDG_STATE_HOME`) and writes a report of the declare
 Run it before and after a change and diff the `declared:` and `mode:` lines. A declared
 package that disappears or a mode that flips to `off` is a regression.
 
+A daemon booted by hand needs the probe's `MISE_TRUSTED_CONFIG_PATHS=<config>` too. The
+private `XDG_STATE_HOME` hides mise's trust store, so `global-mise-mode` asks whether to
+trust `mise.toml`. A frameless daemon reads that answer from stdin, and the failed read
+aborts `elpaca-after-init-hook`, leaving every later startup mode off.
+
 ## Architecture
 
 MyDE is a single literate Emacs configuration targeting **Emacs 31.1+ compiled with

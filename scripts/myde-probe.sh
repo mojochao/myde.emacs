@@ -10,6 +10,9 @@
 #     on macOS and Linux; everything else must be recovered from the shell)
 #   - private XDG_STATE_HOME, so the daemon's exit cannot overwrite the live
 #     session's recentf, savehist, and bookmarks
+#   - MISE_TRUSTED_CONFIG_PATHS, because the private XDG_STATE_HOME hides
+#     mise's trust store, and global-mise-mode's trust prompt reads stdin in a
+#     frameless daemon and aborts elpaca-after-init-hook
 set -euo pipefail
 
 DIR="${1:?usage: myde-probe.sh <init-directory> <output-file>}"
@@ -27,10 +30,10 @@ trap cleanup EXIT
 
 rm -f "$OUT"
 echo "booting $DIR as daemon $SOCK ..."
-env PATH=/usr/bin:/bin XDG_STATE_HOME="$STATE" \
+env PATH=/usr/bin:/bin XDG_STATE_HOME="$STATE" MISE_TRUSTED_CONFIG_PATHS="$(cd "$DIR" && pwd)" \
   "$EMACS" --init-directory="$DIR" --daemon="$SOCK" >/dev/null 2>&1 || {
   echo "FAIL: daemon did not start. Run without redirection to see why:"
-  echo "  env PATH=/usr/bin:/bin XDG_STATE_HOME=/tmp/x $EMACS --init-directory=$DIR --daemon=$SOCK"
+  echo "  env PATH=/usr/bin:/bin XDG_STATE_HOME=/tmp/x MISE_TRUSTED_CONFIG_PATHS=$DIR $EMACS --init-directory=$DIR --daemon=$SOCK"
   exit 1
 }
 
