@@ -858,7 +858,7 @@ The key is bound in both `zig-mode` and `zig-ts-mode`.
 
 - Dape configuration `zig-debug` runs `codelldb`, resolving the binary at `zig-out/bin/<project>`.
 - Org Babel runs `zig` blocks through `ob-zig`, see [4.1.6](#_416-org-babel).
-  `ob-zig` declares no `Package-Requires`, so it never byte-compiles and warns once at every startup, see [RM-12](roadmap.md#rm-12).
+  A block that uses the standard library needs `:imports '(std)`.
 - No snippets.
 
 #### 4.2.15 Python

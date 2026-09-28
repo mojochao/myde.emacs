@@ -47,6 +47,10 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: Emacs no longer warns about `ob-zig` on every start.
+  `ob-zig` comes from the fork `mojochao/ob-zig.el`, which declares `lexical-binding` and its `zig-mode` dependency, so elpaca byte-compiles it.
+  Traces to [RM-12](roadmap.md#rm-12), [ADR-01](adr.md#adr-01).
+  Commit `c28781e`.
 - 2026-09-28: `mise run probe` reports startup modes as they are.
   A trust prompt from `global-mise-mode` read stdin in the frameless probe daemon and aborted `elpaca-after-init-hook`, so 11 modes read `off` in every probe.
   Traces to [RM-11](roadmap.md#rm-11), [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3).

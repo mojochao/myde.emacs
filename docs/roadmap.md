@@ -12,14 +12,19 @@ Nothing is queued.
 
 ## Later
 
+Nothing is planned.
+
+## Shipped
+
 ### RM-12: Decide on `ob-zig` :id=rm-12
 
 - **Decisions:** [ADR-01](adr.md#adr-01)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
 
-`ob-zig` requires `zig-mode` but declares no `Package-Requires`, so elpaca never byte-compiles it and Emacs warns about it on every start.
-AGENTS.md lists three options: live with the warning, pin a fork that adds the header, or drop the package.
-
-## Shipped
+`ob-zig` is pinned to [`mojochao/ob-zig.el`](https://github.com/mojochao/ob-zig.el), a fork that adds the `lexical-binding` cookie and the `Package-Requires` line upstream lacks.
+Without them elpaca compiled it with no `zig-mode` on `load-path`, the compile failed, and Emacs warned about the source on every start.
+Upstream has been quiet since 2024-08, and none of its forks had the fix.
+With it elpaca builds `ob-zig.elc`, and startup logs no warnings.
 
 ### RM-11: Find what reads stdin during a throwaway daemon's startup :id=rm-11
 
