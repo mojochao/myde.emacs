@@ -19,7 +19,7 @@ Nothing is planned.
 ### RM-18: A failed docs deploy can be re-run :id=rm-18
 
 - **Requirements:** [FR-11](prd.md#fr-11)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.2](changelog.md#_012-2026-09-28)
 
 The v0.1.1 push failed to deploy the docs twice.
 With the Pages upload and deploy in one job, `actions/deploy-pages` asked for the artifact a second after the upload and found none listed.
