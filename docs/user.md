@@ -309,7 +309,7 @@ Sections follow consistent keybinding prefixes.
 A few modes bind a key that shadows one of these prefixes.
 
 - In C and C++ buffers, `C-c o` runs `ff-find-other-file`, which hides the whole Org prefix, see [4.2.11](#_4211-c-and-c).
-- In Elixir buffers, `C-c d` is the Mix task prefix instead of dape, see [4.2.10](#_4210-elixir) and [RM-10](roadmap.md#rm-10).
+- In Elixir buffers, the Mix task keys sit under `C-c x`, see [4.2.10](#_4210-elixir).
 - In Elixir buffers, `C-c t t` toggles between a file and its test instead of running the test at point, see [4.2.10](#_4210-elixir).
 - In Common Lisp buffers under SLY, `C-c t b` evaluates the buffer, since there is no test runner, see [4.2.6](#_426-common-lisp).
 - In Markdown buffers, `C-c t` aligns the table at point, which hides the test prefix, see [4.4.2](#_442-markdown).
@@ -558,11 +558,12 @@ Eglot keys, in every buffer eglot manages:
 Every eglot buffer shares that map, and `prog-bash` is always on, so `C-c e f` formats the whole buffer in every language.
 `C-c e h` and `C-c e q` are global, so they also work outside eglot buffers.
 
-Dape keys, global except in Elixir buffers (see [4.2.10](#_4210-elixir)):
+Dape keys, global, including in Elixir buffers (see [4.2.10](#_4210-elixir)):
 
 | Key | Command | Does |
 |---|---|---|
 | `C-c d d` | `dape` | Start a debug session, choosing a configuration |
+| `C-c d l` | `dape-restart` | Restart the session, or re-run the last configuration when none is live |
 | `C-c d b` | `dape-breakpoint-toggle` | Toggle a breakpoint on the current line |
 | `C-c d n` | `dape-next` | Step over |
 | `C-c d s` | `dape-step-in` | Step in |
@@ -655,6 +656,7 @@ Apheleia re-indents the buffer on save with its default `lisp-indent` formatter.
 | `C-c i b` | `sly-eval-buffer` (or `slime-eval-buffer`) | Evaluate the buffer |
 | `C-c i e` | `sly-eval-last-expression` (or `slime-eval-last-expression`) | Evaluate the expression before point |
 | `C-c i d` | `sly-documentation` (or `slime-documentation`) | Look up documentation |
+| `C-c i z` | `sly-mrepl` (or `slime-switch-to-output-buffer`) | Switch to the REPL |
 | `C-c t b` | `sly-eval-buffer` | Evaluate the buffer, the closest thing to a test key: neither SLY nor SLIME has a FiveAM test runner |
 
 - No dape configuration.
@@ -709,6 +711,7 @@ No formatter runs on save.
 | Key | Command | Does |
 |---|---|---|
 | `C-c i i` | `erlang-shell` | Start an Erlang shell |
+| `C-c i s` | `erlang-shell-display` | Show the Erlang shell buffer |
 | `C-c t p` | `myde-erlang-run-tests` | Run the Common Test suite with `rebar3 ct` |
 
 - No dape configuration.
@@ -737,24 +740,23 @@ Linting adds `credo` and `dialyzer` diagnostics to flycheck.
 | `C-c t s` | `exunit-verify-single` | Run the test at point |
 | `C-c t t` | `exunit-toggle-file-and-test` | Toggle between a file and its test |
 
-`mix-minor-mode` binds the whole `C-c d` prefix to its own Mix task keymap (`elpaca/sources/mix/mix.el:322`).
-The global `C-c d` dape keys from [4.2.1](#_421-common-workflow) do not reach Elixir buffers as a result.
+`mix.el` binds its command map on `C-c d`, and `myde.org` moves it to `C-c x` ([RM-10](roadmap.md#rm-10)).
+The global dape keys from [4.2.1](#_421-common-workflow) reach Elixir buffers as a result.
 
 | Key | Command | Does |
 |---|---|---|
-| `C-c d e` | `mix-execute-task` | Run a chosen mix task |
-| `C-c d t` | `mix-test` | Run all tests through mix |
-| `C-c d o` | `mix-test-current-buffer` | Test the current buffer |
-| `C-c d f` | `mix-test-current-test` | Test the item at point |
-| `C-c d q` | `mix-compile` | Compile |
-| `C-c d l` | `mix-last-command` | Rerun the last mix command |
+| `C-c x e` | `mix-execute-task` | Run a chosen mix task |
+| `C-c x t` | `mix-test` | Run all tests through mix |
+| `C-c x o` | `mix-test-current-buffer` | Test the current buffer |
+| `C-c x f` | `mix-test-current-test` | Test the item at point |
+| `C-c x q` | `mix-compile` | Compile |
+| `C-c x l` | `mix-last-command` | Rerun the last mix command |
 
-Prefix `e`, `t`, `o`, `f`, or `q` with an extra `d` (for example `C-c d d t`) to target a chosen umbrella subproject.
+Prefix `e`, `t`, `o`, `f`, or `q` with an extra `d` (for example `C-c x d t`) to target a chosen umbrella subproject.
 `l` has no umbrella variant.
 
-Dape still has configurations registered for Elixir, reached by name through `M-x dape` rather than the `C-c d` prefix.
+Dape has configurations registered for Elixir, chosen by name through `C-c d d`.
 They are `elixir-debug` (`mix run`), `elixir-mix-test`, `elixir-phoenix`, `elixir-remote` (attach), and `elixir-exs-script`.
-[RM-10](roadmap.md#rm-10) tracks resolving the collision.
 
 Debugging a `.exs` script still needs a workaround.
 A bare script's top-level code runs immediately, before the debugger can attach a breakpoint.
@@ -846,8 +848,12 @@ Two formatters run on each save: rustic's own `rustfmt` run (`rustic-format-trig
 `prog-zig` gates on `zig` and adds `zig-ts-mode` for `.zig` and `.zon` files, falling back to `zig-mode` when tree-sitter is unavailable.
 LSP runs through `zls`, with build-on-save and inlay hints for builtins, parameter names, and variable types turned on.
 Two formatters run on each save: zls through `eglot-format-buffer` in `before-save-hook`, then apheleia's default `zig fmt`.
-There is no test key.
-`M-x zig-test-buffer` runs `zig test` on the current file.
+
+| Key | Command | Does |
+|---|---|---|
+| `C-c t p` | `zig-test-buffer` | Run `zig test` on the current file |
+
+The key is bound in both `zig-mode` and `zig-ts-mode`.
 
 - Dape configuration `zig-debug` runs `codelldb`, resolving the binary at `zig-out/bin/<project>`.
 - Org Babel runs `zig` blocks through `ob-zig`, see [4.1.6](#_416-org-babel).
@@ -868,6 +874,7 @@ Apheleia also runs its default, `black`, when `black` is installed.
 | `C-c i b` | `python-shell-send-buffer` | Send the buffer |
 | `C-c i d` | `python-shell-send-defun` | Send the current function |
 | `C-c i s` | `python-shell-switch-to-shell` | Switch to the shell |
+| `C-c t t` | `python-pytest-run-def-at-point-treesit` | Run the test function at point |
 | `C-c t f` | `python-pytest-file-dwim` | Run the file's tests |
 | `C-c t p` | `python-pytest` | Run pytest |
 | `C-c t r` | `python-pytest-repeat` | Repeat the last run |
@@ -895,6 +902,7 @@ Two formatters run on each save: ruby-lsp through `eglot-format-buffer` in `befo
 | `C-c t f` | `rspec-verify` | Run the file's tests |
 | `C-c t p` | `rspec-verify-all` | Run all tests |
 | `C-c t r` | `rspec-rerun` | Rerun the last run |
+| `C-c t x` | `rspec-run-last-failed` | Rerun the specs that failed last run |
 
 - Dape configuration `ruby-debug` launches the current file under `rdbg`, which dape reaches over a local port.
 - Org Babel runs `ruby` blocks, see [4.1.6](#_416-org-babel).

@@ -119,10 +119,8 @@ Presence of a binary on `PATH` is the setting, checked with `executable-find` ar
 
 ## 7. Open Questions
 
-`mix.el` binds `C-c d` to `mix-minor-mode-command-map` in `mix-minor-mode` (`elpaca/sources/mix/mix.el:322`).
-The global dape debug keys also live under `C-c d`.
-In an Elixir buffer, `mix-minor-mode`'s binding wins, so the dape keys never reach it.
-Resolving it is tracked as [RM-10](roadmap.md#rm-10).
+There are no open questions at present.
+The `C-c d` collision in Elixir buffers is resolved, see [RM-10](roadmap.md#rm-10).
 
 ## 8. Requirements Inventory
 
@@ -242,7 +240,7 @@ Every language uses the same prefixes for LSP, tests, REPL, and debugging.
 - **Decided by:** none
 - **Designed in:** [§4.3](tdd.md#_43-language-servers-tests-repls-and-debuggers)
 - **Verified by:** [§3.5](qa.md#_35-language-keys)
-- **Roadmap:** [RM-10](roadmap.md#rm-10), [RM-13](roadmap.md#rm-13)
+- **Roadmap:** [RM-10](roadmap.md#rm-10), [RM-13](roadmap.md#rm-13), [RM-14](roadmap.md#rm-14)
 
 #### FR-8
 

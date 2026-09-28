@@ -8,13 +8,6 @@ Nothing is in progress.
 
 ## Next
 
-### RM-10: Resolve the `C-c d` collision in Elixir buffers :id=rm-10
-
-- **Requirements:** [FR-7](prd.md#fr-7)
-
-`mix.el` binds `C-c d` in `mix-minor-mode` (`elpaca/sources/mix/mix.el:322`).
-The global dape keys under `C-c d` therefore do not reach Elixir buffers.
-
 ### RM-11: Boot the probe daemon with stdin closed :id=rm-11
 
 - **Requirements:** [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3)
@@ -32,6 +25,22 @@ A startup read of stdin then aborts `elpaca-after-init-hook`, so the probe repor
 AGENTS.md lists three options: live with the warning, pin a fork that adds the header, or drop the package.
 
 ## Shipped
+
+### RM-10: Resolve the `C-c d` collision in Elixir buffers :id=rm-10
+
+- **Requirements:** [FR-7](prd.md#fr-7)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+`mix.el`'s command map moved from `C-c d` to `C-c x`.
+The global dape keys under `C-c d` now reach Elixir buffers.
+
+### RM-14: Every bound key runs a real command :id=rm-14
+
+- **Requirements:** [FR-7](prd.md#fr-7)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+Several keys across dape, Common Lisp, Erlang, Go, Zig, Python, and Ruby were bound to commands that did not exist.
+Each now runs a real command, and gotest-ts now loads in Go buffers.
 
 ### RM-9: Docs schema, traceability, theme, Pages, and `VERSION` :id=rm-9
 

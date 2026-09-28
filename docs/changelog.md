@@ -43,6 +43,13 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: Elixir buffers keep the `C-c d` dape keys, and the Mix task keys move to `C-c x`.
+  Traces to [RM-10](roadmap.md#rm-10), [FR-7](prd.md#fr-7).
+  Commit `cfc53f0`.
+- 2026-09-28: Keys bound to commands that do not exist now run real ones, across dape, Common Lisp, Erlang, Go, Zig, Python, and Ruby.
+  gotest-ts now loads in Go buffers, so its test keys work there.
+  Traces to [RM-14](roadmap.md#rm-14), [FR-7](prd.md#fr-7).
+  Commit `cfc53f0`.
 - 2026-09-28: Lua buffers run their full setup again, and the `C-c i` REPL keys work in both Lua modes.
   A hook to `inf-lua-minor-mode`, which inf-lua never defined, stopped each Lua buffer's setup before eglot and format-on-save ran.
   inf-lua is dropped for each mode's own inferior Lua.

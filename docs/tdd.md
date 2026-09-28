@@ -193,9 +193,9 @@ Every language section shares four keybinding prefixes: `C-c e` for eglot, `C-c 
 `myde-eglot-add-workspace-config`, in `core-projects`, upserts LSP workspace configuration for a server key without clobbering another section's settings.
 Nothing assigns `eglot-workspace-configuration` directly.
 `dape` binds `C-c d d` through `C-c d q` globally, for start, continue, step, and breakpoint commands.
+`C-c d l` runs `dape-restart`, which restarts a live session or re-runs the last configuration when none is live.
 
-`mix.el` binds its own `C-c d` prefix inside `mix-minor-mode` (`elpaca/sources/mix/mix.el:322`), shadowing the global dape keys in every Elixir buffer.
-Resolving the collision is tracked as [RM-10](roadmap.md#rm-10).
+`myde.org` moves `mix.el`'s command map from `C-c d` to `C-c x` in `mix-minor-mode`, so the dape keys win in Elixir buffers ([RM-10](roadmap.md#rm-10)).
 
 ### 4.4 Tree-sitter
 
@@ -270,9 +270,6 @@ ERT tests under `tests/` cover logic that fails silently, and the probe covers s
 See [Quality Assurance](qa.md) for both, and for the docs checks that gate them.
 
 ## 7. Open Questions
-
-`mix.el` binds `C-c d` inside `mix-minor-mode` (`elpaca/sources/mix/mix.el:322`), shadowing the global dape debug keys in every Elixir buffer.
-Resolving the collision is tracked as [RM-10](roadmap.md#rm-10).
 
 `scripts/myde-probe.sh` starts its throwaway daemon with no stdin redirection, `"$EMACS" --init-directory="$DIR" --daemon="$SOCK" >/dev/null 2>&1`.
 A daemon started this way can hit a startup stdin read that aborts `elpaca-after-init` partway through, reporting modes as `off` that are not actually off in a normal session.

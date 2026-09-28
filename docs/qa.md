@@ -136,6 +136,5 @@ Only a completed startup is confirmed.
    Confirm `C-c e`, `C-c t`, `C-c i`, and `C-c d` each run that language's command.
    Expected: every language shares the same prefixes ([FR-7](prd.md#fr-7)).
 2. In an Elixir buffer, confirm `C-c e`, `C-c t`, and `C-c i` reach eglot, tests, and the REPL as expected.
-3. In the same buffer, confirm `C-c d` does not reach dape.
-   `mix-minor-mode` binds `C-c d` to `mix-minor-mode-command-map` (`elpaca/sources/mix/mix.el:322`), and it wins over the global dape binding.
-   Tracked as [RM-10](roadmap.md#rm-10).
+3. In the same buffer, confirm `C-c d d` starts dape and `C-c x t` runs `mix-test`.
+   `myde.org` moves `mix-minor-mode`'s command map from `C-c d` to `C-c x`, so both prefixes reach their own commands.
