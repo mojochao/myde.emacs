@@ -9,6 +9,11 @@ Each entry traces to the roadmap item it shipped.
 
 ### Added
 
+- 2026-09-28: `docs/` follows the SciPlay doc schema, and `mise run docs-check` enforces requirement traceability, links, vendored assets, and markdown lint.
+  The site is vendored docsify 4 themed Catppuccin Frappé, and the sidebar shows the root `VERSION`.
+  A push to `main` that changes the docs publishes them to GitHub Pages once the checks pass.
+  Traces to [RM-9](roadmap.md#rm-9), [FR-10](prd.md#fr-10), [FR-11](prd.md#fr-11), [FR-12](prd.md#fr-12), [NFR-7](prd.md#nfr-7), [ADR-11](adr.md#adr-11), [ADR-12](adr.md#adr-12), [ADR-13](adr.md#adr-13).
+  Commits `e0a8a05` to `1e552fd`.
 - 2026-09-27: A docsify site for `docs/`, served natively or from a container, with qmd search.
   Traces to [RM-8](roadmap.md#rm-8), [FR-10](prd.md#fr-10).
   Commits `161892c`, `9ea6ba4`, `68326e4`, and `b784ddd`.

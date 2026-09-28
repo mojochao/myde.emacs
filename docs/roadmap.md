@@ -4,13 +4,7 @@ Status as of 2026-09-28.
 
 ## Now
 
-### RM-9: Docs schema, traceability, theme, Pages, and `VERSION` :id=rm-9
-
-- **Requirements:** [FR-10](prd.md#fr-10), [FR-11](prd.md#fr-11), [FR-12](prd.md#fr-12), [NFR-7](prd.md#nfr-7)
-- **Decisions:** [ADR-11](adr.md#adr-11), [ADR-12](adr.md#adr-12), [ADR-13](adr.md#adr-13)
-
-Bring `docs/` onto the SciPlay doc schema with requirement traceability, a vendored Catppuccin Frappé theme, GitHub Pages publishing, and a root `VERSION` file.
-It moves to Shipped once the owner enables Pages and the first deploy succeeds.
+Nothing is in progress.
 
 ## Next
 
@@ -38,6 +32,15 @@ A startup read of stdin then aborts `elpaca-after-init-hook`, so the probe repor
 AGENTS.md lists three options: live with the warning, pin a fork that adds the header, or drop the package.
 
 ## Shipped
+
+### RM-9: Docs schema, traceability, theme, Pages, and `VERSION` :id=rm-9
+
+- **Requirements:** [FR-10](prd.md#fr-10), [FR-11](prd.md#fr-11), [FR-12](prd.md#fr-12), [NFR-7](prd.md#nfr-7)
+- **Decisions:** [ADR-11](adr.md#adr-11), [ADR-12](adr.md#adr-12), [ADR-13](adr.md#adr-13)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+`docs/` follows the SciPlay doc schema with requirement traceability, a vendored Catppuccin Frappé theme, GitHub Pages publishing, and a root `VERSION` file.
+The first deploy published the site on 2026-09-28.
 
 ### RM-13: Lua and tree-sitter grammar fixes :id=rm-13
 
