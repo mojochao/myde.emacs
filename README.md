@@ -291,16 +291,6 @@ EOF
 chmod +x ~/.local/bin/lemminx
 ```
 
-### XML tree-sitter grammar
-
-After first Emacs startup, install the XML tree-sitter grammar using the
-MyDE wrapper (which installs to `$XDG_DATA_HOME/emacs/tree-sitter/` instead
-of the repo root):
-
-```text
-M-x myde-treesit-install-language-grammar RET xml RET
-```
-
 ## Documentation
 
 The docs site is published at https://mojochao.github.io/myde.emacs/.

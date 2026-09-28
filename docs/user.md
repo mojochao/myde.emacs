@@ -140,16 +140,6 @@ EOF
 chmod +x ~/.local/bin/lemminx
 ```
 
-#### 2.5.2 XML tree-sitter grammar
-
-After the first Emacs startup, install the XML tree-sitter grammar with the MyDE wrapper.
-It installs to `$XDG_DATA_HOME/emacs/tree-sitter/`.
-The stock `M-x treesit-install-language-grammar` prompts for a directory instead, defaulting to `tree-sitter/` in the repo.
-
-```text
-M-x myde-treesit-install-language-grammar RET xml RET
-```
-
 ### 2.6 Browser capture
 
 `org-protocol` lets the browser send a URL, page title, and any selected text to a running Emacs session.
@@ -912,16 +902,18 @@ Two formatters run on each save: ruby-lsp through `eglot-format-buffer` in `befo
 
 #### 4.2.17 Lua
 
-`prog-lua` gates on `lua` and adds `lua-ts-mode` for `.lua` files, falling back to `lua-mode` when tree-sitter is unavailable.
+`prog-lua` gates on `lua` and opens `.lua` files in `lua-ts-mode`, falling back to `lua-mode` when the Lua grammar is not installed.
+The grammar installs on the first visit to a `.lua` file, pinned to the commit Emacs 31's `lua-ts-mode` is written against.
 LSP runs through `lua-language-server`, with inlay hints and completion that replaces a call with its full snippet.
 Two formatters run on each save: lua-language-server through `eglot-format-buffer` in `before-save-hook`, then apheleia's default `stylua`.
-The REPL keys use `lua-mode`'s own Lua process, and are bound in `lua-mode` buffers only.
+The REPL keys use each mode's own inferior Lua.
 
-| Key | Command | Does |
-|---|---|---|
-| `C-c i r` | `lua-send-region` | Send the region to the Lua process |
-| `C-c i b` | `lua-send-buffer` | Send the buffer to the Lua process |
-| `C-c i s` | `lua-show-process-buffer` | Show the Lua process buffer, starting a process if none is running |
+| Key | `lua-ts-mode` | `lua-mode` | Does |
+|---|---|---|---|
+| `C-c i i` | `lua-ts-inferior-lua` | `lua-start-process` | Start a Lua REPL |
+| `C-c i r` | `lua-ts-send-region` | `lua-send-region` | Send the region to the REPL |
+| `C-c i b` | `lua-ts-send-buffer` | `lua-send-buffer` | Send the buffer to the REPL |
+| `C-c i s` | `lua-ts-show-process-buffer` | `lua-show-process-buffer` | Show the REPL buffer |
 
 - No dape configuration and no test runner.
 - Org Babel runs `lua` blocks, see [4.1.6](#_416-org-babel).
