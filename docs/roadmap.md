@@ -19,7 +19,7 @@ Nothing is planned.
 ### RM-19: `mise run cut` releases in one command :id=rm-19
 
 - **Requirements:** [FR-12](prd.md#fr-12)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.3](changelog.md#_013-2026-09-28)
 
 `mise run cut <version>` replaces the hand-run release steps: editing `VERSION`, `/docs-release`, fixing links, committing, tagging, and pushing.
 It checks that it runs on a clean `main` that is not behind `origin/main`, and `scripts/cut_release.py` checks the version, the changelog, and `## Now` before writing anything.

@@ -8,14 +8,18 @@ Each entry traces to the roadmap item it shipped.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## 0.1.3 - 2026-09-28
+
+### Added
+
 - 2026-09-28: `mise run cut <version>` releases in one command: it sets `VERSION`, cuts the changelog and roadmap, commits, tags, and pushes.
   It refuses before editing anything on a dirty tree, off `main`, behind `origin/main`, with nothing to release, or with items still under `## Now`.
   Traces to [RM-19](roadmap.md#rm-19), [FR-12](prd.md#fr-12).
   Commit `23aa69b`.
-
-### Changed
-
-### Fixed
 
 ## 0.1.2 - 2026-09-28
 
