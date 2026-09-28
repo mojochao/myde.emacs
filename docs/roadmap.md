@@ -19,7 +19,7 @@ Nothing is planned.
 ### RM-20: mcp-server's tools are byte-compiled :id=rm-20
 
 - **Requirements:** [FR-8](prd.md#fr-8)
-- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-28, [0.1.4](changelog.md#_014-2026-09-28)
 
 The recipe linked `tools/` into the build as one directory symlink, and `byte-recompile-directory` skips a symlinked directory, so the 16 tool modules were never compiled.
 They loaded as source on every start, and two of them warned that `when-let` is obsolete.
