@@ -44,7 +44,7 @@ All three test files load `user-lisp/myde.el` directly, which [NFR-5](prd.md#nfr
 
 `mise run probe <report>` boots this config as an isolated throwaway daemon: a unique socket, `PATH` stripped to `/usr/bin:/bin`, and a private `XDG_STATE_HOME`.
 The private state directory also hides mise's trust store, so the probe sets `MISE_TRUSTED_CONFIG_PATHS` to the config under test.
-It writes a report of the declared `use-package` forms, the global modes enabled at startup, init time, and startup errors.
+It writes a report of the declared `use-package` forms, the global modes enabled at startup, init time, and startup errors and warnings.
 
 The stripped `PATH` leaves only `git` and the login shell on it, so a gated section turns on only if `exec-path-from-shell` recovered the rest during init ([FR-2](prd.md#fr-2), [FR-3](prd.md#fr-3)).
 A fresh clone boots with nothing tangled ([FR-1](prd.md#fr-1)), and a warm start's `elpaca-init-time-seconds` line shows it reaching `elpaca-after-init-hook` in about 4 seconds ([NFR-3](prd.md#nfr-3)).
@@ -52,8 +52,10 @@ A fresh clone boots with nothing tangled ([FR-1](prd.md#fr-1)), and a warm start
 Run the probe before and after a change and diff its `declared:` and `mode:` lines.
 A declared package that disappears, or a mode that flips to `off`, is a regression.
 
-**Limit:** the report's `error:` lines come from a pattern that does not match elpaca's `Error (elpaca): Subscriber …` warnings.
-A startup hook that signals an error shows up only as modes flipping to `off` in the `mode:` diff.
+The report's `error:` lines include each `Error (…)` and `Warning (…)` line that `display-warning` logged, which is where an error in `elpaca-after-init-hook` surfaces.
+They leave out the MCP server's "Socket already exists" line, which under [ADR-09](adr.md#adr-09) only means the live daemon owns the socket.
+So `error: (none)` and `modes off: 0` hold as readings on their own, not only in a diff.
+A startup prompt fails the probe rather than hanging it: stdin is `/dev/null`, and a daemon still in init after 5 minutes fails with the tail of its output, which names the prompt.
 
 ### 2.3 How tests are specified
 

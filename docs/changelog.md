@@ -17,6 +17,11 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: `mise run probe` lists a failed startup hook or a startup warning under `error:`, and a startup prompt fails it instead of hanging it.
+  The `error:` section no longer lists the MCP socket that the live daemon holds by design.
+  Traces to [RM-17](roadmap.md#rm-17), [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3).
+  Commit `1d5600f`.
+
 ## 0.1.0 - 2026-09-28
 
 ### Added

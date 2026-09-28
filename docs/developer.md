@@ -161,7 +161,7 @@ Anything that only shows up in a window-system frame needs a client frame to con
 - `mise run test` runs the ERT checks under `tests/` in batch mode.
 - `mise run forms` asserts `user-lisp/myde.el` holds only definitions.
 - `mise run check` tangles, then fails if the committed elisp differs from `myde.org`.
-- `mise run probe <report>` boots this config as a throwaway daemon and writes a report of its declared `use-package` forms, global modes, init time, and startup errors.
+- `mise run probe <report>` boots this config as a throwaway daemon and writes a report of its declared `use-package` forms, global modes, init time, and startup errors and warnings.
   Run it before and after a change, and diff its `declared:` and `mode:` lines.
   A declared package that disappears, or a mode that flips to `off`, is a regression.
 - `mise run docs-check` runs the docs checkers and markdownlint in order: `check_links.py`, `check_trace.py`, `test_check_trace.py`, `test_release_notes.py`, `vendor_docs.py --check`, then `markdownlint docs/`.
@@ -234,7 +234,7 @@ The owner runs step 6.
 
 ## 7. Observability
 
-- `mise run probe <report>` boots a throwaway daemon and writes `declared:` and `mode:` lines, init time, and startup errors to a report file, see [4](#_4-test-and-lint-project).
+- `mise run probe <report>` boots a throwaway daemon and writes `declared:` and `mode:` lines, init time, and startup errors and warnings to a report file, see [4](#_4-test-and-lint-project).
 - `M-x elpaca-log`, inside a running Emacs, shows the build status of every package order.
 - The `*Warnings*` buffer holds anything logged above `warning-minimum-level`.
 - `(emacs-init-time)` reports how long the running session took to start.

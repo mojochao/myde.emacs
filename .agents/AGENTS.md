@@ -63,9 +63,9 @@ side effects; keep it that way (`mise run forms`) and the library stays testable
 The probe covers the other kind: it
 boots a config directory as an isolated throwaway daemon (unique socket, `PATH` stripped
 to `/usr/bin:/bin`, private `XDG_STATE_HOME`) and writes a report of the declared
-`use-package` forms, the global modes enabled at startup, init time, and startup errors.
-Run it before and after a change and diff the `declared:` and `mode:` lines. A declared
-package that disappears or a mode that flips to `off` is a regression.
+`use-package` forms, the global modes enabled at startup, init time, and startup errors
+and warnings. Run it before and after a change and diff the `declared:` and `mode:`
+lines. A declared package that disappears or a mode that flips to `off` is a regression.
 
 A daemon booted by hand needs the probe's `MISE_TRUSTED_CONFIG_PATHS=<config>` too. The
 private `XDG_STATE_HOME` hides mise's trust store, so `global-mise-mode` asks whether to

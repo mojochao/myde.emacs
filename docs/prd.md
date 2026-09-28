@@ -185,7 +185,7 @@ A section that needs a toolchain turns on when its binary is on `PATH` and stays
 - **Decided by:** [ADR-02](adr.md#adr-02)
 - **Designed in:** [§1.3](tdd.md#_13-binary-gates)
 - **Verified by:** [§2.2](qa.md#_22-integration-tests)
-- **Roadmap:** [RM-1](roadmap.md#rm-1), [RM-11](roadmap.md#rm-11)
+- **Roadmap:** [RM-1](roadmap.md#rm-1), [RM-11](roadmap.md#rm-11), [RM-17](roadmap.md#rm-17)
 
 #### FR-3
 
@@ -331,7 +331,7 @@ A warm start reaches `elpaca-after-init-hook` in about 4 s.
 - **Decided by:** [ADR-01](adr.md#adr-01)
 - **Designed in:** [§4.1](tdd.md#_41-elpaca)
 - **Verified by:** [§2.2](qa.md#_22-integration-tests)
-- **Roadmap:** [RM-1](roadmap.md#rm-1), [RM-11](roadmap.md#rm-11)
+- **Roadmap:** [RM-1](roadmap.md#rm-1), [RM-11](roadmap.md#rm-11), [RM-17](roadmap.md#rm-17)
 
 #### NFR-4
 
