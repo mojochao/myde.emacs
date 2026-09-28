@@ -336,3 +336,21 @@ Key macOS-specific concerns:
   `condition-case` from `:config` blocks, making errors silent and extremely hard to
   diagnose. Useful only for byte-compilation inspection.
 - `:ensure` is the **last keyword** in a form (see the `myde` skill).
+- **A deferring keyword cannot turn on its own mode from `:config`.** `:commands`,
+  `:bind`, `:hook`, `:mode`, and `:interpreter` all imply `:defer t`, so a `(foo-mode 1)`
+  in `:config` waits for a load that nothing triggers. recentf sat that way and never
+  loaded. Enable the mode with `:hook (elpaca-after-init . foo-mode)`. `:defer t` beside
+  any of those keywords is redundant.
+- **`:custom` silently does nothing on a `defvar`.** Check `custom-variable-p` or the
+  source first. Known defvars here: `rustic-format-trigger`, `jsonrpc-event-hook`,
+  `prefix-help-command`, `eshell-directory-name`, `mode-line-format`,
+  `markdown-preview-javascript`, `markdown-preview-stylesheets`. A `:custom` value is
+  also evaluated during the frameless daemon's init, so one that needs
+  `display-graphic-p` (`neo-theme`) or the loaded package's current value
+  (`jinx-exclude-faces`) stays a `setq` in `:config`.
+- **A keymap defined outside the package's main file needs `:package`.**
+  `:bind (:map foo-map …)` waits for the package *feature*. `cider-mode-map` lives in
+  cider-mode.el, which the `cider-mode` hook loads without ever providing `cider`, so it
+  is `:bind (:map cider-mode-map :package cider-mode …)`. A prefix keymap symbol with no
+  function cell (`project-prefix-map`) needs `:bind-keymap`, not `:bind`. Unbinding is
+  `("key" . nil)` inside `:bind`.

@@ -99,16 +99,15 @@
 ;;;; core-base
 ;;;; ---------
 
-;; Startup configuration
-(setq warning-minimum-level :error)
-;; A daemon otherwise shows every startup warning on its first client frame,
-;; whatever the level above.
+;; Startup configuration.  A daemon otherwise shows every startup warning on
+;; its first client frame, whatever `warning-minimum-level' early-init.el set.
 (advice-add 'display-warning :around #'myde-display-warning-advice)
-(setq recentf-max-saved-items 50)
 (add-to-list 'find-file-not-found-functions #'myde-auto-create-missing-dirs)
 
 ;; Regenerate the tangled elisp whenever myde.org is saved.
-(add-hook 'after-save-hook #'myde-tangle-source-on-save)
+(use-package emacs
+  :hook (after-save . myde-tangle-source-on-save)
+  :ensure nil)
 
 ;; XDG directory support — load early so all XDG paths are available immediately.
 (require 'xdg)
@@ -144,31 +143,26 @@
 (setq url-configuration-directory
       (expand-file-name "emacs/url/" (xdg-cache-home)))
 
-;; Auto-detect shebang comments and use shell-script-mode appropriately.
-(dolist (interp '("bash" "sh" "zsh"))
-  (add-to-list 'interpreter-mode-alist (cons interp 'shell-script-mode)))
-
-;; Recent files management
+;; Recent files management.  `:hook', not `:commands': a deferring keyword
+;; with `recentf-mode' down in :config meant recentf was never loaded at all.
 (use-package recentf
-  :init
-  (setq recentf-save-file
-        (expand-file-name "emacs/recentf.eld" (xdg-state-home)))
+  :hook (elpaca-after-init . recentf-mode)
+  :custom
+  (recentf-save-file (expand-file-name "emacs/recentf.eld" (xdg-state-home)))
+  (recentf-max-saved-items 50)
+  (recentf-auto-cleanup (if (daemonp) 300 'never))
+  (recentf-exclude '("^/tmp/" "^/ssh:" "/COMMIT_EDITMSG\\'"
+                     "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
   :config
-  (recentf-mode t)
-  (setq recentf-auto-cleanup (if (daemonp) 300 'never))
-  (setq recentf-exclude
-        '("^/tmp/" "^/ssh:" "/COMMIT_EDITMSG\\'"
-          "/bookmarks" "/info/" "/diary$" "/\\.elpa/"))
+  ;; `:hook' cannot express a depth, and -90 must run before the savers.
   (add-hook 'kill-emacs-hook #'recentf-cleanup -90)
-  :commands (recentf-mode recentf-cleanup)
   :diminish recentf-mode
   :ensure nil)
 
 ;; Remember last position within files
 (use-package saveplace
-  :init
-  (setq save-place-file
-        (expand-file-name "emacs/places.eld" (xdg-state-home)))
+  :custom
+  (save-place-file (expand-file-name "emacs/places.eld" (xdg-state-home)))
   :config
   (save-place-mode)
   :diminish save-place-mode
@@ -176,9 +170,8 @@
 
 ;; Remember minibuffer history
 (use-package savehist
-  :init
-  (setq savehist-file
-        (expand-file-name "emacs/history" (xdg-state-home)))
+  :custom
+  (savehist-file (expand-file-name "emacs/history" (xdg-state-home)))
   :config
   (savehist-mode)
   :diminish savehist-mode
@@ -188,18 +181,16 @@
 ;; to <user-emacs-directory>/bookmarks, which lands in the repo root since
 ;; ~/.config/emacs is symlinked there.  Redirect to XDG state.
 (use-package bookmark
-  :init
-  (setq bookmark-default-file
-        (expand-file-name "emacs/bookmarks" (xdg-state-home)))
+  :custom
+  (bookmark-default-file (expand-file-name "emacs/bookmarks" (xdg-state-home)))
   :ensure nil)
 
 ;; Transient menus and popups — XDG-compliant persistence paths.
 (use-package transient
-  :init
-  (let ((dir (expand-file-name "emacs/transient" (xdg-data-home))))
-    (setq transient-levels-file  (expand-file-name "levels.el"  dir)
-          transient-values-file  (expand-file-name "values.el"  dir)
-          transient-history-file (expand-file-name "history.el" dir)))
+  :custom
+  (transient-levels-file  (expand-file-name "emacs/transient/levels.el"  (xdg-data-home)))
+  (transient-values-file  (expand-file-name "emacs/transient/values.el"  (xdg-data-home)))
+  (transient-history-file (expand-file-name "emacs/transient/history.el" (xdg-data-home)))
   :ensure nil)
 
 ;; Auto-save buffers on focus loss
@@ -222,9 +213,9 @@
 ;; XDG location rather than the default `user-emacs-directory/tree-sitter/'.
 (use-package treesit
   :init
-  (let ((dir (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
-    (make-directory dir :parents)
-    (setq treesit-extra-load-path (list dir)))
+  (make-directory (expand-file-name "emacs/tree-sitter" (xdg-data-home)) :parents)
+  :custom
+  (treesit-extra-load-path (list (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
   :config
   (advice-add 'treesit-install-language-grammar
               :around #'myde-treesit-install-language-grammar-advice)
@@ -238,17 +229,18 @@
 ;; defers to `open` on macOS and `xdg-open` on Linux — both honor the
 ;; user's OS-level default browser, so no override is needed here.
 (use-package goto-addr
-  :bind (("C-c u" . browse-url-at-point))
-  :config
   ;; macOS trackpads have no native middle-click.  Plain mouse-1 stays
   ;; as point movement; Super+click follows the link (on macOS, Super
   ;; is whichever physical key the user has mapped to it — Cmd by
   ;; default).  Disabling `mouse-1-click-follows-link' is what
   ;; prevents Emacs from translating a quick plain mouse-1 on a
   ;; `follow-link' overlay into a virtual mouse-2 click.
-  (setq mouse-1-click-follows-link nil)
-  (define-key goto-address-highlight-keymap [s-mouse-1] #'goto-address-at-point)
-  (global-goto-address-mode 1)
+  :custom
+  (mouse-1-click-follows-link nil)
+  :bind (("C-c u" . browse-url-at-point)
+         :map goto-address-highlight-keymap
+         ([s-mouse-1] . goto-address-at-point))
+  :hook (elpaca-after-init . global-goto-address-mode)
   :ensure nil)
 
 ;;;; Environment
@@ -268,9 +260,8 @@
 
 (use-package exec-path-from-shell
   :ensure (:wait t)
-  :demand t
-  :init
-  (setq exec-path-from-shell-arguments '("-l"))
+  :custom
+  (exec-path-from-shell-arguments '("-l"))
   :config
   (when (or (daemonp) window-system)
     (exec-path-from-shell-initialize)))
@@ -300,7 +291,9 @@
       ring-bell-function 'myde-flash-mode-line)
 
 ;; Clear echo area after all startup hooks have run (removes last info message).
-(add-hook 'elpaca-after-init-hook #'myde/clear-echo-area)
+(use-package emacs
+  :hook (elpaca-after-init . myde/clear-echo-area)
+  :ensure nil)
 
 ;; Disable startup splash screen and initial scratch message
 (setq inhibit-startup-message t
@@ -436,9 +429,6 @@
 ;; Exit confirmation
 (setq confirm-kill-emacs 'y-or-n-p)
 
-;; Enable clickable links
-(goto-address-mode 1)
-
 ;; Improve search display
 (setq isearch-lazy-count t
       lazy-count-prefix-format nil
@@ -483,8 +473,10 @@
 (setq delete-by-moving-to-trash t)
 
 ;; Global keyboard remap
-(global-set-key [remap keyboard-quit] #'myde-keyboard-quit)
-(global-set-key (kbd "M-Z") #'zap-up-to-char)
+(use-package emacs
+  :bind (([remap keyboard-quit] . myde-keyboard-quit)
+         ("M-Z" . zap-up-to-char))
+  :ensure nil)
 
 ;; Expand/contract region with semantic awareness
 (use-package expreg  ;; https://github.com/casouri/expreg
@@ -503,10 +495,9 @@
          ("C-S-c C->"   . mc/mark-next-like-this)      ;; add next match
          ("C-S-c C-<"   . mc/mark-previous-like-this)  ;; add previous match
          ("C-S-c C-+"   . mc/mark-all-like-this))      ;; mark all matches
-  :config
-  (setq mc/list-file
-        (expand-file-name "emacs/mc-lists.el" (xdg-state-home)))
-  (setq mc/always-run-for-all t)   ;; Make cursor movement more predictable
+  :custom
+  (mc/list-file (expand-file-name "emacs/mc-lists.el" (xdg-state-home)))
+  (mc/always-run-for-all t)   ;; Make cursor movement more predictable
   :ensure t)
 
 ;; Operate on whole line or region
@@ -592,8 +583,8 @@
 ;; so registering it again would only duplicate the alist entry.
 (use-package org
   :defer t
-  :config
-  (setq org-confirm-babel-evaluate nil)
+  :custom
+  (org-confirm-babel-evaluate nil)
   :ensure nil)
 
 (use-package ob-async  ;; https://github.com/astahlman/ob-async
@@ -610,8 +601,8 @@
 ;; flycheck-mode on manually in an org buffer.
 (use-package flycheck
   :defer t
-  :init
-  (setq flycheck-global-modes '(not org-mode org-agenda-mode))
+  :custom
+  (flycheck-global-modes '(not org-mode org-agenda-mode))
   :config
   (add-to-list 'flycheck-disabled-checkers 'org-lint)
   :ensure nil)
@@ -723,8 +714,8 @@
 
 
 (use-package eldoc
-  :config
-  (setq eldoc-idle-delay most-positive-fixnum)  ;; Disable automatic echo-area display; docs are shown on demand with C-c e h.
+  :custom
+  (eldoc-idle-delay most-positive-fixnum)  ;; Disable automatic echo-area display; docs are shown on demand with C-c e h.
   :ensure nil)
 
 (use-package eldoc-box  ;; https://github.com/casouri/eldoc-box
@@ -760,9 +751,10 @@
 
 
 (use-package emacs
+  :hook ((vterm-mode term-mode eshell-mode comint-mode eat-mode)
+         . myde-terminal-disable-hl-line)
   :config
   (set-terminal-coding-system 'utf-8-unix)
-  (setq global-hl-line-modes '(not vterm-mode term-mode eshell-mode ansi-term-mode comint-mode))  ;; Disable hl-line-mode in all terminal-like modes
   :ensure nil)
 
 (use-package eat  ;; https://codeberg.org/akib/emacs-eat
@@ -799,8 +791,8 @@
   :ensure nil)
 
 (use-package project
-  :config
-  (keymap-set project-prefix-map "t" #'myde/project-vterm)
+  :bind (:map project-prefix-map
+              ("t" . myde/project-vterm))
   :ensure nil)
 
 ;;;; core-dashboard
@@ -816,14 +808,13 @@
 ;; made every `emacsclient -c' frame pay for a render.
 (use-package dashboard  ;; https://github.com/emacs-dashboard/emacs-dashboard
   :defer t
-  :config
-  (setq dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
-  (setq dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")
-  (setq dashboard-display-icons-p t)
-  (setq dashboard-icon-type 'nerd-icons)
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
   :custom
+  (dashboard-startup-banner (cons myde-banner-image-file myde-banner-text-file))
+  (dashboard-banner-logo-title "Welcome to MyDE -- *MY* Development Environment!")
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
   (dashboard-projects-backend 'project-el)
   (dashboard-items '((recents   . 5)
                      (projects  . 5)
@@ -976,12 +967,12 @@
 
 (use-package yasnippet  ;; https://github.com/joaotavora/yasnippet
   :hook (elpaca-after-init . yas-global-mode)
-  :config
   ;; Do not bind TAB globally for snippet expansion -- it conflicts with
   ;; comint/REPL completion (e.g. inf-elixir).  Snippets can still be
   ;; expanded via `yas-insert-snippet' or the `yas-minor-mode-map' binding.
-  (define-key yas-minor-mode-map (kbd "TAB") nil)
-  (define-key yas-minor-mode-map [(tab)] nil)
+  :bind (:map yas-minor-mode-map
+              ("TAB" . nil)
+              ([tab] . nil))
   :diminish yas-minor-mode
   :ensure t)
 
@@ -999,14 +990,14 @@
 
 ;; Built-in project management
 (use-package project
-  :config
-  (keymap-global-set "C-c p" project-prefix-map)
-  (keymap-global-set "s-p" project-prefix-map)
-  (when (file-directory-p (expand-file-name "~/Projects/"))
-    (project-remember-projects-under "~/Projects/" t))
+  :bind-keymap (("C-c p" . project-prefix-map)
+                ("s-p" . project-prefix-map))
   :custom
   (project-list-file
    (expand-file-name "emacs/projects.eld" (xdg-state-home)))
+  :config
+  (when (file-directory-p (expand-file-name "~/Projects/"))
+    (project-remember-projects-under "~/Projects/" t))
   :ensure nil)
 
 ;; EditorConfig support for project-wide formatting rules
@@ -1023,31 +1014,29 @@
   :after nerd-icons
   :bind ([f8] . myde-neotree-project-root-toggle)
   :commands (neotree-toggle)
+  :hook (after-save . myde-neotree-refresh)
+  :custom
+  (neo-window-fixed-size nil)
+  (neo-show-hidden-files t)
   :config
+  ;; Stays in :config: this runs when neotree loads from a client frame,
+  ;; where `display-graphic-p' is meaningful.  As a :custom value it would
+  ;; be evaluated during the frameless daemon's init and always pick arrow.
   (setq neo-theme (if (display-graphic-p) 'nerd-icons 'arrow))
-  (setq neo-window-fixed-size nil)
-  (setq neo-show-hidden-files t)
+  ;; An abnormal hook: `:hook' would append -hook to the name.
   (add-to-list 'window-size-change-functions #'myde-neotree-window-size-change-function)
-  (add-hook 'after-save-hook        #'myde-neotree-refresh)
-  (add-hook 'after-delete-file-hook #'myde-neotree-refresh)
-  (add-hook 'after-create-file-hook #'myde-neotree-refresh)
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Tree-sitter setup
 ;; -----------------------------------------------------------------------------
-
-(use-package treesit
-  :config
-  (setq treesit-extra-load-path
-        (list (expand-file-name "emacs/tree-sitter" (xdg-data-home))))
-  ;; Language grammar sources are registered by each language module in myde-.
-  :ensure nil)
+;; `treesit-extra-load-path' is set once, in core-base.  Language grammar
+;; sources are registered by each language module.
 
 (use-package treesit-auto  ;; https://github.com/renzmann/treesit-auto
   :hook (elpaca-after-init . myde-treesit-auto-setup)
-  :config
-  (setq treesit-auto-install t) ; install grammars automatically, if missing
+  :custom
+  (treesit-auto-install t) ; install grammars automatically, if missing
   :diminish treesit-auto-mode
   :ensure t)
 
@@ -1065,13 +1054,14 @@
               ("C-c e f" . eglot-format)
               ("C-c e i" . eglot-find-implementation)
               ("C-c e t" . eglot-find-typeDefinition))
-  :config
+  :custom
   ;; Performance optimizations
-  (setq eglot-autoshutdown t
-        eglot-sync-connect 0                               ;; non-blocking LSP connect
-        eglot-report-progress nil                          ;; no progress messages
-        eglot-events-buffer-config '(:size 0 :format short) ;; no event logging
-        jsonrpc-event-hook nil)                            ;; no per-message hooks
+  (eglot-autoshutdown t)
+  (eglot-sync-connect 0)                                ;; non-blocking LSP connect
+  (eglot-report-progress nil)                           ;; no progress messages
+  (eglot-events-buffer-config '(:size 0 :format short)) ;; no event logging
+  :config
+  (setq jsonrpc-event-hook nil)  ;; no per-message hooks.  A defvar, so not :custom.
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
@@ -1087,8 +1077,8 @@
               ("n" . myde-diagnostics-next)
               ("p" . myde-diagnostics-prev)
               ("l" . myde-diagnostics-list))
-  :config
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  :custom
+  (flycheck-check-syntax-automatically '(save mode-enabled))
   :diminish (flycheck-mode . " ✓")
   :ensure t)
 
@@ -1139,8 +1129,8 @@
   ;; Lightweight DAP client; debug configs are registered by each language
   ;; module in myde-.  Only shared keybindings and layout settings live here.
   :after transient
-  :config
-  (setq dape-buffer-window-arrangement 'right)
+  :custom
+  (dape-buffer-window-arrangement 'right)
   :bind (("C-c d d" . dape)
          ("C-c d l" . dape-restart)   ; restart, or re-run the last config
          ("C-c d b" . dape-breakpoint-toggle)
@@ -1171,21 +1161,20 @@
   :ensure t)
 
 (use-package diff-hl  ;; https://github.com/dgutov/diff-hl
-  :hook (elpaca-after-init . global-diff-hl-mode)
-  :config
-  (add-hook 'magit-pre-refresh-hook  #'diff-hl-magit-pre-refresh)
-  (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)
+  :hook ((elpaca-after-init . global-diff-hl-mode)
+         (magit-pre-refresh . diff-hl-magit-pre-refresh)
+         (magit-post-refresh . diff-hl-magit-post-refresh))
   :ensure t)
 
 (use-package blamer
   :bind (("C-c g b" . blamer-mode))
-  :config
-  (setq blamer-idle-time 0.05)
-  (setq blamer-author-formatter "%s ")
-  (setq blamer-datetime-formatter "[%s]")
-  (setq blamer-commit-formatter ": %s")
-  (setq blamer-max-commit-message-length 100)
-  (setq blamer-min-offset 70)
+  :custom
+  (blamer-idle-time 0.05)
+  (blamer-author-formatter "%s ")
+  (blamer-datetime-formatter "[%s]")
+  (blamer-commit-formatter ": %s")
+  (blamer-max-commit-message-length 100)
+  (blamer-min-offset 70)
   :ensure t)
 
 ;;;; core-spell
@@ -1279,8 +1268,9 @@
   ;; ;; if you want to enable auto suggestion.
   ;; ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
   ;; (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
+  :custom
+  (minuet-provider 'codestral)  ;; Use Codestral FIM completions via the Mistral API.
   :config
-  (setq minuet-provider 'codestral)  ;; Use Codestral FIM completions via the Mistral API.
   (plist-put minuet-codestral-options :api-key (auth-source-pick-first-password :host "MISTRAL_API_KEY"))
   (plist-put minuet-codestral-options :end-point "https://api.mistral.ai/v1/fim/completions")
   (plist-put minuet-codestral-options :model "codestral-latest")
@@ -1354,7 +1344,7 @@
 
 (use-package mcp-server  ;; https://github.com/rhblind/emacs-mcp-server
   :demand t
-  :init
+  :custom
   ;; `error' keeps the socket path fixed at emacs-mcp-server.sock, which the
   ;; socat bridge registered with `claude mcp add' hardcodes. A socket left by a
   ;; dead daemon has no listener, so mcp-server reclaims it as stale before the
@@ -1363,9 +1353,9 @@
   ;; $XDG_CACHE_HOME. `force' made that Emacs unlink the daemon's socket, leaving
   ;; the daemon listening on a path no client could reach; `warn' strands a
   ;; stray emacs-mcp-server-N.sock. `error' leaves the owner's socket alone.
-  (setq mcp-server-socket-directory (expand-file-name "emacs/" (xdg-cache-home))
-        mcp-server-socket-name nil
-        mcp-server-socket-conflict-resolution 'error)
+  (mcp-server-socket-directory (expand-file-name "emacs/" (xdg-cache-home)))
+  (mcp-server-socket-name nil)
+  (mcp-server-socket-conflict-resolution 'error)
   :hook (elpaca-after-init . myde/mcp-server-startup-hook)
   ;; The tool modules live in tools/, which mcp-server-emacs-tools.el resolves
   ;; relative to itself; elpaca's default :files would leave them behind.
@@ -1384,13 +1374,12 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package auth-source-1password  ;; https://github.com/dlobraico/auth-source-1password
-  :init
-  (setq auth-source-1password-construct-secret-reference
-        #'myde-auth-source-1password-construct-secret-reference)
-  :config
-  (auth-source-1password-enable)
   :custom
   (auth-source-1password-vault "My API credentials")
+  (auth-source-1password-construct-secret-reference
+   #'myde-auth-source-1password-construct-secret-reference)
+  :config
+  (auth-source-1password-enable)
   :ensure t)
 
   )
@@ -1627,8 +1616,10 @@
 
 
 ;; Configure display of line numbers and current line highlighting
-(add-hook 'prog-mode-hook #'myde-prog-mode-hook-function)
-(add-hook 'prog-mode-hook #'myde-delete-trailing-whitespace-setup)
+(use-package prog-mode
+  :hook ((prog-mode . myde-prog-mode-hook-function)
+         (prog-mode . myde-delete-trailing-whitespace-setup))
+  :ensure nil)
 
 ;; Consistent multi-language formatter foundation.
 ;; Individual language modules register their formatter via apheleia-mode-alist.
@@ -1680,18 +1671,6 @@
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------
-;; interpreter-mode-alist override
-;;
-;; core-base maps bash shebangs to shell-script-mode.  Override that entry so
-;; #!/usr/bin/env bash and #!/bin/bash shebangs activate bash-ts-mode instead.
-;; -----------------------------------------------------------------------------
-
-(use-package emacs
-  :config
-  (add-to-list 'interpreter-mode-alist '("bash" . bash-ts-mode))
-  :ensure nil)
-
-;; -----------------------------------------------------------------------------
 ;; LSP via eglot + bash-language-server
 ;;
 ;; bash-language-server automatically:
@@ -1739,6 +1718,8 @@
   :mode (("\\.sh\\'"   . bash-ts-mode)
          ("\\.bash\\'" . bash-ts-mode)
          ("\\.bats\\'" . bash-ts-mode))
+  ;; Outranks Emacs' default entry, which sends bash shebangs to sh-mode.
+  :interpreter ("bash" . bash-ts-mode)
   :bind (:map bash-ts-mode-map
               ("C-c i i" . myde-bash-open-shell)
               ("C-c i r" . myde-bash-send-region)
@@ -1897,9 +1878,8 @@
               ("C-c i r" . myde-nushell-send-region)
               ("C-c i b" . myde-nushell-send-buffer)
               ("C-c i x" . myde-nushell-run-buffer))
-  :config
-  (add-to-list 'interpreter-mode-alist '("nu" . nushell-mode))
-     :ensure t)
+  :interpreter ("nu" . nushell-mode)
+  :ensure t)
 
 ;; -----------------------------------------------------------------------------
 ;; Formatting via apheleia + nufmt (OPT-IN ONLY)
@@ -2021,70 +2001,68 @@
 
 ;; Tree-sitter grammar registration for Common Lisp
 (use-package treesit
-  :ensure nil
   :config
   ;; Register Common Lisp grammar for future tree-sitter-based major mode
   ;; Currently no stable commonlisp-ts-mode on MELPA, but grammar is available
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(commonlisp "https://github.com/tree-sitter-grammars/tree-sitter-commonlisp"))))
+      '(commonlisp "https://github.com/tree-sitter-grammars/tree-sitter-commonlisp")))
+  :ensure nil)
 
 ;; Project root detection for CL toolchains
 (use-package project
-  :ensure nil
   :config
   ;; Add Common Lisp-specific project markers
-  (myde-prog-clisp-setup))
+  (myde-prog-clisp-setup)
+  :ensure nil)
 
 ;; Built-in Common Lisp major mode
 (use-package lisp-mode
-  :ensure nil  ;; Built-in to Emacs
   :mode (("\\.lisp\\'" . lisp-mode)
          ("\\.cl\\'" . lisp-mode)
          ("\\.asd\\'" . lisp-mode))
-  :hook (lisp-mode . myde-prog-clisp-lisp-mode-setup))
+  :hook (lisp-mode . myde-prog-clisp-lisp-mode-setup)
+  :ensure nil)
 
 ;; SLY: Primary REPL for interactive Common Lisp development
 ;; Modern UX, stickers (live feedback), excellent debugger integration
 (use-package sly
-  :defer t
-  :config
-  ;; Initialize SLY configuration
-  (myde-prog-clisp-sly-init)
-
+  :custom
+  ;; SBCL by default; SLY auto-detects other implementations at runtime.
+  (sly-default-lisp 'sbcl)
   ;; Enable multiple simultaneous REPLs
-  (setq sly-mrepl-history-file-name nil)
-
+  (sly-mrepl-history-file-name nil)
   ;; SLY test runner keybindings (standard myde pattern)
   ;; Note: These are aspirational; SLY doesn't have built-in FiveAM test runner
   ;; Tests are run via: C-c i b (eval buffer), manual REPL, or asdf:test-system
   ;; Documented for future integration with SLY test framework enhancements
-  (define-key sly-mode-map (kbd "C-c t b") 'sly-eval-buffer)
-  (define-key sly-mode-map (kbd "C-c i i") 'sly)
-  (define-key sly-mode-map (kbd "C-c i r") 'sly-eval-region)
-  (define-key sly-mode-map (kbd "C-c i b") 'sly-eval-buffer)
-  (define-key sly-mode-map (kbd "C-c i e") 'sly-eval-last-expression)
-  (define-key sly-mode-map (kbd "C-c i d") 'sly-documentation)
-  (define-key sly-mode-map (kbd "C-c i z") 'sly-mrepl)
+  :bind (:map sly-mode-map
+              ("C-c t b" . sly-eval-buffer)
+              ("C-c i i" . sly)
+              ("C-c i r" . sly-eval-region)
+              ("C-c i b" . sly-eval-buffer)
+              ("C-c i e" . sly-eval-last-expression)
+              ("C-c i d" . sly-documentation)
+              ("C-c i z" . sly-mrepl))
   :ensure t)
 
 ;; SLIME: Fallback REPL for Common Lisp (larger ecosystem if SLY unavailable)
 ;; Battle-tested stability (20+ years), excellent debugging (SLDB)
+;; No `(unless (featurep 'sly) ...)' guard: sly's autoloads turn on
+;; `sly-editing-mode' in every lisp buffer, so sly is always loaded by the
+;; time slime is, and the guard made this whole block dead.  slime only
+;; loads on M-x slime, so both stay installed without stepping on each other.
 (use-package slime
-  :defer t
   :config
-  ;; Only initialize if SLY is not available
-  ;; Both can coexist but SLY is primary
-  (unless (featurep 'sly)
-    (myde-prog-clisp-slime-init)
-
-    ;; SLIME keybindings (same C-c i prefix for consistency)
-    (define-key slime-mode-map (kbd "C-c i i") 'slime)
-    (define-key slime-mode-map (kbd "C-c i r") 'slime-eval-region)
-    (define-key slime-mode-map (kbd "C-c i b") 'slime-eval-buffer)
-    (define-key slime-mode-map (kbd "C-c i e") 'slime-eval-last-expression)
-    (define-key slime-mode-map (kbd "C-c i d") 'slime-documentation)
-    (define-key slime-mode-map (kbd "C-c i z") 'slime-switch-to-output-buffer))
+  (myde-prog-clisp-slime-init)
+  ;; SLIME keybindings (same C-c i prefix for consistency)
+  :bind (:map slime-mode-map
+              ("C-c i i" . slime)
+              ("C-c i r" . slime-eval-region)
+              ("C-c i b" . slime-eval-buffer)
+              ("C-c i e" . slime-eval-last-expression)
+              ("C-c i d" . slime-documentation)
+              ("C-c i z" . slime-switch-to-output-buffer))
   :ensure t)
 
 ;; FiveAM: Test framework documentation
@@ -2103,31 +2081,26 @@
 ;; Install via: (ql:quickload "rove")
 ;; Usage: (rove:run #'test-function)
 
-;; cl-indent.el: Built-in Common Lisp indentation (zero dependencies)
-;; Handles &body and other macro indentation patterns excellently
-(use-package cl-indent
-  :ensure nil  ;; Built-in to Emacs
-  :config
-  ;; cl-indent.el provides optimal indentation for CL
-  ;; No external dependencies required
-  ;;
-  ;; ALTERNATIVE: nice-lisp formatter (commented below)
-  ;; Requires: (ql:quickload "trivial-formatter") in your CL system
-  ;; Then: (nice-lisp:format-string code)
-  ;; Uncomment if you install nice-lisp:
-  ;;
-  ;; (use-package apheleia
-  ;;   :config
-  ;;   (add-to-list 'apheleia-formatters
-  ;;     '(nice-lisp . ("sbcl" "--noinform" "--load" "format.lisp" "--eval"
-  ;;                    "(nice-lisp:format-string (read-file-as-string 0))")))
-  ;;   (add-to-list 'apheleia-mode-alist
-  ;;     '(lisp-mode . nice-lisp)))
-  nil)
+;; Indentation is the built-in cl-indent.el, which handles &body and the other
+;; macro patterns and needs no configuration, so it has no use-package form.
+;;
+;; ALTERNATIVE: nice-lisp formatter
+;; Requires: (ql:quickload "trivial-formatter") in your CL system
+;; Then: (nice-lisp:format-string code)
+;; If you install nice-lisp, register it with apheleia:
+;;
+;; (use-package apheleia
+;;   :after apheleia
+;;   :config
+;;   (add-to-list 'apheleia-formatters
+;;     '(nice-lisp . ("sbcl" "--noinform" "--load" "format.lisp" "--eval"
+;;                    "(nice-lisp:format-string (read-file-as-string 0))")))
+;;   (add-to-list 'apheleia-mode-alist
+;;     '(lisp-mode . nice-lisp))
+;;   :ensure nil)
 
 ;; Eglot: LSP support (optional, requires Roswell + cl-lsp)
 (use-package eglot
-  :ensure nil  ;; Built-in to Emacs 29+
   :config
   ;; cl-lsp is optional; only setup if Roswell is available
   ;; SLIME/SLY provide superior interactive feedback anyway
@@ -2136,7 +2109,8 @@
       (when lsp-cmd
         (add-to-list 'eglot-server-programs
           `(lisp-mode . ,lsp-cmd))
-        (add-hook 'lisp-mode-hook 'eglot-ensure)))))
+        (add-hook 'lisp-mode-hook 'eglot-ensure))))
+  :ensure nil)
 
 ;; Known Limitations
 ;;
@@ -2159,8 +2133,8 @@
 ;;    - lisp-mode (regex-based) sufficient for now
 ;;
 ;; 5. SLY vs SLIME Coexistence
-;;    - Both can be installed; myde prioritizes SLY (modern)
-;;    - Falls back to SLIME via (unless (featurep 'sly) ...) guard
+;;    - Both are installed; myde prioritizes SLY (modern)
+;;    - SLY turns itself on in lisp buffers; SLIME only after M-x slime
 ;;    - User picks implementation at M-x sly / M-x slime runtime
 ;;
 ;; 6. SLDB Debugging Model
@@ -2204,46 +2178,49 @@
 
 ;; Tree-sitter grammar registration for Scheme
 (use-package treesit
-  :ensure nil
   :config
   ;; Register Scheme grammar for future tree-sitter-based major mode
   ;; Currently no stable scheme-ts-mode on MELPA, but grammar is available
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(scheme "https://github.com/6cdh/tree-sitter-scheme"))))
+      '(scheme "https://github.com/6cdh/tree-sitter-scheme")))
+  :ensure nil)
 
 ;; Project root detection for Scheme toolchains
 (use-package project
-  :ensure nil
   :config
   ;; Add Scheme-specific project markers
-  (myde-prog-scheme-setup))
+  (myde-prog-scheme-setup)
+  :ensure nil)
 
 ;; Built-in Scheme major mode
 (use-package scheme
-  :ensure nil  ;; Built-in to Emacs
   :mode (("\\.scm\\'" . scheme-mode)
          ("\\.ss\\'" . scheme-mode)
          ("\\.sls\\'" . scheme-mode))
-  :hook (scheme-mode . eglot-ensure))
+  ;; Buffer-local before-save formatter: schemat runs only if available and
+  ;; eglot is managing the buffer (see myde-prog-scheme-format-buffer-maybe).
+  :hook ((scheme-mode . eglot-ensure)
+         (scheme-mode . myde-prog-scheme-format-on-save-setup))
+  :ensure nil)
 
 ;; LSP support for Scheme via implementation-specific servers
 ;; scheme-langserver (general, R6RS/R7RS) or guile-lsp-server or chicken-lsp-server
 (use-package eglot
-  :ensure nil  ;; Built-in to Emacs 29+
   :config
   ;; Register dynamic LSP server detection
   ;; myde-prog-scheme-lsp-server returns the first available server
   (add-to-list 'eglot-server-programs
-    `(scheme-mode . ,(lambda () (myde-prog-scheme-lsp-server)))))
+    `(scheme-mode . ,(lambda () (myde-prog-scheme-lsp-server))))
+  :ensure nil)
 
 ;; Geiser: Interactive Scheme evaluation and REPL
 ;; Provides evaluation, debugging, documentation, macro expansion, etc.
 (use-package geiser
-  :config
+  :custom
   ;; Make all installed Scheme backends available in M-x geiser prompt
   ;; User can choose implementation at runtime
-  (setq geiser-active-implementations '(guile chicken chez))
+  (geiser-active-implementations '(guile chicken chez))
   :ensure t)
 
 ;; Geiser backend: GNU Guile
@@ -2272,26 +2249,10 @@
     '(schemat . ("schemat")))
   (add-to-list 'apheleia-mode-alist
     '(scheme-mode . schemat))
-
-  ;; Buffer-local before-save formatter: schemat runs only if available and eglot
-  ;; is managing the buffer (see myde-prog-scheme-format-buffer-maybe).
-  (add-hook 'scheme-mode-hook #'myde-prog-scheme-format-on-save-setup)
   :ensure nil)
 
-;; Standard keybindings for geiser (C-c i prefix)
-;; These are defaults from geiser but can be customized here if needed
-(use-package geiser
-  :after (scheme geiser)
-  :config
-  ;; C-c i i — geiser (open REPL, prompts for implementation)
-  ;; C-c i r — geiser-eval-region
-  ;; C-c i b — geiser-eval-buffer
-  ;; C-c i m — geiser-expand-last-sexp
-  ;; C-c i z — geiser-switch-to-repl
-  ;; C-c i d — geiser-doc
-  ;; (Most are already bound by geiser; this is for documentation)
-  nil
-  :ensure nil)
+;; REPL keys are geiser's own (`C-c C-z' switches to the REPL).  myde adds
+;; none, so there is no second geiser form.
 
 ;; Known Limitations
 ;;
@@ -2350,18 +2311,18 @@
 
 
 (use-package treesit
-  :ensure nil
   :config
   ;; Register Clojure grammar for system-wide availability
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
-      '(clojure "https://github.com/sogaiu/tree-sitter-clojure" "unstable-20250526"))))
+      '(clojure "https://github.com/sogaiu/tree-sitter-clojure" "unstable-20250526")))
+  :ensure nil)
 
 (use-package project
-  :ensure nil
   :config
   ;; Add Clojure-specific project root markers
-  (myde-prog-clojure-setup))
+  (myde-prog-clojure-setup)
+  :ensure nil)
 
 ;; Load clojure-mode silently (required as CIDER's undeclared dependency)
 ;; Future: clojure-ts-mode will subsume clojure-mode (Emacs 32+)
@@ -2372,7 +2333,6 @@
   :ensure t)
 
 (use-package clojure-ts-mode
-  :defer t
   :mode (("\\.clj\\'" . clojure-ts-mode)
          ("\\.cljs\\'" . clojure-ts-mode)
          ("\\.cljc\\'" . clojure-ts-mode))
@@ -2382,7 +2342,6 @@
   :ensure t)
 
 (use-package eglot
-  :ensure nil  ;; Built-in to Emacs 29+
   :hook ((clojure-ts-mode . eglot-ensure)
          (clojure-mode . eglot-ensure))
   :config
@@ -2393,29 +2352,33 @@
   (add-to-list 'eglot-server-programs
     '(clojure-mode . ("clojure-lsp")))
   (add-to-list 'eglot-server-programs
-    '(clojurescript-mode . ("clojure-lsp"))))
+    '(clojurescript-mode . ("clojure-lsp")))
+  :ensure nil)
 
 (use-package cider
   :after clojure-ts-mode
-  :defer t
   :hook (clojure-ts-mode . cider-mode)
-  :config
-  ;; Setup CIDER configuration
-  (myde-prog-clojure-cider-setup)
-
+  :custom
+  ;; apheleia formats through cljfmt, so CIDER's own auto-format stays off.
+  ;; Users who prefer zprint can override `cider-format-code-options' via
+  ;; .dir-locals.el.
+  (cider-auto-mode nil)
   ;; Disable CIDER's eldoc display for symbol-at-point to let CIDER's
   ;; eldoc (arglists, docstrings) take precedence when active
-  (setq cider-eldoc-display-for-symbol-at-point nil)
-
+  (cider-eldoc-display-for-symbol-at-point nil)
   ;; CIDER test runner keybindings (standard myde pattern)
   ;; C-c t t = test at point
   ;; C-c t f = test file
   ;; C-c t p = test project
   ;; C-c t r = rerun last test
-  (define-key cider-mode-map (kbd "C-c t t") 'cider-test-run-test)
-  (define-key cider-mode-map (kbd "C-c t f") 'cider-test-run-ns-tests)
-  (define-key cider-mode-map (kbd "C-c t p") 'cider-test-run-project-tests)
-  (define-key cider-mode-map (kbd "C-c t r") 'cider-test-run-loaded-tests)
+  ;; `:package cider-mode': the map lives in cider-mode.el, which the
+  ;; `cider-mode' hook loads without ever providing the `cider' feature, so a
+  ;; binding that waited on `cider' would never happen.
+  :bind (:map cider-mode-map :package cider-mode
+              ("C-c t t" . cider-test-run-test)
+              ("C-c t f" . cider-test-run-ns-tests)
+              ("C-c t p" . cider-test-run-project-tests)
+              ("C-c t r" . cider-test-run-loaded-tests))
   :ensure t)
 
 (use-package apheleia
@@ -2441,8 +2404,8 @@
   ;; (add-to-list 'apheleia-mode-alist
   ;;   '(clojure-mode . zprint))
   ;;
-  ;; Then configure CIDER formatter in myde-prog-clojure-cider-setup:
-  ;; (setq cider-format-code-options {:style :community})
+  ;; Then configure CIDER's formatter in the cider form's :custom block:
+  ;; (cider-format-code-options {:style :community})
   ;;
   ;; Or via .dir-locals.el in project root:
   ;; ((clojure-ts-mode
@@ -2753,9 +2716,10 @@
 
 (use-package flycheck-credo  ;; https://github.com/aaronjensen/flycheck-credo
   :after flycheck
+  :custom
+  (flycheck-elixir-credo-strict t)
   :config
   (flycheck-credo-setup)
-  (setq flycheck-elixir-credo-strict t)
   :ensure t)
 
 (use-package flycheck-dialyxir  ;; https://github.com/aaronjensen/flycheck-dialyxir
@@ -2771,11 +2735,11 @@
 (use-package mix  ;; https://github.com/ayrat555/mix.el
   :after elixir-ts-mode
   :hook (elixir-ts-mode . mix-minor-mode)
-  :config
   ;; mix binds its command map on C-c d, the shared dape prefix.  The debug
   ;; keys win, so the mix commands move to C-c x.
-  (define-key mix-minor-mode-map (kbd "C-c d") nil t)
-  (define-key mix-minor-mode-map (kbd "C-c x") 'mix-minor-mode-command-map)
+  :bind (:map mix-minor-mode-map
+              ("C-c d" . nil)
+              ("C-c x" . mix-minor-mode-command-map))
   :ensure t)
 
 ;; -----------------------------------------------------------------------------
@@ -3061,10 +3025,11 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package rustic  ;; https://github.com/emacs-rustic/rustic
+  :custom
+  (rustic-lsp-client 'eglot)
+  (rust-mode-treesitter-derive t)
   :init
-  (setq rustic-lsp-client 'eglot
-        rust-mode-treesitter-derive t
-        rustic-format-trigger 'on-save)
+  (setq rustic-format-trigger 'on-save)  ; a defvar in rustic, so not :custom
   :hook ((rustic-mode . myde-rust-mode-setup))
   :bind (:map rustic-mode-map
               ("C-c t t" . rustic-cargo-current-test)
@@ -3939,7 +3904,9 @@
 ;;;; ---------
 
 
-(add-hook 'text-mode-hook #'myde-text-mode-hook-function)
+(use-package text-mode
+  :hook (text-mode . myde-text-mode-hook-function)
+  :ensure nil)
 
 ;;;; text-asciidoc
 ;;;; -------------
@@ -3972,8 +3939,8 @@
 ;; -----------------------------------------------------------------------------
 
 (use-package markdown-mode  ;; https://github.com/jrblevin/markdown-mode
-  :init
-  (setq markdown-command "pandoc")
+  :custom
+  (markdown-command "pandoc")
   :mode (("\\.md\\'"        . gfm-mode)
          ("README\\.md\\'"  . gfm-mode))
   :hook ((markdown-mode . myde-markdown-mode-setup)
@@ -4054,10 +4021,9 @@
 
 (use-package nov  ;; https://depp.brause.cc/nov.el
   :after xdg
-  :init
-  (setq nov-text-width 80
-        nov-place-file
-        (expand-file-name "emacs/nov-places" (xdg-state-home)))
+  :custom
+  (nov-text-width 80)
+  (nov-save-place-file (expand-file-name "emacs/nov-places" (xdg-state-home)))
   :hook
   ((nov-mode . visual-line-mode)
    (nov-mode . variable-pitch-mode))
@@ -4075,17 +4041,18 @@
 
 
 (use-package pdf-tools  ;; https://github.com/vedang/pdf-tools
-  :init
-  (setq pdf-view-display-size 'fit-width
-        pdf-view-resize-factor 1.1)
+  :custom
+  (pdf-view-display-size 'fit-width)
+  (pdf-view-resize-factor 1.1)
+  (pdf-view-use-scaling t)        ;; Improve rendering responsiveness
+  (pdf-view-use-imagemagick nil)
+  (pdf-view-continuous t)         ;; Continuous scrolling
   :config
-  (pdf-tools-install)                 ;; Compile/install epdfinfo server automatically
-  (setq pdf-view-use-scaling t        ;; Improve rendering responsiveness
-        pdf-view-use-imagemagick nil
-	pdf-view-continuous t)        ;; Continuous scrolling
-  (define-key pdf-view-mode-map (kbd "C-s") #'isearch-forward)
-  (define-key pdf-view-mode-map (kbd "h") #'pdf-annot-add-highlight-markup-annotation)
-  (define-key pdf-view-mode-map (kbd "t") #'pdf-annot-add-text-annotation)
+  (pdf-tools-install)             ;; Compile/install epdfinfo server automatically
+  :bind (:map pdf-view-mode-map
+              ("C-s" . isearch-forward)
+              ("h" . pdf-annot-add-highlight-markup-annotation)
+              ("t" . pdf-annot-add-text-annotation))
   :mode ("\\.pdf\\'" . pdf-view-mode)
   :ensure t)
 

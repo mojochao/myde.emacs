@@ -539,6 +539,13 @@ ragged columns.  Used as `:filter-args' advice on that function."
          (default-directory root))
     (vterm (format "*vterm<%s>*" (file-name-nondirectory (directory-file-name root))))))
 
+(defun myde-terminal-disable-hl-line ()
+  "Keep `global-hl-line-mode' out of the current buffer.
+Terminal-like buffers draw their own cursor and colors, which the
+current-line highlight fights.  The global mode checks its variable per
+buffer, so a buffer-local nil is the supported opt-out."
+  (setq-local global-hl-line-mode nil))
+
 ;;;; core-dashboard
 ;;;; --------------
 
@@ -1037,22 +1044,8 @@ tree-sitter grammar for future commonlisp-ts-mode compatibility."
       '(commonlisp "https://github.com/tree-sitter-grammars/tree-sitter-commonlisp"))))
 
 (defun myde-prog-clisp-lisp-mode-setup ()
-  "Buffer-local setup for `lisp-mode': initialize SLY and disable hard tabs."
-  (myde-prog-clisp-sly-init)
-  (setq indent-tabs-mode nil))
-
-(defun myde-prog-clisp-sly-init ()
-  "Configure SLY for interactive Common Lisp development.
-
-Sets up the modern REPL with stickers (live feedback), autodoc, and SLDB
-integrated debugger. SLY is the primary REPL choice for myde."
-  ;; Set default Lisp implementation to SBCL
-  ;; SLY will auto-detect available implementations at runtime
-  (setq sly-default-lisp 'sbcl)
-
-  ;; Enable stickers for live feedback (SLY-specific feature)
-  ;; Shows results inline as you type
-  (setq sly-stickers-default-action 'sly-stickers-fetch))
+  "Buffer-local setup for `lisp-mode': disable hard tabs."
+  (setq-local indent-tabs-mode nil))
 
 (defun myde-prog-clisp-slime-init ()
   "Configure SLIME for Common Lisp development (fallback REPL).
@@ -1172,14 +1165,6 @@ adds project root markers for mono-repos, and registers tree-sitter grammar."
   (when (treesit-available-p)
     (add-to-list 'treesit-language-source-alist
       '(clojure "https://github.com/sogaiu/tree-sitter-clojure" "unstable-20250526"))))
-
-(defun myde-prog-clojure-cider-setup ()
-  "Configure CIDER for Clojure development.
-
-Disables CIDER's auto-format (apheleia handles formatting via cljfmt).
-Users who prefer zprint can override `cider-format-code-options' via
-.dir-locals.el — see prog-clojure/cfg.el for a worked example."
-  (setq cider-auto-mode nil))
 
 ;;;; prog-erlang
 ;;;; -----------
