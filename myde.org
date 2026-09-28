@@ -4975,11 +4975,9 @@ Used as the `:program' callback for dape Zig debug configurations."
 ;; Org Babel
 ;; -----------------------------------------------------------------------------
 
-;; A fork of https://github.com/jolby/ob-zig.el.  Upstream declares no
-;; Package-Requires and no lexical-binding cookie, so elpaca compiled it without
-;; zig-mode on `load-path', the compile failed, and Emacs warned about the
-;; source on every start.  The fork adds those two header lines, plus a
-;; `declare-function' for `org-entry-get' that the native compiler asked for.
+;; A fork of https://github.com/jolby/ob-zig.el, which stopped tracking Zig at
+;; 0.11.  The fork targets Zig 0.16 and Emacs 30.1, wraps a block without a
+;; main in `pub fn main(init: std.process.Init)', and needs no zig-mode.
 (use-package ob-zig  ;; https://github.com/mojochao/ob-zig.el
   :defer t
   :ensure (:host github :repo "mojochao/ob-zig.el"))

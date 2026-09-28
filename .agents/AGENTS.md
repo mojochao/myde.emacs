@@ -168,8 +168,9 @@ so any `require` of another package fails, the compile errors, and no `.elc` is
 written. Emacs then loads the `.el`, and a source file with no `lexical-binding`
 cookie warns on every startup. `elpaca-rebuild` uses the same load-path and cannot
 help. The options are to live with the warning, pin a fork that adds the header, or
-drop the package. `ob-zig` was the case here: it requires `zig-mode` and declares
-nothing, so it is pinned to `mojochao/ob-zig.el`, a fork that adds the header.
+drop the package. `ob-zig` was the case here: it required `zig-mode` and declared
+nothing, so it is pinned to `mojochao/ob-zig.el`, a fork that declares its header and
+has since dropped `zig-mode` altogether.
 
 #### A package that will not install may be a half-finished clone
 
