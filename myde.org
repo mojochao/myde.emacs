@@ -1931,6 +1931,42 @@ restart."
   (global-treesit-auto-mode 1)
   (advice-remove 'set-auto-mode-0 #'treesit-auto--set-major-remap)
   (setq-default major-mode-remap-alist (treesit-auto--build-major-mode-remap-alist)))
+
+;; Diagnostics navigation
+
+(eval-when-compile
+  (declare-function flymake-goto-next-error "flymake" (&optional n filter interactive))
+  (declare-function flymake-goto-prev-error "flymake" (&optional n filter interactive))
+  (declare-function flymake-show-buffer-diagnostics "flymake" ())
+  (declare-function flycheck-next-error "flycheck" (&optional n reset))
+  (declare-function flycheck-previous-error "flycheck" (&optional n))
+  (declare-function flycheck-list-errors "flycheck" ()))
+
+;; ponytail: picks one checker per buffer.  In an eglot buffer that also runs
+;; flycheck checkers (credo, dialyxir), those are reached with M-x flycheck-*.
+(defun myde-diagnostics-next ()
+  "Go to the next diagnostic.
+Uses flymake where it runs, as in eglot buffers, and flycheck elsewhere."
+  (interactive)
+  (call-interactively (if (bound-and-true-p flymake-mode)
+                          #'flymake-goto-next-error
+                        #'flycheck-next-error)))
+
+(defun myde-diagnostics-prev ()
+  "Go to the previous diagnostic.
+Uses flymake where it runs, as in eglot buffers, and flycheck elsewhere."
+  (interactive)
+  (call-interactively (if (bound-and-true-p flymake-mode)
+                          #'flymake-goto-prev-error
+                        #'flycheck-previous-error)))
+
+(defun myde-diagnostics-list ()
+  "List the buffer's diagnostics.
+Uses flymake where it runs, as in eglot buffers, and flycheck elsewhere."
+  (interactive)
+  (call-interactively (if (bound-and-true-p flymake-mode)
+                          #'flymake-show-buffer-diagnostics
+                        #'flycheck-list-errors)))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2023,20 +2059,26 @@ restart."
 ;; Problems reporting support
 ;; -----------------------------------------------------------------------------
 
-;; Flycheck (on-the-fly syntax checking)
+;; Flycheck (on-the-fly syntax checking).  Its C-c ! map would shadow the global
+;; C-c ! keys below in every flycheck buffer, eglot buffers included, so its
+;; n/p/l run the same dispatching commands.
 (use-package flycheck  ;; https://github.com/flycheck/flycheck
   :hook (elpaca-after-init . global-flycheck-mode)
+  :bind (:map flycheck-command-map
+              ("n" . myde-diagnostics-next)
+              ("p" . myde-diagnostics-prev)
+              ("l" . myde-diagnostics-list))
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   :diminish (flycheck-mode . " ✓")
   :ensure t)
 
-;; flymake is used by eglot for LSP diagnostics.  Provide navigation bindings
-;; alongside the global flycheck setup so eglot errors are easy to navigate.
+;; flymake is used by eglot for LSP diagnostics.  C-c ! n/p/l dispatch to
+;; flymake where it runs, as in eglot buffers, and to flycheck elsewhere.
 (use-package flymake
-  :bind (("C-c ! n" . flymake-goto-next-error)
-         ("C-c ! p" . flymake-goto-prev-error)
-         ("C-c ! l" . flymake-show-buffer-diagnostics))
+  :bind (("C-c ! n" . myde-diagnostics-next)
+         ("C-c ! p" . myde-diagnostics-prev)
+         ("C-c ! l" . myde-diagnostics-list))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------

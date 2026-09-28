@@ -1078,20 +1078,26 @@
 ;; Problems reporting support
 ;; -----------------------------------------------------------------------------
 
-;; Flycheck (on-the-fly syntax checking)
+;; Flycheck (on-the-fly syntax checking).  Its C-c ! map would shadow the global
+;; C-c ! keys below in every flycheck buffer, eglot buffers included, so its
+;; n/p/l run the same dispatching commands.
 (use-package flycheck  ;; https://github.com/flycheck/flycheck
   :hook (elpaca-after-init . global-flycheck-mode)
+  :bind (:map flycheck-command-map
+              ("n" . myde-diagnostics-next)
+              ("p" . myde-diagnostics-prev)
+              ("l" . myde-diagnostics-list))
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   :diminish (flycheck-mode . " ✓")
   :ensure t)
 
-;; flymake is used by eglot for LSP diagnostics.  Provide navigation bindings
-;; alongside the global flycheck setup so eglot errors are easy to navigate.
+;; flymake is used by eglot for LSP diagnostics.  C-c ! n/p/l dispatch to
+;; flymake where it runs, as in eglot buffers, and to flycheck elsewhere.
 (use-package flymake
-  :bind (("C-c ! n" . flymake-goto-next-error)
-         ("C-c ! p" . flymake-goto-prev-error)
-         ("C-c ! l" . flymake-show-buffer-diagnostics))
+  :bind (("C-c ! n" . myde-diagnostics-next)
+         ("C-c ! p" . myde-diagnostics-prev)
+         ("C-c ! l" . myde-diagnostics-list))
   :ensure nil)
 
 ;; -----------------------------------------------------------------------------

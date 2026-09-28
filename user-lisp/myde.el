@@ -651,6 +651,42 @@ restart."
   (advice-remove 'set-auto-mode-0 #'treesit-auto--set-major-remap)
   (setq-default major-mode-remap-alist (treesit-auto--build-major-mode-remap-alist)))
 
+;; Diagnostics navigation
+
+(eval-when-compile
+  (declare-function flymake-goto-next-error "flymake" (&optional n filter interactive))
+  (declare-function flymake-goto-prev-error "flymake" (&optional n filter interactive))
+  (declare-function flymake-show-buffer-diagnostics "flymake" ())
+  (declare-function flycheck-next-error "flycheck" (&optional n reset))
+  (declare-function flycheck-previous-error "flycheck" (&optional n))
+  (declare-function flycheck-list-errors "flycheck" ()))
+
+;; ponytail: picks one checker per buffer.  In an eglot buffer that also runs
+;; flycheck checkers (credo, dialyxir), those are reached with M-x flycheck-*.
+(defun myde-diagnostics-next ()
+  "Go to the next diagnostic.
+Uses flymake where it runs, as in eglot buffers, and flycheck elsewhere."
+  (interactive)
+  (call-interactively (if (bound-and-true-p flymake-mode)
+                          #'flymake-goto-next-error
+                        #'flycheck-next-error)))
+
+(defun myde-diagnostics-prev ()
+  "Go to the previous diagnostic.
+Uses flymake where it runs, as in eglot buffers, and flycheck elsewhere."
+  (interactive)
+  (call-interactively (if (bound-and-true-p flymake-mode)
+                          #'flymake-goto-prev-error
+                        #'flycheck-previous-error)))
+
+(defun myde-diagnostics-list ()
+  "List the buffer's diagnostics.
+Uses flymake where it runs, as in eglot buffers, and flycheck elsewhere."
+  (interactive)
+  (call-interactively (if (bound-and-true-p flymake-mode)
+                          #'flymake-show-buffer-diagnostics
+                        #'flycheck-list-errors)))
+
 ;;;; core-spell
 ;;;; ----------
 
