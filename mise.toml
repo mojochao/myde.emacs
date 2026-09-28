@@ -120,6 +120,7 @@ run = [
   "python3 scripts/check_trace.py",
   "python3 scripts/test_check_trace.py",
   "python3 scripts/test_release_notes.py",
+  "python3 scripts/test_cut_release.py",
   "python3 scripts/vendor_docs.py --check",
   "markdownlint docs/",
 ]
@@ -129,6 +130,26 @@ description = "Tag HEAD v<VERSION> once docs/changelog.md has that release"
 run = [
   "grep -q \"^## $(cat VERSION) - \" docs/changelog.md || { echo \"docs/changelog.md has no '## $(cat VERSION) - <date>' heading\"; exit 1; }",
   "git tag -a \"v$(cat VERSION)\" -m \"v$(cat VERSION)\"",
+]
+
+# One command for a release.  The guards run first, so a failure leaves at most
+# the three files cut_release.py edits, on a tree that was clean before.  A
+# roadmap with items under ## Now stops it: moving those is a person's call.
+# The tag push runs .github/workflows/release.yml, which publishes the release.
+[tasks.cut]
+description = "Release <version>: bump VERSION, cut the changelog and roadmap, commit, tag, and push"
+usage = 'arg "<version>" help="The version to release, as MAJOR.MINOR.PATCH"'
+run = [
+  "test \"$(git branch --show-current)\" = main || { echo 'cut: releases are cut from main'; exit 1; }",
+  "test -z \"$(git status --porcelain)\" || { echo 'cut: the working tree is not clean, commit or stash first'; exit 1; }",
+  "git fetch -q origin main",
+  "test \"$(git rev-list --count HEAD..origin/main)\" = 0 || { echo 'cut: main is behind origin/main, pull first'; exit 1; }",
+  "python3 scripts/cut_release.py \"$usage_version\"",
+  "mise run docs-check",
+  "git add VERSION docs/changelog.md docs/roadmap.md",
+  "git commit -q -m \"docs: cut $usage_version\"",
+  "mise run tag",
+  "git push origin main \"v$usage_version\"",
 ]
 
 # --verify-tag refuses unless the tag is already on GitHub, so this never
