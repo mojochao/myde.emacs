@@ -16,6 +16,16 @@ Nothing is planned.
 
 ## Shipped
 
+### RM-18: A failed docs deploy can be re-run :id=rm-18
+
+- **Requirements:** [FR-11](prd.md#fr-11)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+The v0.1.1 push failed to deploy the docs twice.
+With the Pages upload and deploy in one job, `actions/deploy-pages` asked for the artifact a second after the upload and found none listed.
+Re-running the failed job uploaded a second artifact, which `actions/deploy-pages` refuses.
+The `check` job now uploads the site once `mise run docs-check` passes, and `deploy` only publishes it.
+
 ### RM-17: The probe reports what went wrong on its own :id=rm-17
 
 - **Requirements:** [FR-2](prd.md#fr-2), [NFR-3](prd.md#nfr-3)

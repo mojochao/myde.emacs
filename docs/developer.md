@@ -210,8 +210,9 @@ See [User Guide §2.6](user.md#_26-browser-capture) for the browser bookmarklet 
 `.github/workflows/docs.yml` publishes the docs:
 
 - It triggers on a push to `main` that touches `docs/**`, `VERSION`, `scripts/**`, `.markdownlint*`, `mise.toml`, or the workflow file itself, and on `workflow_dispatch`.
-- Its `check` job runs `mise run docs-check`.
-- Its `deploy` job needs `check` to pass, and publishes `docs/` with `actions/upload-pages-artifact` and `actions/deploy-pages`.
+- Its `check` job runs `mise run docs-check`, then uploads `docs/` with `actions/upload-pages-artifact`.
+- Its `deploy` job needs `check` to pass, and publishes that artifact with `actions/deploy-pages`.
+  A failed `deploy` can be re-run on its own, and it reuses the artifact.
 
 The repository's Pages source has to be set to "GitHub Actions" once, under Settings, Pages.
 That is a one-time step for the repository owner, done outside any commit.

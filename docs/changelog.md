@@ -12,6 +12,11 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: A failed docs deploy can be re-run from the Actions page.
+  The Pages artifact is uploaded by the `check` job, so a re-run of `deploy` reuses it instead of uploading a second one.
+  Traces to [RM-18](roadmap.md#rm-18), [FR-11](prd.md#fr-11).
+  Commit `b12caa0`.
+
 ## 0.1.1 - 2026-09-28
 
 ### Added

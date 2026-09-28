@@ -249,8 +249,9 @@ It scans `docs/index.html` and `docs/vendor/*.css` for a remaining remote `@impo
 ### 5.4 Publishing and versions
 
 `.github/workflows/docs.yml` runs two jobs on a push to `main` that touches `docs/**`, `VERSION`, `scripts/**`, `.markdownlint*`, `mise.toml`, or the workflow file, and on `workflow_dispatch` ([ADR-12](adr.md#adr-12)).
-`check` (`ubuntu-24.04`) installs `npm:markdownlint-cli` through mise and runs `mise run docs-check`.
-`deploy` needs `check` to pass, carries `pages: write` and `id-token: write`, and runs `actions/configure-pages`, `actions/upload-pages-artifact` with `path: docs`, and `actions/deploy-pages` into the `github-pages` environment.
+`check` (`ubuntu-24.04`) installs `npm:markdownlint-cli` through mise, runs `mise run docs-check`, and then uploads the site with `actions/upload-pages-artifact` and `path: docs`.
+`deploy` needs `check` to pass, carries `pages: write` and `id-token: write`, and runs `actions/configure-pages` and `actions/deploy-pages` into the `github-pages` environment.
+Because the upload sits in `check`, re-running a failed `deploy` reuses its one artifact, since `actions/deploy-pages` refuses a run holding two.
 A failing `docs-check` blocks the publish instead of shipping broken links or lint violations ([FR-11](prd.md#fr-11)).
 The published site is `https://mojochao.github.io/myde.emacs/`.
 

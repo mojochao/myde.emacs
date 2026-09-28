@@ -284,7 +284,7 @@ A push to `main` that changes the docs publishes them to GitHub Pages, and a fai
 - **Decided by:** [ADR-12](adr.md#adr-12)
 - **Designed in:** [§5.4](tdd.md#_54-publishing-and-versions)
 - **Verified by:** [§2.5](qa.md#_25-docs-checks)
-- **Roadmap:** [RM-9](roadmap.md#rm-9)
+- **Roadmap:** [RM-9](roadmap.md#rm-9), [RM-18](roadmap.md#rm-18)
 
 #### FR-12
 
