@@ -1,0 +1,40 @@
+# Publish a GitHub release when a v* tag is pushed.  The job runs the same
+# `mise run release' a developer runs, so the notes are the tag's section of
+# docs/changelog.md.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      # Trust this checkout's mise.toml without a prompt, and install none of
+      # its pinned tools: the task needs only python3 and gh, which the runner
+      # already has.
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      MISE_TASK_RUN_AUTO_INSTALL: "false"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.9.15
+          install: false
+      # `mise run release' publishes v<VERSION>, so a tag that disagrees with
+      # the VERSION file at its own commit would release the wrong tag.  The
+      # tag is read from the environment, not a ${{ }} expression, so a tag
+      # name holding shell syntax cannot run as part of this script.
+      - name: Check the tag matches VERSION
+        run: |
+          test "$GITHUB_REF_NAME" = "v$(cat VERSION)" || {
+            echo "::error::tag $GITHUB_REF_NAME does not match VERSION $(cat VERSION)"
+            exit 1
+          }
+      - run: mise run release

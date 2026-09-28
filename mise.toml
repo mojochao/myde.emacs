@@ -119,6 +119,7 @@ run = [
   "python3 scripts/check_links.py",
   "python3 scripts/check_trace.py",
   "python3 scripts/test_check_trace.py",
+  "python3 scripts/test_release_notes.py",
   "python3 scripts/vendor_docs.py --check",
   "markdownlint docs/",
 ]
@@ -129,6 +130,14 @@ run = [
   "grep -q \"^## $(cat VERSION) - \" docs/changelog.md || { echo \"docs/changelog.md has no '## $(cat VERSION) - <date>' heading\"; exit 1; }",
   "git tag -a \"v$(cat VERSION)\" -m \"v$(cat VERSION)\"",
 ]
+
+# --verify-tag refuses unless the tag is already on GitHub, so this never
+# creates a tag.  The notes are captured before gh runs, so a changelog with no
+# section for VERSION stops the task instead of publishing an empty release.
+# .github/workflows/release.yml runs it on every v* tag push.
+[tasks.release]
+description = "Publish the GitHub release for tag v<VERSION>, its notes cut from docs/changelog.md"
+run = "notes=$(python3 scripts/release_notes.py) && gh release create \"v$(cat VERSION)\" --verify-tag --title \"v$(cat VERSION)\" --notes \"$notes\""
 
 [tasks.install-xdg]
 description = "Register the org-protocol:// URI handler (Linux)"

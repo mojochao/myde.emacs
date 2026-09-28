@@ -21,6 +21,7 @@ mise run docs-search <q>  # Search docs/ with qmd; index once with `mise exec --
 mise run docs-check       # Check docs/ links, traceability, vendored assets, and markdown lint
 mise run docs-vendor      # Re-fetch the pinned docsify assets into docs/vendor/
 mise run tag              # Tag HEAD v<VERSION> once docs/changelog.md has that release
+mise run release          # Publish the GitHub release for v<VERSION> (CI runs it on tag push)
 mise run export           # Export myde.org to build/myde.tex and build/myde.pdf
 mise run install-xdg      # Register the org-protocol:// URI handler (Linux)
 mise run install-macos    # Register the org-protocol:// URI handler (macOS)
