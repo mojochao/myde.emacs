@@ -16,6 +16,15 @@ Nothing is planned.
 
 ## Shipped
 
+### RM-19: `mise run cut` releases in one command :id=rm-19
+
+- **Requirements:** [FR-12](prd.md#fr-12)
+- **Shipped:** 2026-09-28, [Unreleased](changelog.md#unreleased)
+
+`mise run cut <version>` replaces the hand-run release steps: editing `VERSION`, `/docs-release`, fixing links, committing, tagging, and pushing.
+It checks that it runs on a clean `main` that is not behind `origin/main`, and `scripts/cut_release.py` checks the version, the changelog, and `## Now` before writing anything.
+A full run was tested against a throwaway clone whose `origin` was a local bare repository, along with each refusal, including a version holding shell syntax.
+
 ### RM-18: A failed docs deploy can be re-run :id=rm-18
 
 - **Requirements:** [FR-11](prd.md#fr-11)

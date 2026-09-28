@@ -75,7 +75,7 @@ It verifies without rewriting anything: `check` tangles, asserts the definitions
 
 ### 2.5 Docs checks
 
-`mise run docs-check` runs six checks in order, stopping at the first failure.
+`mise run docs-check` runs seven checks in order, stopping at the first failure.
 
 | Command                        | Catches                                                                                     |
 |----------------------------------|-------------------------------------------------------------------------------------------------|
@@ -83,10 +83,11 @@ It verifies without rewriting anything: `check` tangles, asserts the definitions
 | `scripts/check_trace.py`        | A requirement's section 8.3 block and a downstream doc (ADR, TDD, QA, roadmap, changelog) disagreeing on which links which, or a link missing from the chain |
 | `scripts/test_check_trace.py`   | Regressions in `check_trace.py` itself, checked by its own 12 tests against fixtures         |
 | `scripts/test_release_notes.py` | A release whose notes cut the wrong changelog section or keep doc links that 404 on a release page ([FR-12](prd.md#fr-12)) |
+| `scripts/test_cut_release.py`   | A `mise run cut` that mangles the changelog or roadmap, or accepts a version, section, or `## Now` it should refuse ([FR-12](prd.md#fr-12)) |
 | `scripts/vendor_docs.py --check` | A pinned asset that is missing or never loaded, an unpinned asset that is loaded, or a reference to a live CDN URL instead of `docs/vendor/` ([NFR-7](prd.md#nfr-7)) |
 | `markdownlint docs/`            | Markdown lint violations against this repo's markdownlint config                             |
 
-A push to `main` that changes `docs/` runs the same six checks in the `check` job of `.github/workflows/docs.yml`.
+A push to `main` that changes `docs/` runs the same seven checks in the `check` job of `.github/workflows/docs.yml`.
 The `deploy` job that publishes to GitHub Pages declares `needs: check`, so a failing check blocks the publish ([FR-11](prd.md#fr-11)).
 
 ## 3. Manual testing

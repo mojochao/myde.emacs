@@ -164,7 +164,7 @@ Anything that only shows up in a window-system frame needs a client frame to con
 - `mise run probe <report>` boots this config as a throwaway daemon and writes a report of its declared `use-package` forms, global modes, init time, and startup errors and warnings.
   Run it before and after a change, and diff its `declared:` and `mode:` lines.
   A declared package that disappears, or a mode that flips to `off`, is a regression.
-- `mise run docs-check` runs the docs checkers and markdownlint in order: `check_links.py`, `check_trace.py`, `test_check_trace.py`, `test_release_notes.py`, `vendor_docs.py --check`, then `markdownlint docs/`.
+- `mise run docs-check` runs the docs checkers and markdownlint in order: `check_links.py`, `check_trace.py`, `test_check_trace.py`, `test_release_notes.py`, `test_cut_release.py`, `vendor_docs.py --check`, then `markdownlint docs/`.
 
 See [Quality Assurance](qa.md) for what each check catches, how it is enforced by git hooks, and the manual checks that have no automated equivalent.
 
@@ -220,18 +220,19 @@ Once it is set, a passing push to `main` publishes to [https://mojochao.github.i
 
 ### 6.3 Releasing a version
 
-1. Edit `VERSION`.
-2. Run `/docs-release <version>`, which moves `Unreleased` to that version and `Now` items to `Shipped`.
-3. Fix the `Shipped` links that `mise run docs-check` reports.
-4. Commit.
-5. Run `mise run tag`.
-   It checks that `docs/changelog.md` has a `## <VERSION> - <date>` heading, and refuses otherwise.
-   `git tag -a` itself refuses if `v<VERSION>` already exists.
-6. Push the commit and the tag.
-   The tag push runs `.github/workflows/release.yml`, which publishes the GitHub release with `mise run release`.
+1. Move any finished items under `## Now` in `docs/roadmap.md` to `## Shipped`.
+   `mise run cut` refuses while `## Now` lists anything, since whether an item shipped is a person's call.
+2. Run `mise run cut <version>` on a clean `main` that is not behind `origin/main`.
+   It sets `VERSION`, turns `Unreleased` into `## <version> - <date>` without its empty subsections, adds a fresh `Unreleased` block, and points the roadmap's `Unreleased` links at the new heading.
+   It then runs `mise run docs-check`, commits `docs: cut <version>`, runs `mise run tag`, and pushes `main` and `v<version>`.
+3. The tag push runs `.github/workflows/release.yml`, which publishes the GitHub release with `mise run release`.
    Its notes are the version's section of `docs/changelog.md`.
 
-The owner runs step 6.
+`mise run cut` refuses before editing anything when the version is not `MAJOR.MINOR.PATCH` or not above `VERSION`, when that version was already cut, or when `Unreleased` has no entries.
+If `docs-check` fails, the tree holds only its edits to `VERSION`, `docs/changelog.md`, and `docs/roadmap.md`, which `git checkout -- VERSION docs` discards.
+If only the push fails, `git push origin main v<version>` finishes the release.
+
+The owner runs `mise run cut`, since it pushes.
 
 ## 7. Observability
 

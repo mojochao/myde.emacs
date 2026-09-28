@@ -259,8 +259,9 @@ The published site is `https://mojochao.github.io/myde.emacs/`.
 `actions/upload-pages-artifact` tars its artifact with `--dereference --hard-dereference`, so the Pages artifact holds the real file rather than a dangling symlink.
 Between releases, the sidebar shows the last released version, since `VERSION` only changes as part of a release ([FR-12](prd.md#fr-12)).
 
-The release flow: edit `VERSION`, move `Unreleased` to that version and `Now` items to `Shipped` in the docs, and fix the `Shipped` links `mise run docs-check` reports.
-Then commit and run `mise run tag`.
+The release flow is `mise run cut <version>`, once any finished `Now` items have been moved to `Shipped` by hand.
+`scripts/cut_release.py` sets `VERSION`, turns `Unreleased` into that version's changelog section, and points the roadmap's `Unreleased` links at it.
+The task then runs `mise run docs-check`, commits, runs `mise run tag`, and pushes `main` and the tag.
 `mise run tag` refuses unless `docs/changelog.md` has a `## <VERSION> - <date>` heading, then creates the annotated tag `v<VERSION>`.
 Pushing the tag runs `.github/workflows/release.yml`, which checks that the tag matches `VERSION` at its commit and runs `mise run release`.
 That publishes the GitHub release, its notes cut from the version's changelog section by `scripts/release_notes.py`, with relative doc links rewritten to the Pages site.

@@ -295,7 +295,7 @@ The config carries one version, which names its git tags and shows in the docs s
 - **Decided by:** [ADR-13](adr.md#adr-13)
 - **Designed in:** [§5.4](tdd.md#_54-publishing-and-versions)
 - **Verified by:** [§3.4](qa.md#_34-docs-site)
-- **Roadmap:** [RM-9](roadmap.md#rm-9), [RM-16](roadmap.md#rm-16)
+- **Roadmap:** [RM-9](roadmap.md#rm-9), [RM-16](roadmap.md#rm-16), [RM-19](roadmap.md#rm-19)
 
 #### NFR-1
 
