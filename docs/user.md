@@ -533,13 +533,14 @@ Each subsection below names the formatters its buffers get.
 | `C-c p` | `project-prefix-map` | Project commands: switch, find file, and so on |
 | `s-p` | `project-prefix-map` | Same, on the super key |
 | `<f8>` | `myde-neotree-project-root-toggle` | Toggle a project tree explorer, rooted at the current project |
-| `C-c ! n` | `flycheck-next-error` | Next flycheck error |
-| `C-c ! p` | `flycheck-previous-error` | Previous flycheck error |
-| `C-c ! l` | `flycheck-list-errors` | List the buffer's flycheck errors |
+| `C-c ! n` | `myde-diagnostics-next` | Next diagnostic |
+| `C-c ! p` | `myde-diagnostics-prev` | Previous diagnostic |
+| `C-c ! l` | `myde-diagnostics-list` | List the buffer's diagnostics |
 
-The `C-c !` keys are flycheck's wherever flycheck is on, which includes every programming buffer.
-Eglot reports its diagnostics through flymake instead.
-Reach those with `M-x flymake-goto-next-error`, `M-x flymake-goto-prev-error`, and `M-x flymake-show-buffer-diagnostics`.
+The `C-c !` keys follow the buffer's checker.
+In a buffer eglot manages, they use flymake, which carries the language server's diagnostics.
+Everywhere else they use flycheck.
+In an eglot buffer that also runs flycheck checkers, such as Elixir's credo and dialyxir, reach those with `M-x flycheck-next-error` and `M-x flycheck-list-errors`.
 
 Eglot keys, in every buffer eglot manages:
 

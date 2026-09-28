@@ -41,6 +41,7 @@ The global dape keys under `C-c d` now reach Elixir buffers.
 
 Several keys across dape, Common Lisp, Erlang, Go, Zig, Python, and Ruby were bound to commands that did not exist.
 Each now runs a real command, and gotest-ts now loads in Go buffers.
+`C-c ! n`, `p`, and `l` reach flymake in eglot buffers, where flycheck's own map used to shadow them.
 
 ### RM-9: Docs schema, traceability, theme, Pages, and `VERSION` :id=rm-9
 

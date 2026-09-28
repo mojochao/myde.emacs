@@ -43,6 +43,11 @@ Each entry traces to the roadmap item it shipped.
 
 ### Fixed
 
+- 2026-09-28: `C-c ! n`, `p`, and `l` navigate the language server's diagnostics in eglot buffers.
+  flycheck's `C-c !` map used to shadow them in every flycheck buffer, so they only ever reached flycheck.
+  They now dispatch to flymake where it runs and to flycheck elsewhere.
+  Traces to [RM-14](roadmap.md#rm-14).
+  Commit `422c059`.
 - 2026-09-28: Elixir buffers keep the `C-c d` dape keys, and the Mix task keys move to `C-c x`.
   Traces to [RM-10](roadmap.md#rm-10), [FR-7](prd.md#fr-7).
   Commit `cfc53f0`.
