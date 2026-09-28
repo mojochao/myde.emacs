@@ -3164,7 +3164,8 @@
 ;; A fork of https://github.com/jolby/ob-zig.el.  Upstream declares no
 ;; Package-Requires and no lexical-binding cookie, so elpaca compiled it without
 ;; zig-mode on `load-path', the compile failed, and Emacs warned about the
-;; source on every start.  The fork adds those two header lines and nothing else.
+;; source on every start.  The fork adds those two header lines, plus a
+;; `declare-function' for `org-entry-get' that the native compiler asked for.
 (use-package ob-zig  ;; https://github.com/mojochao/ob-zig.el
   :defer t
   :ensure (:host github :repo "mojochao/ob-zig.el"))
