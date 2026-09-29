@@ -6,12 +6,17 @@
   <title>MyDE.Emacs</title>
   <meta name="description" content="My Development Environment, a literate Emacs configuration">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Emacs' own icon, as in the sidebar.  The PNG is for browsers that
+       cannot use an SVG favicon. -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/emacs-32.png">
+  <link rel="icon" type="image/svg+xml" href="assets/emacs.svg">
   <!-- Every asset is vendored under vendor/ by scripts/vendor_docs.py, so the
        site fetches nothing from a third party at runtime.  The Catppuccin
        stylesheet sets colors only, so it loads after the layout theme. -->
   <link rel="stylesheet" href="vendor/theme-simple-dark.css">
   <link rel="stylesheet" href="vendor/catppuccin-frappe-mauve.css">
   <style>
+    .app-name-link img { display: block; height: 80px; margin: 0 auto 0.5rem; }
     .app-version { color: var(--subtext0); font-size: 0.6em; margin-left: 0.4em; }
   </style>
 </head>
@@ -40,7 +45,9 @@
       });
     }
     window.$docsify = {
-      name: 'MyDE.Emacs',
+      // The icon is Emacs' own, copied unmodified from etc/images/icons
+      // (GPLv3+, Free Software Foundation), and is the favicon too.
+      name: '<img src="assets/emacs.svg" alt="">MyDE.Emacs',
       repo: 'mojochao/myde.emacs',
       loadSidebar: true,
       subMaxLevel: 2,
