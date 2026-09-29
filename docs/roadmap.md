@@ -19,7 +19,7 @@ Nothing is planned.
 ### RM-21: The Emacs icon heads the docs sidebar :id=rm-21
 
 - **Requirements:** [FR-10](prd.md#fr-10)
-- **Shipped:** 2026-09-29, [Unreleased](changelog.md#unreleased)
+- **Shipped:** 2026-09-29, [0.1.5](changelog.md#_015-2026-09-29)
 
 The sidebar name sits under an 80px Emacs icon, the layout the SciPlay docs sites use, and the same icon is the favicon.
 Both files are Emacs' own, copied unmodified from `etc/images/icons` into `docs/assets/`, so the site still loads nothing from a third party.

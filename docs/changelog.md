@@ -8,13 +8,17 @@ Each entry traces to the roadmap item it shipped.
 
 ### Added
 
-- 2026-09-29: The docs sidebar shows the Emacs icon above the site name, and the same icon is the favicon.
-  Traces to [RM-21](roadmap.md#rm-21), [FR-10](prd.md#fr-10).
-  Commit `12f9eea`.
-
 ### Changed
 
 ### Fixed
+
+## 0.1.5 - 2026-09-29
+
+### Added
+
+- 2026-09-29: The docs sidebar shows the Emacs icon above the site name, and the same icon is the favicon.
+  Traces to [RM-21](roadmap.md#rm-21), [FR-10](prd.md#fr-10).
+  Commit `12f9eea`.
 
 ## 0.1.4 - 2026-09-28
 
