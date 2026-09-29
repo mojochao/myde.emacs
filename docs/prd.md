@@ -273,7 +273,7 @@ The docs can be previewed and searched locally.
 - **Decided by:** [ADR-11](adr.md#adr-11)
 - **Designed in:** [§5.3](tdd.md#_53-docs-site)
 - **Verified by:** [§3.4](qa.md#_34-docs-site)
-- **Roadmap:** [RM-8](roadmap.md#rm-8), [RM-9](roadmap.md#rm-9)
+- **Roadmap:** [RM-8](roadmap.md#rm-8), [RM-9](roadmap.md#rm-9), [RM-21](roadmap.md#rm-21)
 
 #### FR-11
 
