@@ -540,7 +540,7 @@ Each subsection below names the formatters its buffers get.
 The `C-c !` keys follow the buffer's checker.
 In a buffer eglot manages, they use flymake, which carries the language server's diagnostics.
 Everywhere else they use flycheck.
-In an eglot buffer that also runs flycheck checkers, such as Elixir's credo and dialyxir, reach those with `M-x flycheck-next-error` and `M-x flycheck-list-errors`.
+In an eglot buffer that also runs flycheck checkers, such as Elixir's credo, reach those with `M-x flycheck-next-error` and `M-x flycheck-list-errors`.
 
 Eglot keys, in every buffer eglot manages:
 

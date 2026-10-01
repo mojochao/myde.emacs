@@ -2723,12 +2723,6 @@
   (flycheck-credo-setup)
   :ensure t)
 
-(use-package flycheck-dialyxir  ;; https://github.com/aaronjensen/flycheck-dialyxir
-  :after flycheck
-  :config
-  (flycheck-dialyxir-setup)
-  :ensure t)
-
 ;; -----------------------------------------------------------------------------
 ;; Mix task runner
 ;; -----------------------------------------------------------------------------

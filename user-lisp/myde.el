@@ -669,7 +669,7 @@ restart."
   (declare-function flycheck-list-errors "flycheck" ()))
 
 ;; ponytail: picks one checker per buffer.  In an eglot buffer that also runs
-;; flycheck checkers (credo, dialyxir), those are reached with M-x flycheck-*.
+;; flycheck checkers (credo), those are reached with M-x flycheck-*.
 (defun myde-diagnostics-next ()
   "Go to the next diagnostic.
 Uses flymake where it runs, as in eglot buffers, and flycheck elsewhere."
