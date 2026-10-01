@@ -120,6 +120,27 @@
   (setq backup-directory-alist `(("." . ,backup-dir)))
   (make-directory backup-dir :parents))
 
+;; Lockfiles only guard against a second Emacs editing the same file, and this
+;; config runs one, the daemon.  Here they would only leave .#file symlinks in
+;; repos.  Also covers remote files, so `remote-file-name-inhibit-locks' is moot.
+(use-package emacs
+  :custom
+  (create-lockfiles nil)
+  :ensure nil)
+
+;; Ignore `eval:' file-local forms instead of prompting, and make a TLS
+;; certificate failure an error instead of a prompt.
+(use-package emacs
+  :custom
+  (enable-local-eval nil)
+  :ensure nil)
+
+(use-package gnutls
+  :defer t
+  :custom
+  (gnutls-verify-error t)
+  :ensure nil)
+
 ;; Themes trusted without a prompt: batppuccin frappe and mocha.  The hashes
 ;; pin those files' contents, so a batppuccin update prompts again.  Set before
 ;; custom.el loads so a theme Customize saves as safe there is not overwritten.
@@ -135,9 +156,19 @@
   (when exists
     (load-file custom-file)))
 
-;; TRAMP connection cache
-(setq tramp-persistency-file-name
-      (expand-file-name "emacs/tramp" (xdg-state-home)))
+;; TRAMP: connection cache in XDG state, only errors in *Messages*, and remote
+;; file attributes cached for 50 s instead of 10 s.
+(use-package tramp
+  :defer t
+  :init
+  ;; Not `:custom'.  tramp-loaddefs.el defvars this to its default when tramp
+  ;; loads, which discards a saved custom value.  A setq binds it first.
+  (setq tramp-persistency-file-name
+        (expand-file-name "emacs/tramp" (xdg-state-home)))
+  :custom
+  (tramp-verbose 1)
+  (remote-file-name-inhibit-cache 50)
+  :ensure nil)
 
 ;; URL library configuration (cookies, cache)
 (setq url-configuration-directory
@@ -280,6 +311,20 @@
 
 ;; Cursor configuration
 (setq-default cursor-type 'bar)
+
+;; Redisplay work this config does not need: right-to-left text analysis,
+;; font-lock while keys are still pending, and cursors in unfocused windows.
+;; The `setq' names are plain variables, not defcustoms.
+(use-package emacs
+  :custom
+  (bidi-paragraph-direction 'left-to-right)
+  (cursor-in-non-selected-windows nil)
+  (fast-but-imprecise-scrolling t)
+  :config
+  (setq bidi-inhibit-bpa t
+        redisplay-skip-fontification-on-input t
+        auto-window-vscroll nil)
+  :ensure nil)
 
 ;; Highlight current line globally
 (global-hl-line-mode)
@@ -716,6 +761,16 @@
 (use-package eldoc
   :custom
   (eldoc-idle-delay most-positive-fixnum)  ;; Disable automatic echo-area display; docs are shown on demand with C-c e h.
+  :ensure nil)
+
+;; Stop `C-h o' and the plain describe-* commands loading libraries just to
+;; complete a name or render a docstring.  helpful's `C-h f' and `C-h v'
+;; complete over obarray and never read these.
+(use-package help-fns
+  :defer t
+  :custom
+  (help-enable-autoload nil)
+  (help-enable-completion-autoload nil)
   :ensure nil)
 
 (use-package eldoc-box  ;; https://github.com/casouri/eldoc-box
@@ -1170,6 +1225,14 @@
 
 (use-package git-modes  ;; https://github.com/magit/git-modes
   :ensure t)
+
+;; Histogram diffs give cleaner hunks.  diff-hl passes this switch through to
+;; its own gutter diffs.
+(use-package vc-git
+  :defer t
+  :custom
+  (vc-git-diff-switches '("--histogram"))
+  :ensure nil)
 
 (use-package diff-hl  ;; https://github.com/dgutov/diff-hl
   :hook ((elpaca-after-init . global-diff-hl-mode)

@@ -175,7 +175,9 @@
   (setq pgtk-wait-for-event-timeout 0.001))
 
 (setq warning-minimum-level (if init-file-debug :warning :error))
-(setq warning-suppress-types '((lexical-binding)))
+;; Emacs 31 raises the missing-cookie warning from files.el as
+;; (files missing-lexbind-cookie FILE).  It is still logged in *Warnings*.
+(setq warning-suppress-types '((files missing-lexbind-cookie)))
 
 (when init-file-debug
   (setq message-log-max 16384))
