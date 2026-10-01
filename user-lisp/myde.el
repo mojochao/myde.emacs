@@ -1193,6 +1193,15 @@ adds project root markers for mono-repos, and registers tree-sitter grammar."
       (message "Installing %s tree-sitter grammar..." lang)
       (treesit-install-language-grammar lang))))
 
+;; ponytail: decided when the buffer opens.  After `mix deps.get' adds credo,
+;; revert the buffer to pick it up.
+(defun myde-prog-elixir-flycheck-setup ()
+  "Turn on `flycheck-mode' only in a project with credo in deps/.
+Credo is the one flycheck checker that runs in `elixir-ts-mode', with the
+same test.  Elsewhere elixir-ls reports through flymake, and flycheck with
+nothing to run announces that it has no checker."
+  (flycheck-mode (if (locate-dominating-file default-directory "deps/credo") 1 -1)))
+
 (defun myde-elixir-exs-debug-example ()
   "Return an example of how to structure an .exs script for debugging.
 

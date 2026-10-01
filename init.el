@@ -2665,13 +2665,11 @@
 ;; Elixir and HEEx modes
 ;; -----------------------------------------------------------------------------
 
+;; Emacs maps .ex and .exs to elixir-ts-mode itself, and .heex goes to
+;; heex-ts-mode below.
 (use-package elixir-ts-mode
-  :after erlang
-  :mode (("\\.ex\\'"   . elixir-ts-mode)
-         ("\\.exs\\'"  . elixir-ts-mode)
-         ("\\.heex\\'" . elixir-ts-mode))
   :hook ((elixir-ts-mode . myde-elixir-ts-ensure-grammars)
-         (elixir-ts-mode . flycheck-mode)
+         (elixir-ts-mode . myde-prog-elixir-flycheck-setup)
          (elixir-ts-mode . yas-minor-mode))
   :ensure nil)
 
