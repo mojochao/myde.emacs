@@ -1648,17 +1648,6 @@ buffer, so a buffer-local nil is the supported opt-out."
   (ghostel-module-directory (expand-file-name "emacs/ghostel/" (xdg-data-home)))
   :ensure t)
 
-;; Enabling the mode at startup loads consult (~30 ms) rather than on first use,
-;; so the `g' narrow key is in `consult-buffer' from the first call.
-(use-package consult-ghostel ;; https://github.com/dakra/ghostel
-  :hook (elpaca-after-init . consult-ghostel-mode)
-  :bind (("C-x m" . consult-ghostel)
-         :map project-prefix-map
-         ("m" . consult-ghostel-project)
-         :map ghostel-semi-char-mode-map
-         ("C-c h" . consult-ghostel-history))
-  :ensure t)
-
 (use-package vterm ;; https://github.com/akermu/emacs-libvterm
   :commands
   (vterm)
@@ -1675,6 +1664,9 @@ buffer, so a buffer-local nil is the supported opt-out."
               ("t" . myde/project-vterm))
   :ensure nil)
 #+end_src
+
+#+RESULTS:
+: #s(hash-table data (:use-package (1791956708653760189 . 1000000000) :init (1791956708653694406 . 1000000000) :init-secs (24611 . 1000000000) :use-package-secs (93978 . 1000000000) :config (1791956708653690625 . 1000000000) :config-secs (475 . 1000000000)))
 
 *** core-dashboard
 
